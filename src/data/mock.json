@@ -1,0 +1,30 @@
+{
+  "groom": {
+    "name": "강준구",
+    "englishName": "JUNGU",
+    "isFatherDeceased": false,
+    "father": "",
+    "mother": "조언아",
+    "isMotherDeceased": false,
+    "relation": "장남"
+  },
+  "bride": {
+    "name": "김세현",
+    "englishName": "SEHYEON",
+    "father": "김덕용",
+    "isFatherDeceased": true,
+    "mother": "문정희",
+    "isMotherDeceased": false,
+    "relation": "차녀"
+  },
+  "weddingDate": "2027-10-25T12:00:00",
+  "location": {
+    "name": "더라포레 3층 그레이스홀",
+    "address": "서울시 강남구 테헤란로 123",
+    "transport": "역삼역 3번 출구 도보 5분"
+  },
+  "greeting": {
+    "title": "소중한 분들을 초대합니다",
+    "content": "두 사람이 사랑과 믿음으로\n한 가정을 이루어 맺어지려고 합니다.\n오셔서 축복해 주시면 감사하겠습니다."
+  }
+}

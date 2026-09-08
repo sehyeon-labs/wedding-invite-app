@@ -1,0 +1,197 @@
+// src/components/sections/Dday.module.scss
+
+.ddaySection {
+  width: 100%;
+  height: 100vh;
+  padding: 4.5rem 1.5rem;
+  background-color: #ffffff;
+  color: #24292e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid #eaecef;
+  overflow: hidden;
+
+  .container {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.8rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .headerTag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #005cc5;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      min-height: 1.2rem;
+    }
+
+    /* 미니 달력 */
+    .calendarBox {
+      width: 100%;
+      background-color: #ffffff;
+      padding: 1.5rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+
+      &.showCalendar {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .calendarHeader {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #24292e;
+        letter-spacing: 0.08em;
+        text-align: left;
+        padding: 0.3rem 0.8rem;
+        border-left: 3px solid #005cc5;
+        background-color: rgba(246, 248, 250, 0.943);
+        line-height: 1;
+        min-height: 1.5rem;
+      }
+
+      .weekGrid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        color: #6a737d;
+        font-weight: 600;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid #f1f3f5;
+
+        .weekDay:first-child { color: #d73a49; }
+        .weekDay:last-child { color: #005cc5; }
+      }
+
+      .daysGrid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        row-gap: 0.5rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: #24292e;
+
+        .dayCell {
+          aspect-ratio: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-radius: 50%;
+          font-weight: 400;
+          margin: auto;
+          width: 30px;
+          height: 30px;
+          transition: background-color 0.2s;
+
+          &.weddingDay {
+            background-color: #005cc5;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 92, 197, 0.25);
+          }
+        }
+      }
+    }
+
+    .countdownWrapper {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 1rem;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+
+      &.showTimer {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .timeUnit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+
+        .number {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: #24292e;
+        }
+
+        .label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.6rem;
+          color: #6a737d;
+          letter-spacing: 0.1em;
+        }
+      }
+
+      .divider {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.4rem;
+        color: #b2bec3;
+        margin-bottom: 1rem;
+      }
+    }
+
+    .subMessage {
+      font-family: "Nanum Gothic Coding", monospace;
+      font-size: 0.785rem;
+      color: #24292e;
+      letter-spacing: 0.02em;
+      line-height: 1.5;
+      min-height: 1.5rem;
+      
+      .highlight {
+        color: #22863a;
+        font-weight: 700;
+        font-family: "Nanum Gothic Coding", monospace;
+      }
+
+      strong {
+        color: #22863a;
+        font-weight: 700;
+        font-family: "Nanum Gothic Coding", monospace;
+      }
+    }
+
+    /* 터미널 타이핑 커서 효과 */
+    .cursor {
+      display: inline-block;
+      animation: blinkCursor 0.8s infinite;
+      font-weight: bold;
+      color: #005cc5;
+      margin-left: 2px;
+    }
+  }
+}
+
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

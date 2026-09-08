@@ -1,0 +1,39 @@
+// src/app/layout.module.scss
+
+.pcContainer {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: #e5e0db;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.mobileFrame {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  background-color: #FDFBF7;
+  color: #3A322C;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+
+  animation: fadeInSlide 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

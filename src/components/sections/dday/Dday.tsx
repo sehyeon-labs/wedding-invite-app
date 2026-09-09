@@ -96,9 +96,9 @@ export default function Dday() {
           i++;
         } else {
           clearInterval(timer);
-          setStep(4); // 👈 타이핑이 모두 끝난 후에도 step 4 이상으로 유지하여 커서 깜빡임 유지
+          setStep(4);
         }
-      }, 50);
+      }, 80);
       return () => clearInterval(timer);
     }
   }, [hasAnimated, step, headerText, headerMonthText, subMessageText]);

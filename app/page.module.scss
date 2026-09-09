@@ -3,9 +3,13 @@
 .container {
   width: 100%;
   height: 100vh;
-  overflow-y: hidden;
-  position: relative;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
 
+  /* 스크롤바 숨기기 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   &::-webkit-scrollbar {
     display: none;
   }
@@ -14,5 +18,6 @@
 .section {
   width: 100%;
   height: 100vh;
+  scroll-snap-align: start;
   position: relative;
 }

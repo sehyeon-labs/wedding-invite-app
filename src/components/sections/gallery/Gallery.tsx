@@ -5,17 +5,17 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./Gallery.module.scss";
 
 const GALLERY_IMAGES = [
-  "/images/sample.jpg",
+  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample.jpg",
+  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample.jpg",
+  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample.jpg",
+  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample.jpg",
+  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample.jpg",
+  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
 ];
 

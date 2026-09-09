@@ -1,0 +1,61 @@
+// src/components/common/QuickNav.module.scss
+
+.quickNav {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%) scale(0.95);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(-50%) scale(1);
+  }
+
+  .barButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .bar {
+      width: 3.5px;
+      height: 20px;
+      background-color: #cbd5e1;
+      border-radius: 4px;
+      transition: background-color 0.25s, height 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+
+    &:hover {
+      .bar {
+        background-color: #94a3b8;
+      }
+    }
+
+    &.active {
+      .bar {
+        width: 4.5px;
+        height: 30px;
+        background-color: #22863a;
+        box-shadow: 0 0 8px rgba(34, 134, 58, 0.4);
+      }
+    }
+  }
+}

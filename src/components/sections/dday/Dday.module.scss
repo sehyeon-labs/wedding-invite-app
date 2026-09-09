@@ -19,7 +19,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.8rem;
+    gap: 1.5rem;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -32,11 +32,10 @@
     .headerTag {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.75rem;
-      color: #005cc5;
+      color: #22863a;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       font-weight: 600;
-      min-height: 1.2rem;
     }
 
     /* 미니 달력 */
@@ -47,7 +46,6 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      margin-bottom: 1.5rem;
       opacity: 0;
       transform: translateY(10px);
       transition: opacity 0.5s ease-out, transform 0.5s ease-out;
@@ -65,7 +63,7 @@
         letter-spacing: 0.08em;
         text-align: left;
         padding: 0.3rem 0.8rem;
-        border-left: 3px solid #005cc5;
+        border-left: 3px solid #22863a;
         background-color: rgba(246, 248, 250, 0.943);
         line-height: 1;
         min-height: 1.5rem;
@@ -82,7 +80,7 @@
         border-bottom: 1px solid #f1f3f5;
 
         .weekDay:first-child { color: #d73a49; }
-        .weekDay:last-child { color: #005cc5; }
+        .weekDay:last-child { color: #22863a; }
       }
 
       .daysGrid {
@@ -106,10 +104,10 @@
           transition: background-color 0.2s;
 
           &.weddingDay {
-            background-color: #005cc5;
+            background-color: #22863a;
             color: #ffffff;
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(0, 92, 197, 0.25);
+            box-shadow: 0 4px 12px rgba(34, 134, 58, 0.25);
           }
         }
       }
@@ -138,7 +136,7 @@
 
         .number {
           font-family: 'JetBrains Mono', monospace;
-          font-size: 1.6rem;
+          font-size: 1.3rem;
           font-weight: 700;
           color: #24292e;
         }
@@ -146,7 +144,7 @@
         .label {
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.6rem;
-          color: #6a737d;
+          color: #22863a;
           letter-spacing: 0.1em;
         }
       }
@@ -162,7 +160,7 @@
     .subMessage {
       font-family: "Nanum Gothic Coding", monospace;
       font-size: 0.785rem;
-      color: #24292e;
+      color: #0c3d17;
       letter-spacing: 0.02em;
       line-height: 1.5;
       min-height: 1.5rem;
@@ -185,7 +183,7 @@
       display: inline-block;
       animation: blinkCursor 0.8s infinite;
       font-weight: bold;
-      color: #005cc5;
+      color: #22863a;
       margin-left: 2px;
     }
   }

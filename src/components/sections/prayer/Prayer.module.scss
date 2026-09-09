@@ -1,0 +1,192 @@
+// src/components/sections/Prayer.module.scss
+
+.section {
+  width: 100%;
+  min-height: 100vh;
+  padding: 4rem 1.5rem;
+  background-color: #ffffff;
+  color: #24292e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid #eaecef;
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 2.0s cubic-bezier(0.16, 1, 0.3, 1), transform 2.0s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .headerTag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #22863a;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      min-height: 1.2rem;
+      display: flex;
+      align-items: center;
+
+      .cursor {
+        display: inline-block;
+        animation: blink 1s step-end infinite;
+        margin-left: 2px;
+        font-weight: 700;
+      }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .contentWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 1.0s ease, transform 1.0s ease;
+
+      &.showContent {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mainTitle {
+      font-size: 1.0rem;
+      font-family: "Nanum Gothic Coding", monospace;
+      font-weight: 400;
+      color: #24292e;
+      letter-spacing: 0.05em;
+      min-height: 1.5rem;
+    }
+
+    .subDescription {
+      font-family: "Nanum Gothic Coding", monospace;
+      font-size: 0.75rem;
+      color: #586069;
+      line-height: 1.6;
+      white-space: pre-line;
+      letter-spacing: 0.02em;
+    }
+
+    /* Mac 터미널 창 스타일 */
+    .terminalBlock {
+      width: 100%;
+      background-color: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      overflow: hidden;
+      text-align: left;
+      animation: fadeIn 0.3s ease;
+
+      .blockHeader {
+        background-color: #e1e4e8;
+        padding: 0.4rem 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .dots {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .dotRed, .dotYellow, .dotGreen {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+          }
+          .dotRed { 
+            background-color: #ff5f56; 
+            transition: opacity 0.2s;
+            &:hover { opacity: 0.8; }
+          }
+          .dotYellow { background-color: #ffbd2e; cursor: default; }
+          .dotGreen { background-color: #27c93f; cursor: default; }
+        }
+
+        .fileName {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          color: #586069;
+        }
+      }
+
+      .prayerList {
+        padding: 0.9rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .prayerItem {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.5rem;
+
+          .number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #22863a;
+            flex-shrink: 0;
+            margin-top: 1px;
+          }
+
+          .content {
+            font-family: "Nanum Gothic Coding", monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: #24292e;
+            letter-spacing: 0.01em;
+          }
+        }
+      }
+    }
+
+    /* 창이 닫혔을 때 다시 여는 버튼 */
+    .reopenBtn {
+      width: 100%;
+      background-color: #fafbfc;
+      border: 1px dashed #d1d5da;
+      border-radius: 6px;
+      padding: 1rem;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #22863a;
+      transition: background-color 0.2s, border-color 0.2s;
+
+      &:hover {
+        background-color: #f1f8ff;
+        border-color: #22863a;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}

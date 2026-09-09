@@ -5,17 +5,29 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./Gallery.module.scss";
 
 const GALLERY_IMAGES = [
-  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample-cover.jpg",
   "/images/tomato.jpeg",
-  "/images/sample-cover.jpg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
+  "/images/tomato.jpeg",
   "/images/tomato.jpeg",
 ];
 
@@ -29,7 +41,10 @@ export default function Gallery() {
   
   // 가로 스크롤 트랙을 제어하기 위한 Ref
   const trackRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false); // 마우스 올렸을 때 멈춤 여부
+  const [isPaused, setIsPaused] = useState(false);
+
+  // 모달 하단 썸네일 리스트를 제어하기 위한 Ref
+  const thumbnailTrackRef = useRef<HTMLDivElement>(null);
 
   const headerText = `// PHOTO_GALLERY.log`;
   const subTitleText = `소중한 순간들`;
@@ -103,13 +118,11 @@ export default function Gallery() {
         scrollPos += speed;
         track.scrollLeft = scrollPos;
         
-        // 끝까지 도달했을 때 맨 앞으로 자연스럽게 루프(순환)
         if (track.scrollLeft >= track.scrollWidth - track.clientWidth) {
           scrollPos = 0;
           track.scrollLeft = 0;
         }
       } else {
-        // 멈춰있을 때 현재 스크롤 위치 동기화
         scrollPos = track.scrollLeft;
       }
       animationFrameId = requestAnimationFrame(stepScroll);
@@ -118,6 +131,20 @@ export default function Gallery() {
     animationFrameId = requestAnimationFrame(stepScroll);
     return () => cancelAnimationFrame(animationFrameId);
   }, [isPaused, selectedIndex]);
+
+  // 선택된 사진이 바뀔 때 하단 썸네일 바가 해당 위치를 자동으로 스크롤하여 보여주도록 연동
+  useEffect(() => {
+    if (selectedIndex !== null && thumbnailTrackRef.current) {
+      const selectedThumb = thumbnailTrackRef.current.children[selectedIndex] as HTMLElement;
+      if (selectedThumb) {
+        selectedThumb.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      }
+    }
+  }, [selectedIndex]);
 
   // 모달 슬라이드 이전/다음 이동 함수
   const handlePrev = (e?: React.MouseEvent) => {
@@ -208,6 +235,20 @@ export default function Gallery() {
                 &gt;
               </button>
             </div>
+
+            {/* 하단에 모든 사진들이 조그맣게 나열되는 썸네일 네비게이터 독(Dock) */}
+            <div ref={thumbnailTrackRef} className={styles.thumbnailDock}>
+              {GALLERY_IMAGES.map((src, index) => (
+                <div
+                  key={index}
+                  className={`${styles.thumbItem} ${selectedIndex === index ? styles.activeThumb : ""}`}
+                  onClick={() => setSelectedIndex(index)}
+                >
+                  <img src={src} alt={`썸네일 ${index + 1}`} />
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       )}

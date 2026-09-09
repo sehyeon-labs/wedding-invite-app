@@ -31,7 +31,7 @@
     .headerTag {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.75rem;
-      color: #005cc5;
+      color: #22863a;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       font-weight: 600;
@@ -39,7 +39,7 @@
     }
 
     .mainTitle {
-      font-size: 1.2rem;
+      font-size: 1.0rem;
       font-family: "Nanum Gothic Coding", monospace;
       font-weight: 400;
       color: #24292e;
@@ -64,7 +64,7 @@
 
       .imageCard {
         position: relative;
-        flex: 0 0 68%; // 한 화면에 카드가 살짝 걸치는 크기
+        flex: 0 0 68%;
         aspect-ratio: 4 / 5;
         border-radius: 8px;
         overflow: hidden;
@@ -115,7 +115,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: flex-end; /* 우측 정렬 */
+      align-items: flex-end;
       gap: 0.3rem;
       padding: 0 0.5rem;
       margin-top: -0.2rem;
@@ -129,8 +129,8 @@
 
       .startViewBtn {
         background: #1f2428;
-        border: 1px solid #58a6ff;
-        color: #58a6ff;
+        border: 1px solid #22863a;
+        color: #22863a;
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.7rem;
         padding: 4px 10px;
@@ -147,8 +147,8 @@
         &:hover {
           background: #282e33;
           animation: none; 
-          color: #79c0ff;
-          border-color: #79c0ff;
+          color: #22863a;
+          border-color: #22863a;
         }
 
         .btnCursor {
@@ -250,7 +250,7 @@
           img {
             width: 100%;
             height: auto;
-            max-height: 75vh;
+            max-height: 70vh;
             object-fit: contain;
             border-radius: 6px;
             user-select: none;
@@ -259,11 +259,76 @@
 
           .imageCounter {
             position: absolute;
-            bottom: -30px;
+            bottom: -25px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
             color: #8b949e;
             letter-spacing: 0.1em;
+          }
+        }
+      }
+
+      /* 모달 하단 썸네일 나열 영역 (독 바) 및 오버 시 보이는 스크롤바 */
+      .thumbnailDock {
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding: 0.6rem 0.2rem 0.4rem 0.2rem;
+        margin-top: 1.5rem;
+
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        transition: scrollbar-color 0.3s;
+
+        &:hover {
+          scrollbar-color: rgba(34, 134, 58, 0.7) rgba(255, 255, 255, 0.1);
+        }
+
+        &::-webkit-scrollbar {
+          height: 5px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 3px;
+          transition: background 0.3s;
+        }
+
+        &:hover::-webkit-scrollbar-thumb {
+          background: #22863a;
+        }
+
+        .thumbItem {
+          flex: 0 0 52px;
+          width: 52px;
+          height: 52px;
+          border-radius: 6px;
+          overflow: hidden;
+          cursor: pointer;
+          opacity: 0.45;
+          border: 2px solid transparent;
+          transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          &:hover {
+            opacity: 0.8;
+          }
+
+          &.activeThumb {
+            opacity: 1;
+            border-color: #22863a;
+            transform: scale(1.05);
           }
         }
       }
@@ -275,7 +340,7 @@
   display: inline-block;
   animation: blinkCursor 0.8s infinite;
   font-weight: bold;
-  color: #005cc5;
+  color: #22863a;
   margin-left: 2px;
 }
 
@@ -284,11 +349,10 @@
   50% { opacity: 0; }
 }
 
-/* 글자색과 테두리가 은은하게 깜빡이는 터미널 효과 애니메이션 */
 @keyframes blinkGlow {
   0%, 100% {
-    color: #58a6ff;
-    border-color: #58a6ff;
+    color: #22863a;
+    border-color: #22863a;
   }
   50% {
     color: #8b949e;

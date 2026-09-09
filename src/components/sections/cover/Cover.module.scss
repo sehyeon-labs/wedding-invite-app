@@ -43,7 +43,7 @@
       .logRow {
         display: flex;
         align-items: flex-start;
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         line-height: 1.5;
         width: 100%;
 
@@ -55,24 +55,25 @@
           letter-spacing: -0.02em;
         }
 
-        .cyanText { color: #79c0ff; }
-        .blueText { color: #58a6ff; }
+        /* 💡 터미널 고유의 다채로운 가독성 컬러 적용 */
+        .cyanText { color: #79c0ff; } /* 변수명, 시스템 키워드 (시안 블루) */
+        .blueText { color: #58a6ff; } /* 일반 경로 및 안내 텍스트 (소프트 블루) */
 
         .infoText {
           color: #8b949e;
         }
 
         .successLog {
-          color: #3fb950;
+          color: #3fb950; /* 성공 로그만 선명한 에메랄드 그린 */
           font-weight: bold;
           animation: terminalBlink 0.8s ease-in-out infinite;
         }
       }
 
-      /* 💡 기존 터미널 감성과 완벽히 일치하도록 조율된 박스 스타일 */
+      /* 💡 터미널 박스 스타일 */
       .claudeBox {
         width: 100%;
-        border: 1px solid #30363d; /* 터미널 테두리 색상 통일 */
+        border: 1px solid #30363d;
         border-radius: 6px;
         background-color: #161b22;
         padding: 0.8rem 1rem;
@@ -84,8 +85,8 @@
         animation: fadeInLogs 0.4s ease-out forwards;
 
         .boxHeader {
-          font-size: 0.7rem;
-          color: #58a6ff; /* 파란색 계열로 통일 */
+          font-size: 0.6rem;
+          color: #58a6ff; /* 박스 헤더는 깔끔한 블루 톤으로 포인트 */
           font-weight: 600;
           border-bottom: 1px solid #30363d;
           padding-bottom: 0.4rem;
@@ -108,7 +109,7 @@
           .pixelArt {
             font-family: 'JetBrains Mono', monospace, 'Courier New';
             font-size: 0.65rem;
-            color: #79c0ff; /* 시안 블루 컬러로 일체감 부여 */
+            color: #79c0ff; /* 픽셀아트는 시안 블루로 시원한 느낌 부여 */
             background: rgba(0, 0, 0, 0.4);
             padding: 0.5rem;
             border-radius: 4px;
@@ -125,7 +126,7 @@
             color: #8b949e;
 
             .pathText {
-              color: #3fb950; /* 터미널 성공/경로 색상인 초록빛 포인트 */
+              color: #3fb950; /* 핵심 성공 경로는 초록색 포인트 유지 */
               font-family: 'JetBrains Mono', monospace;
             }
           }
@@ -142,7 +143,7 @@
     }
   }
 
-  /* ✨ 비 효과 및 메인 콘텐츠 영역 */
+  /* ✨ 비 효과 (Matrix Rain) 색상 조합 */
   .globalRainContainer {
     position: absolute;
     inset: 0;
@@ -171,9 +172,10 @@
         animation: terminalFall linear infinite;
       }
 
+      /* 💡 비 내리는 글자 색상도 초록/블루/골드를 섞어 다채롭게 연출 */
       span:nth-child(odd) { color: #3fb950; }
       span:nth-child(even) { color: #58a6ff; }
-      span:nth-child(3n) { color: #d4b28c; }
+      span:nth-child(3n) { color: #e3b341; }
 
       span:nth-child(1)  { left: 5%;   animation-duration: 2.2s; animation-delay: 0s; }
       span:nth-child(2)  { left: 15%;  animation-duration: 3.1s; animation-delay: 0.4s; }

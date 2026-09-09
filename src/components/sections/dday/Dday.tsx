@@ -24,7 +24,7 @@ export default function Dday() {
   // 날짜 데이터 파싱
   const targetDateObj = new Date(weddingDate);
   const year = targetDateObj.getFullYear();
-  const month = targetDateObj.getMonth(); // 0~11
+  const month = targetDateObj.getMonth();
   const weddingDay = targetDateObj.getDate();
 
   // 타이핑할 텍스트 정의
@@ -42,8 +42,8 @@ export default function Dday() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true); // 👈 진입 즉시 잠금 처리하여 다시 리셋되지 않게 함
-          setStep(1); // 1단계 시작
+          setHasAnimated(true);
+          setStep(1);
         }
       },
       { threshold: 0.3 }

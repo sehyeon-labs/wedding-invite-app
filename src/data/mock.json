@@ -2,20 +2,68 @@
   "groom": {
     "name": "강준구",
     "englishName": "JUNGU",
+    "phone": "010-1234-5678",
     "isFatherDeceased": false,
-    "father": "",
-    "mother": "조언아",
+    "father": {
+      "name": "강영구",
+      "isDeceased": false,
+      "phone": "010-1234-5678",
+      "account" : {
+        "bank" : "국민은행",
+        "number" : "1234567890",
+        "holder" : "강영구"
+      }
+    },
+    "mother": {
+      "name": "조언아",
+      "isDeceased": false,
+      "phone": "010-1234-5678",
+      "account" : {
+        "bank" : "국민은행",
+        "number" : "1234567890",
+        "holder" : "조언아"
+      }
+    },
     "isMotherDeceased": false,
-    "relation": "장남"
+    "relation": "장남",
+    "account" : {
+      "bank" : "국민은행",
+      "number" : "1234567890",
+      "holder" : "강준구"
+    }
   },
   "bride": {
     "name": "김세현",
     "englishName": "SEHYEON",
-    "father": "김덕용",
+    "phone": "010-1234-5678",
+    "father": {
+      "name": "김덕용",
+      "isDeceased": true,
+      "phone": null,
+      "account" : {
+        "bank" : null,
+        "number" : null,
+        "holder" : null
+      }
+    },
     "isFatherDeceased": true,
-    "mother": "문정희",
+    "mother": {
+      "name": "문정희",
+      "isDeceased": false,
+      "phone": "010-1234-5678",
+      "account" : {
+        "bank" : "우리은행",
+        "number" : "1234567890",
+        "holder" : "문정희"
+      }
+    },
     "isMotherDeceased": false,
-    "relation": "차녀"
+    "relation": "차녀",
+    "account" : {
+      "bank" : "우리은행",
+      "number" : "1234567890",
+      "holder" : "김세현"
+    }
   },
   "weddingDate": "2027-10-25T12:00:00",
   "location": {
@@ -23,8 +71,30 @@
     "address": "서울시 강남구 테헤란로 123",
     "transport": "역삼역 3번 출구 도보 5분"
   },
-  "greeting": {
+  "greeting": { 
     "title": "소중한 분들을 초대합니다",
     "content": "두 사람이 사랑과 믿음으로\n한 가정을 이루어 맺어지려고 합니다.\n오셔서 축복해 주시면 감사하겠습니다."
-  }
+  },
+  "prayers": [
+    {
+      "id": 1,
+      "content": "말을 앞세우기보다, 우리의 삶을 통해 하나님의 사랑과 복음이 흘러가는 가정이 되기를"
+    },
+    {
+      "id": 2,
+      "content": "삶의 중요한 기로마다 우리의 생각보다 기도로 먼저 나아가는 부부가 되기를"
+    },
+    {
+      "id": 3,
+      "content": "우리의 욕심이나 세상의 기준이 아닌, 늘 하나님의 때와 뜻을 구하며 겸손히 나아가기를"
+    },
+    {
+      "id": 4,
+      "content": "영과 육의 건강을 지켜주셔서, 오랫동안 서로의 곁에서 함께 복음을 전하는 삶을 살아가기를"
+    },
+    {
+      "id": 5,
+      "content": "서로가 하나님의 귀한 자녀임을 늘 기억하며, 주님이 나를 사랑하시듯 상대방을 깊이 사랑하고 존중하며 살아가기를"
+    }
+  ]
 }

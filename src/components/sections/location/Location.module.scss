@@ -1,0 +1,166 @@
+// src/components/sections/Location.module.scss
+
+.section {
+  width: 100%;
+  min-height: 100vh;
+  padding: 4rem 1.5rem;
+  background-color: #ffffff;
+  color: #24292e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid #eaecef;
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 2.0s cubic-bezier(0.16, 1, 0.3, 1), transform 2.0s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .headerTag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #22863a;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      min-height: 1.2rem;
+      display: flex;
+      align-items: center;
+
+      .cursor {
+        display: inline-block;
+        animation: blink 1s step-end infinite;
+        margin-left: 2px;
+        font-weight: 700;
+      }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .contentWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 1.0s ease, transform 1.0s ease;
+
+      &.showContent {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mainTitle {
+      font-size: 1.0rem;
+      font-family: "Nanum Gothic Coding", monospace;
+      font-weight: 700;
+      color: #24292e;
+      letter-spacing: 0.05em;
+    }
+
+    /* 설정 파일 감성의 정보 블록 (일정 및 장소) */
+    .infoTextGroup {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      text-align: left;
+      padding: 0.5rem 0.8rem;
+      border-left: 3px solid #22863a;
+      margin: 0.9rem 0;
+
+      .configHeader {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        color: #22863a;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        letter-spacing: 0.05em;
+      }
+
+      .infoRow {
+        display: flex;
+        align-items: flex-start;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        line-height: 1.5;
+
+        .key {
+          color: #005cc5;
+          font-weight: 600;
+          width: 55px;
+          flex-shrink: 0;
+        }
+
+        .val {
+          color: #24292e;
+          font-family: "Nanum Gothic Coding", monospace;
+          word-break: break-all;
+        }
+      }
+    }
+
+    /* 대중교통 안내 블록 */
+    .transportWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      background-color: #fafbfc;
+      border: 1px solid #e1e4e8;
+      border-left: 3px solid #005cc5;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+
+      .configHeader {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        color: #005cc5;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        letter-spacing: 0.05em;
+      }
+
+      .transportContent {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        .transitItem {
+          font-family: "Nanum Gothic Coding", monospace;
+          font-size: 0.72rem;
+          color: #24292e;
+          line-height: 1.5;
+          word-break: break-all;
+
+          .bullet {
+            color: #005cc5;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            margin-right: 4px;
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,7 +9,8 @@ import Gallery from "@/components/sections/gallery/Gallery";
 import QuickNav from "@/components/common/quickNav/QuickNav";
 import styles from "./page.module.scss";
 import ContactAccount from "@/components/sections/contactAccount/ContactAccount";
-import Prayer from "@/components/sections/prayer/Prayer";
+import Reception from "@/components/sections/reception/Reception";
+import Location from "@/components/sections/location/Location";
 
 export default function Page() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -51,7 +52,7 @@ export default function Page() {
   return (
     <div className={styles.container}>
       <QuickNav 
-        totalSections={6} 
+        totalSections={7} 
         activeIndex={activeIndex} 
         isVisible={activeIndex > 0} 
         onSelect={handleNavSelect} 
@@ -69,15 +70,19 @@ export default function Page() {
         <Dday />
       </section>
 
-      <section ref={(el) => { sectionRefs.current[5] = el; }} className={styles.section}>
-        <Prayer />
-      </section>
-
       <section ref={(el) => { sectionRefs.current[3] = el; }} className={styles.section}>
         <Gallery />
       </section>
 
       <section ref={(el) => { sectionRefs.current[4] = el; }} className={styles.section}>
+        <Location />
+      </section>
+
+      <section ref={(el) => { sectionRefs.current[5] = el; }} className={styles.section}>
+        <Reception />
+      </section>
+
+      <section ref={(el) => { sectionRefs.current[6] = el; }} className={styles.section}>
         <ContactAccount />
       </section>
     </div>

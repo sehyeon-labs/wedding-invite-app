@@ -21,6 +21,34 @@ export function formatWeddingDate(dateString: string): string {
   return `${year}년 ${month}월 ${day}일 ${weekDay}요일 ${period} ${formattedHours}시`;
 }
 
+export function formatDay(dateString: string): string {
+  const dateObj = new Date(dateString);
+  
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth() + 1;
+  const day = dateObj.getDate();
+  
+  // 요일 구하기
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const weekDay = days[dateObj.getDay()];
+
+  return `${year}년 ${month}월 ${day}일 ${weekDay}요일`;
+}
+
+
+export function formatTime(dateString: string): string {
+  const dateObj = new Date(dateString);
+
+  // 시간 구하기 (오전/오후)
+  const hours = dateObj.getHours();
+  const period = hours < 12 ? "오전" : "오후";
+  const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
+
+  const formattedMinutes = dateObj.getMinutes().toString().padStart(2, "0");
+
+  return `${period} ${formattedHours}시 ${formattedMinutes}분`;
+}
+
 /**
  * 클립보드에 텍스트 복사하는 공용 유틸리티
  */

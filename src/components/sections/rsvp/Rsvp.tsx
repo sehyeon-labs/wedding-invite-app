@@ -1,229 +1,187 @@
-// src/components/sections/Rsvp.tsx
+// src/components/sections/rsvp/Rsvp.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { supabase } from "@/lib/supabase";
 import styles from "./Rsvp.module.scss";
 
 export default function Rsvp() {
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const [step, setStep] = useState(0);
-  const sectionRef = useRef<HTMLElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const subTitleText = "> cat rsvp.sh";
-  const [typedSubTitle, setTypedSubTitle] = useState("");
-
-  // 폼 입력 상태
-  const [formData, setFormData] = useState({
-    name: "",
-    side: "groom", // groom (신랑측) | bride (신부측)
-    attendance: "yes", // yes (참석) | no (불참)
-    meal: "yes", // yes (식사함) | no (식사안함)
-    guestCount: "1",
-  });
-
-  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState("");
+  const [attendance, setAttendance] = useState("attending");
+  // 타입을 string 또는 null을 허용하도록 명시해 줍니다.
+  const [meal, setMeal] = useState<string | null>("yes");
+  const [count, setCount] = useState<string | null>("1");
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
+  // SSR 환경에서 document 안전하게 접근하기 위한 처리
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          setStep(1);
-        }
-      },
-      { threshold: 0.3 }
-    );
+    setMounted(true);
+  }, []);
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasAnimated]);
-
-  useEffect(() => {
-    if (!hasAnimated) return;
-
-    if (step === 1) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= subTitleText.length) {
-          setTypedSubTitle(subTitleText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(2);
-          setTimeout(() => setStep(3), 600);
-        }
-      }, 90);
-      return () => clearInterval(timer);
-    }
-  }, [hasAnimated, step, subTitleText]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
+    if (!name.trim()) {
       alert("성함을 입력해주세요.");
       return;
     }
 
     setLoading(true);
-    // TODO: 백엔드나 구글 스프레드시트 API 연동 지점
-    setTimeout(() => {
-      setLoading(false);
+
+    // 불참인 경우 meal과 guests_count를 null로 처리
+    const payload = {
+      name,
+      attendance,
+      meal: attendance === "attending" ? meal : null,
+      guests_count: attendance === "attending" ? Number(count) : null,
+    };
+
+    const { error } = await supabase.from("rsvp").insert([payload]);
+
+    if (error) {
+      alert("전송 실패: " + error.message);
+    } else {
       setSubmitted(true);
-    }, 800);
+      handleModalClose();
+    }
+    setLoading(false);
   };
 
-  return (
-    <section ref={sectionRef} className={styles.section}>
-      <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-        
-        {/* 타이핑 헤더 */}
-        <div className={styles.headerTag}>
-          <span>{hasAnimated ? typedSubTitle : ""}</span>
-          {hasAnimated && <span className={styles.cursor}>_</span>}
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  // 모달 컴포넌트 (Portal을 통해 body에 직접 렌더링)
+  const modalContent = isModalOpen && mounted ? createPortal(
+    <div className={styles.modalOverlay} onClick={handleModalClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <span className={styles.modalTitle}>// RSVP_INPUT_FORM</span>
+          <button className={styles.closeBtn} onClick={handleModalClose}>×</button>
         </div>
 
-        <div className={`${styles.contentWrapper} ${hasAnimated && step >= 3 ? styles.showContent : ""}`}>
-          
-          <h2 className={styles.mainTitle}>참석 의사 전달</h2>
-          <p className={styles.subDescription}>
-            소중한 발걸음을 해주시는 모든 분들을 위해<br />
-            정성껏 식사를 준비할 수 있도록 미리 알려주세요.
-          </p>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.labelKey}>name</label>
+            <input
+              type="text"
+              placeholder="성함을 입력해주세요"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-          {!submitted ? (
-            <form className={styles.terminalForm} onSubmit={handleSubmit}>
-              <div className={styles.formHeader}>
-                <span className={styles.configHeader}>// RSVP_INPUT_CONFIG</span>
-              </div>
-
-              {/* 구분 (신랑측 / 신부측) */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>$ select side</label>
-                <div className={styles.radioGroup}>
-                  <button
-                    type="button"
-                    className={`${styles.radioBtn} ${formData.side === "groom" ? styles.active : ""}`}
-                    onClick={() => setFormData({ ...formData, side: "groom" })}
-                  >
-                    신랑 측
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.radioBtn} ${formData.side === "bride" ? styles.active : ""}`}
-                    onClick={() => setFormData({ ...formData, side: "bride" })}
-                  >
-                    신부 측
-                  </button>
-                </div>
-              </div>
-
-              {/* 성함 입력 */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label} htmlFor="name">$ input name</label>
+          <div className={styles.fieldGroup}>
+            <label className={styles.labelKey}>attendance</label>
+            <div className={styles.radioGroup}>
+              <label className={`${styles.radioCard} ${attendance === "attending" ? styles.active : ""}`}>
                 <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className={styles.textInput}
-                  placeholder="성함을 입력하세요"
-                  value={formData.name}
-                  onChange={handleChange}
+                  type="radio"
+                  name="attendance"
+                  value="attending"
+                  checked={attendance === "attending"}
+                  onChange={(e) => setAttendance(e.target.value)}
                 />
-              </div>
+                참석
+              </label>
+              <label className={`${styles.radioCard} ${attendance === "not_attending" ? styles.active : ""}`}>
+                <input
+                  type="radio"
+                  name="attendance"
+                  value="not_attending"
+                  checked={attendance === "not_attending"}
+                  onChange={(e) => setAttendance(e.target.value)}
+                />
+                불참
+              </label>
+            </div>
+          </div>
 
-              {/* 참석 여부 */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>$ attendance</label>
+          {attendance === "attending" && (
+            <div className={styles.rowGroup}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.labelKey}>meal</label>
                 <div className={styles.radioGroup}>
-                  <button
-                    type="button"
-                    className={`${styles.radioBtn} ${formData.attendance === "yes" ? styles.active : ""}`}
-                    onClick={() => setFormData({ ...formData, attendance: "yes" })}
-                  >
-                    참석합니다
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.radioBtn} ${formData.attendance === "no" ? styles.active : ""}`}
-                    onClick={() => setFormData({ ...formData, attendance: "no" })}
-                  >
-                    정중히 사절합니다
-                  </button>
+                  <label className={`${styles.radioCard} ${meal === "yes" ? styles.active : ""}`}>
+                    <input
+                      type="radio"
+                      name="meal"
+                      value="yes"
+                      checked={meal === "yes"}
+                      onChange={(e) => setMeal(e.target.value)}
+                    />
+                    예정
+                  </label>
+                  <label className={`${styles.radioCard} ${meal === "no" ? styles.active : ""}`}>
+                    <input
+                      type="radio"
+                      name="meal"
+                      value="no"
+                      checked={meal === "no"}
+                      onChange={(e) => setMeal(e.target.value)}
+                    />
+                    안 함
+                  </label>
                 </div>
               </div>
 
-              {/* 참석 시 추가 정보 (참석할 경우만 노출) */}
-              {formData.attendance === "yes" && (
-                <>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label} htmlFor="guestCount">$ guest count</label>
-                    <select
-                      id="guestCount"
-                      name="guestCount"
-                      className={styles.selectInput}
-                      value={formData.guestCount}
-                      onChange={handleChange}
-                    >
-                      <option value="1">본인 포함 1명</option>
-                      <option value="2">본인 포함 2명</option>
-                      <option value="3">본인 포함 3명</option>
-                      <option value="4">본인 포함 4명</option>
-                      <option value="5">본인 포함 5명 이상</option>
-                    </select>
-                  </div>
-
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label}>$ meal status</label>
-                    <div className={styles.radioGroup}>
-                      <button
-                        type="button"
-                        className={`${styles.radioBtn} ${formData.meal === "yes" ? styles.active : ""}`}
-                        onClick={() => setFormData({ ...formData, meal: "yes" })}
-                      >
-                        식사 예정
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.radioBtn} ${formData.meal === "no" ? styles.active : ""}`}
-                        onClick={() => setFormData({ ...formData, meal: "no" })}
-                      >
-                        식사 안 함
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <button type="submit" className={styles.submitBtn} disabled={loading}>
-                {loading ? "PROCESSING..." : "EXECUTE RSVP // 전송하기"}
-              </button>
-            </form>
-          ) : (
-            <div className={styles.successBox}>
-              <span className={styles.successHeader}>// STATUS: SUCCESS (200 OK)</span>
-              <p className={styles.successText}>
-                참석 의사가 정상적으로 기록되었습니다.<br />
-                축하해주셔서 진심으로 감사합니다.
-              </p>
-              <button 
-                className={styles.resetBtn} 
-                onClick={() => setSubmitted(false)}
-              >
-                다시 작성하기
-              </button>
+              <div className={styles.fieldGroup}>
+                <label className={styles.labelKey}>count</label>
+                <select value={count || "1"} onChange={(e) => setCount(e.target.value)}>
+                  <option value="1">1인</option>
+                  <option value="2">2인</option>
+                  <option value="3">3인</option>
+                  <option value="4">4인</option>
+                </select>
+              </div>
             </div>
           )}
 
+          <button type="submit" disabled={loading} className={styles.submitBtn}>
+            {loading ? "전송 중..." : "제출하기"}
+          </button>
+        </form>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.container}>
+        
+        <div className={styles.headerTag}>
+          <span>&gt; cat rsvp.config</span>
         </div>
+
+        <div className={styles.contentWrapper}>
+          <div className={styles.infoTextGroup}>
+            <span className={styles.configHeader}>// RSVP_GUIDE</span>
+            <p className={styles.desc}>
+              소중한 발걸음으로 자리를 빛내주세요.<br />
+              참석 여부를 미리 알려주시면 준비에 큰 도움이 됩니다.
+            </p>
+          </div>
+
+          {submitted ? (
+            <div className={styles.successBox}>
+              <span className={styles.configHeader}>// STATUS: SUCCESS</span>
+              <p>참석 여부가 성공적으로 전달되었습니다.</p>
+              <p className={styles.subText}>소중한 걸음해 주셔서 감사합니다.</p>
+            </div>
+          ) : (
+            <button className={styles.openModalBtn} onClick={() => setIsModalOpen(true)}>
+              참석 여부 전달하기
+            </button>
+          )}
+        </div>
+
+        {modalContent}
 
       </div>
     </section>

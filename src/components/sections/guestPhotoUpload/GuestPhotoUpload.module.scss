@@ -1,8 +1,7 @@
-// src/components/sections/rsvp/Rsvp.module.scss
+// src/components/sections/gallery/GuestPhotoUpload.module.scss
 
 .section {
   width: 100%;
-  min-height: 100vh;
   padding: 4rem 1.5rem;
   background-color: #ffffff;
   color: #24292e;
@@ -11,6 +10,7 @@
   align-items: center;
   text-align: center;
   border-bottom: 1px solid #eaecef;
+  box-sizing: border-box;
 
   .container {
     width: 100%;
@@ -68,7 +68,7 @@
       }
     }
 
-    .openModalBtn {
+    .primaryBtn {
       width: 100%;
       padding: 0.9rem;
       background-color: #24292e;
@@ -84,57 +84,105 @@
       &:hover {
         background-color: #22863a;
       }
+
+      /* 결혼식 전 비활성화 버튼 스타일 */
+      &.disabledBtn {
+        background-color: #e1e4e8;
+        color: #586069;
+        cursor: not-allowed;
+
+        &:hover {
+          background-color: #e1e4e8;
+        }
+      }
     }
 
-    .successBox {
+    /* 하단 가로 스크롤 피드 스타일 */
+    .uploadedPhotosSection {
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
       text-align: left;
-      padding: 1rem;
-      background-color: #f0fff4;
-      border: 1px solid #34d058;
-      border-left: 3px solid #22863a;
-      border-radius: 4px;
-      font-family: "Nanum Gothic Coding", monospace;
 
-      .configHeader {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
-        color: #22863a;
-        font-weight: 600;
-        display: block;
-        margin-bottom: 0.3rem;
+      .feedHeaderRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .subHeader {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.68rem;
+          color: #005cc5;
+          font-weight: 600;
+        }
       }
 
-      p {
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: #24292e;
-        margin: 0 0 0.2rem 0;
-      }
+      .horizontalScrollRow {
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scroll-snap-type: x mandatory;
 
-      .subText {
-        font-size: 0.75rem;
-        color: #586069;
-        font-weight: 400;
-        margin: 0;
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background-color: #e1e4e8;
+          border-radius: 2px;
+        }
+
+        .scrollThumb {
+          position: relative;
+          flex: 0 0 75px;
+          aspect-ratio: 1 / 1;
+          border-radius: 4px;
+          overflow: hidden;
+          border: 1px solid #e1e4e8;
+          background-color: #fafbfc;
+          scroll-snap-align: start;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .miniAuthorLabel {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            font-family: "Nanum Gothic Coding", monospace;
+            font-size: 0.55rem;
+            padding: 1px 3px;
+            border-radius: 2px;
+            max-width: 85%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
       }
     }
   }
 }
 
-/* 모달 오버레이 및 컨텐츠 스타일 */
-/* 모달 오버레이 및 컨텐츠 스타일 */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(36, 41, 46, 0.6);
+  background-color: rgba(36, 41, 46, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* 다른 요소들 위에 확실히 뜨도록 z-index 상향 조정 */
+  z-index: 9999;
   box-sizing: border-box;
   padding: 1rem;
 
@@ -149,7 +197,6 @@
     flex-direction: column;
     gap: 1.2rem;
     text-align: left;
-    animation: modalAppear 0.25s ease-out;
     box-sizing: border-box;
 
     .modalHeader {
@@ -198,8 +245,7 @@
           font-weight: 600;
         }
 
-        input[type="text"],
-        select {
+        input[type="text"] {
           width: 100%;
           padding: 0.75rem 1rem;
           border: 1px solid #e1e4e8;
@@ -210,11 +256,6 @@
           color: #24292e;
           outline: none;
           box-sizing: border-box;
-          transition: border-color 0.2s ease;
-
-          &::placeholder {
-            color: #959da5;
-          }
 
           &:focus {
             border-color: #22863a;
@@ -222,53 +263,55 @@
           }
         }
 
-        select {
-          appearance: none;
-          background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.358%22%20height%3D%22292.358%22%3E%3Cpath%20fill%3D%22%23959da5%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
-          background-repeat: no-repeat;
-          background-position: right 1rem center;
-          background-size: 0.6rem auto;
-        }
-
-        .radioGroup {
+        .fileDropZone {
+          width: 100%;
+          min-height: 130px;
+          max-height: 180px;
+          overflow-y: auto;
+          border: 1.5px dashed #e1e4e8;
+          border-radius: 6px;
+          background-color: #fafbfc;
           display: flex;
-          gap: 0.5rem;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          padding: 0.5rem;
+          box-sizing: border-box;
+          transition: border-color 0.2s ease;
 
-          .radioCard {
-            flex: 1;
+          &:hover {
+            border-color: #22863a;
+          }
+
+          .placeholderText {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 0.3rem;
-            padding: 0.65rem;
-            border: 1px solid #e1e4e8;
-            border-radius: 6px;
-            background-color: #fafbfc;
-            font-family: "Nanum Gothic Coding", monospace;
-            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
             color: #586069;
-            cursor: pointer;
-            transition: all 0.2s ease;
 
-            input[type="radio"] {
-              accent-color: #22863a;
-              margin: 0;
+            .sub {
+              font-size: 0.65rem;
+              color: #959da5;
             }
+          }
 
-            &.active {
-              border-color: #22863a;
-              background-color: #f0fff4;
-              color: #24292e;
-              font-weight: 700;
+          .previewGrid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.4rem;
+
+            .previewImg {
+              width: 100%;
+              aspect-ratio: 1 / 1;
+              object-fit: cover;
+              border-radius: 4px;
             }
           }
         }
-      }
-
-      .rowGroup {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.6rem;
       }
 
       .submitBtn {
@@ -295,16 +338,5 @@
         }
       }
     }
-  }
-}
-
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

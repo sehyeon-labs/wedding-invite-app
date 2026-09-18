@@ -6,7 +6,20 @@ import "./globals.css";
 import styles from "./layout.module.scss";
 
 export const metadata: Metadata = {
-  title: "준구 & 세현 결혼식에 초대합니다"
+  title: "준구 & 세현 결혼식에 초대합니다",
+  description: "2026년 O월 O일 토요일 오후 X시, OOO 웨딩홀",
+  openGraph: {
+    title: "준구 & 세현 결혼식에 초대합니다",
+    description: "2026년 O월 O일 토요일 오후 X시, OOO 웨딩홀",
+    images: [
+      {
+        url: "https://hyeon0114.github.io/wedding-invite-app/images/tomato.jpeg", 
+        width: 800,
+        height: 600,
+        alt: "웨딩 대표 사진",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

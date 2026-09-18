@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     description: "2026년 O월 O일 토요일 오후 X시, OOO 웨딩홀",
     images: [
       {
-        url: "https://sehyeon-labs.github.io/wedding-invite-app/images/tomato.jpeg", 
+        url: "https://sehyeon-labs.github.io/wedding-invite-app/public/images/tomato.jpeg", 
         width: 800,
         height: 600,
         alt: "웨딩 대표 사진",

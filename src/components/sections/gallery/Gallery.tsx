@@ -2,20 +2,23 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./Gallery.module.scss";
+import { getAssetPath } from "@/utils/path";
 
 const GALLERY_IMAGES = [
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
+  getAssetPath("/images/tomato.jpeg"),
 ];
 
 interface GalleryProps {

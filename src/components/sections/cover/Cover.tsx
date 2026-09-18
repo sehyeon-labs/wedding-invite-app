@@ -5,6 +5,7 @@ import { useState, useEffect, MutableRefObject } from "react";
 import data from "@/data/mock.json";
 import { formatWeddingDate } from "@/utils/Utils";
 import styles from "./Cover.module.scss";
+import { getAssetPath } from "@/utils/path";
 import TerminalIntro from "@/components/sections/terminalIntro/TerminalIntro";
 
 interface CoverProps {
@@ -54,7 +55,7 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
 
           <div className={styles.imageContainer}>
             <img 
-              src="/images/sample.jpg" 
+              src={getAssetPath("/images/sample.jpg")} 
               alt="웨딩 대표 사진" 
               className={styles.bgImage}
             />

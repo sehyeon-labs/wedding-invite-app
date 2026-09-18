@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import data from "@/data/mock.json";
+import { getAssetPath } from "@/utils/path";
 import styles from "./ContactAccount.module.scss";
 
 interface ContactAccountProps {
@@ -23,7 +24,6 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
 
   const handleCopy = (accountNumber: string) => {
     navigator.clipboard.writeText(accountNumber).then(() => {
-      // 💡 텍스트 변경 상태 없이 전역 토스트만 호출
       if (onCopyToast) {
         onCopyToast();
       }
@@ -41,8 +41,8 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
         <span>{title}</span>
         <div className={styles.toggleWrapper}>
           <span className={styles.toggleText}>{isOpen ? "접기" : "열기"}</span>
-          <Image 
-            src="/icon/down.png" 
+          <img 
+            src={getAssetPath("/icon/down.png")} 
             alt="토글 아이콘" 
             width={12} 
             height={12} 

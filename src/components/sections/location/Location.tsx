@@ -1,4 +1,3 @@
-// src/components/sections/Location.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -7,110 +6,164 @@ import styles from "./Location.module.scss";
 import MapView from "@/components/map/MapView";
 import { formatDay, formatTime } from "@/utils/Utils";
 
-export default function Location() {
+interface LocationProps {
+  isTerminalMode: boolean;
+  onCopyToast?: () => void; // 💡 상위 페이지에서 내려주는 전역 토스트 함수
+}
+
+interface TransportItem {
+  category: "subway" | "bus" | "parking" | string;
+  line?: string;
+  busType?: "blue" | "green" | "red" | "yellow" | string;
+  text: string;
+}
+
+export default function Location({ isTerminalMode, onCopyToast }: LocationProps) {
   const locationData = (data as any).location;
   const weddingDate = (data as any).weddingDate;
 
   const [hasAnimated, setHasAnimated] = useState(false);
-  const [step, setStep] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const subTitleText = "> cat location.log";
-  const [typedSubTitle, setTypedSubTitle] = useState("");
-
   useEffect(() => {
+    setHasAnimated(false);
+    const currentRef = sectionRef.current;
+    if (!currentRef) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (entry.isIntersecting) {
           setHasAnimated(true);
-          setStep(1);
+          observer.disconnect();
         }
       },
       { threshold: 0.3 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    observer.observe(currentRef);
+
+    const rect = currentRef.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom >= 0) {
+      setHasAnimated(true);
+      observer.disconnect();
     }
 
     return () => observer.disconnect();
-  }, [hasAnimated]);
-
-  useEffect(() => {
-    if (!hasAnimated) return;
-
-    if (step === 1) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= subTitleText.length) {
-          setTypedSubTitle(subTitleText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(2);
-          setTimeout(() => setStep(3), 600);
-        }
-      }, 90);
-      return () => clearInterval(timer);
-    }
-  }, [hasAnimated, step, subTitleText]);
+  }, [isTerminalMode]);
 
   if (!locationData) return null;
 
+  const rawTransport = locationData.transport || [];
+  const subwayItems = rawTransport.filter((item: TransportItem) => item.category === "subway");
+  const busItems = rawTransport.filter((item: TransportItem) => item.category === "bus");
+  const parkingItems = rawTransport.filter((item: TransportItem) => item.category === "parking");
+  const otherItems = rawTransport.filter((item: TransportItem) => !["subway", "bus", "parking"].includes(item.category));
+
   return (
     <section ref={sectionRef} className={styles.section}>
-      <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-        
-        <div className={styles.headerTag}>
-          <span>{hasAnimated ? typedSubTitle : ""}</span>
-          {hasAnimated && <span className={styles.cursor}>_</span>}
-        </div>
-
-        <div className={`${styles.contentWrapper} ${hasAnimated && step >= 3 ? styles.showContent : ""}`}>
+      {!isTerminalMode && (
+        <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
           
-          {/* 상단 일정 정보 블록 */}
-          <div className={styles.infoTextGroup}>
-            <div className={styles.infoRow}>
-              <span className={styles.key}>date</span>
-              <span className={styles.val}>: {formatDay(weddingDate)}</span>
-            </div>
-            <div className={styles.infoRow}>
-              <span className={styles.key}>time</span>
-              <span className={styles.val}>: {formatTime(weddingDate)}</span>
-            </div>
-            {locationData.name && (
+          <div className={styles.headerTag}>LOCATION</div>
+          <h2 className={styles.mainTitle}>오시는 길</h2>
+
+          <div className={styles.contentWrapper}>
+            
+            <div className={styles.infoTextGroup}>
               <div className={styles.infoRow}>
-                <span className={styles.key}>venue</span>
-                <span className={styles.val}>: {locationData.name}</span>
+                <span className={styles.key}>일시</span>
+                <span className={styles.val}>{formatDay(weddingDate)} {formatTime(weddingDate)}</span>
+              </div>
+              {locationData.name && (
+                <div className={styles.infoRow}>
+                  <span className={styles.key}>장소</span>
+                  <span className={styles.val}>{locationData.name}</span>
+                </div>
+              )}
+              {locationData.address && (
+                <div className={styles.infoRow}>
+                  <span className={styles.key}>주소</span>
+                  <span className={styles.val}>{locationData.address}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.mapContainer}>
+              <MapView 
+                locationName={locationData.name}
+                address={locationData.address}
+                lat={locationData.lat}
+                lng={locationData.lng}
+                onCopySuccess={onCopyToast}
+              />
+            </div>
+
+            {/* 대중교통 및 주차 안내 블록 */}
+            {rawTransport.length > 0 && (
+              <div className={styles.transportWrapper}>
+                <span className={styles.configHeader}>교통안내</span>
+                <div className={styles.transportContent}>
+                  
+                  {/* 지하철 안내 */}
+                  {subwayItems.map((item: TransportItem, index: number) => (
+                    <div key={`subway-${index}`} className={styles.transitItem}>
+                      <span className={`${styles.badge} ${styles.subwayBadge}`}>{item.line || "지하철"}</span>
+                      <span className={styles.transitText}>{item.text}</span>
+                    </div>
+                  ))}
+
+                  {/* 버스 안내 */}
+                  {busItems.length > 0 && (
+                    <div className={styles.busGroupContainer}>
+                      <div className={styles.busGroupHeader}>
+                        <span className={`${styles.badge} ${styles.busGroupBadge}`}>버스</span>
+                      </div>
+                      <div className={styles.busList}>
+                        {busItems.map((item: TransportItem, index: number) => (
+                          <div key={`bus-${index}`} className={styles.busItemRow}>
+                            <span 
+                              className={`
+                                ${styles.busDot} 
+                                ${item.busType === "blue" ? styles.dotBlue : item.busType === "green" ? styles.dotGreen : styles.dotDefault}
+                              `} 
+                            />
+                            <span className={styles.transitText}>{item.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 주차 안내 */}
+                  {parkingItems.map((item: TransportItem, index: number) => (
+                    <div key={`parking-${index}`} className={styles.transitItem}>
+                      <span className={`${styles.badge} ${styles.parkingBadge}`}>주차</span>
+                      <span className={styles.transitText}>{item.text}</span>
+                    </div>
+                  ))}
+
+                  {/* 기타 항목들 */}
+                  {otherItems.map((item: TransportItem, index: number) => (
+                    <div key={`other-${index}`} className={styles.transitItem}>
+                      <span className={styles.bullet}>·</span>
+                      <span className={styles.transitText}>{item.text}</span>
+                    </div>
+                  ))}
+
+                </div>
               </div>
             )}
-          </div>
 
-          {/* 지도 뷰어 */}
-          <MapView 
-            locationName={locationData.name}
-            address={locationData.address}
-            lat={locationData.lat}
-            lng={locationData.lng}
-          />
-
-          {/* 하단 대중교통 정보 블록 */}
-          <div className={styles.transportWrapper}>
-            <span className={styles.configHeader}>// TRANSIT_INFO</span>
-            {locationData.transport && (
-              <div className={styles.transportContent}>
-                {locationData.transport.map((transit: string, index: number) => (
-                  <div key={index} className={styles.transitItem}>
-                    <span className={styles.bullet}>#</span> {transit}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
         </div>
+      )}
 
-      </div>
+      {isTerminalMode && (
+        <div className={styles.terminalContainer}>
+          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
+        </div>
+      )}
     </section>
   );
 }

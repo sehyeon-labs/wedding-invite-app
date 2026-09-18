@@ -1,112 +1,112 @@
-// src/components/sections/Reception.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import data from "@/data/mock.json";
 import styles from "./Reception.module.scss";
 import MapView from "@/components/map/MapView";
+import { formatDay, formatTime } from "@/utils/Utils";
 
-export default function Reception() {
+interface ReceptionProps {
+  isTerminalMode: boolean;
+  onCopyToast?: () => void;
+}
+
+export default function Reception({ isTerminalMode, onCopyToast }: ReceptionProps) {
   const receptionData = (data as any).reception;
 
   const [hasAnimated, setHasAnimated] = useState(false);
-  const [step, setStep] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const subTitleText = "> cat reception.txt";
-  const [typedSubTitle, setTypedSubTitle] = useState("");
-
   useEffect(() => {
+    setHasAnimated(false);
+    const currentRef = sectionRef.current;
+    if (!currentRef) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (entry.isIntersecting) {
           setHasAnimated(true);
-          setStep(1);
+          observer.disconnect();
         }
       },
       { threshold: 0.3 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    observer.observe(currentRef);
+
+    const rect = currentRef.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom >= 0) {
+      setHasAnimated(true);
+      observer.disconnect();
     }
 
     return () => observer.disconnect();
-  }, [hasAnimated]);
-
-  useEffect(() => {
-    if (!hasAnimated) return;
-
-    if (step === 1) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= subTitleText.length) {
-          setTypedSubTitle(subTitleText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(2);
-          setTimeout(() => setStep(3), 600);
-        }
-      }, 90);
-      return () => clearInterval(timer);
-    }
-  }, [hasAnimated, step, subTitleText]);
+  }, [isTerminalMode]);
 
   if (!receptionData) return null;
 
   return (
     <section ref={sectionRef} className={styles.section}>
-      <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-        
-        {/* 타이핑 헤더 태그 */}
-        <div className={styles.headerTag}>
-          <span>{hasAnimated ? typedSubTitle : ""}</span>
-          {hasAnimated && <span className={styles.cursor}>_</span>}
-        </div>
-
-        <div className={`${styles.contentWrapper} ${hasAnimated && step >= 3 ? styles.showContent : ""}`}>
+      {!isTerminalMode && (
+        <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
+          
+          {/* 상단 태그 */}
+          <div className={styles.headerTag}>RECEPTION</div>
           <h2 className={styles.mainTitle}>피로연 안내</h2>
 
-          {/* 상세 안내 문구 */}
-          {receptionData.description && (
-            <p className={styles.subDescription}>
-              {receptionData.description}
-            </p>
-          )}
+          <div className={styles.contentWrapper}>
+            
+            {/* 상세 안내 문구 */}
+            {receptionData.description && (
+              <p className={styles.subDescription}>
+                {receptionData.description}
+              </p>
+            )}
 
-          {/* 날짜, 시간, 장소 안내 */}
-          <div className={styles.infoTextGroup}>
-            {receptionData.date && (
-              <div className={styles.infoRow}>
-                <span className={styles.key}>date</span>
-                <span className={styles.val}>: {receptionData.date}</span>
-              </div>
-            )}
-            {receptionData.time && (
-              <div className={styles.infoRow}>
-                <span className={styles.key}>time</span>
-                <span className={styles.val}>: {receptionData.time}</span>
-              </div>
-            )}
-            {receptionData.locationName && (
-              <div className={styles.infoRow}>
-                <span className={styles.key}>venue</span>
-                <span className={styles.val}>: {receptionData.locationName}</span>
-              </div>
-            )}
+            {/* 날짜, 시간, 장소 안내 블록 */}
+            <div className={styles.infoTextGroup}>
+              {receptionData.date && (
+                <div className={styles.infoRow}>
+                  <span className={styles.key}>일시</span>
+                  <span className={styles.val}>{formatDay(receptionData.date)} {formatTime(receptionData.date)}</span>
+                </div>
+              )}
+              {receptionData.locationName && (
+                <div className={styles.infoRow}>
+                  <span className={styles.key}>장소</span>
+                  <span className={styles.val}>{receptionData.locationName}</span>
+                </div>
+              )}
+              {receptionData.address && (
+                <div className={styles.infoRow}>
+                  <span className={styles.key}>주소</span>
+                  <span className={styles.val}>{receptionData.address}</span>
+                </div>
+              )}
+            </div>
+
+            {/* MapView 컴포넌트 장착 */}
+            <div className={styles.mapContainer}>
+              <MapView 
+                locationName={receptionData.locationName}
+                address={receptionData.address}
+                lat={receptionData.lat}
+                lng={receptionData.lng}
+                onCopySuccess={onCopyToast}
+              />
+            </div>
+
           </div>
 
-          {/* MapView 컴포넌트 장착 */}
-          <MapView 
-            locationName={receptionData.locationName}
-            address={receptionData.address}
-            lat={receptionData.lat}
-            lng={receptionData.lng}
-          />
         </div>
+      )}
 
-      </div>
+      {/* 개발자 모드 비워두기 */}
+      {isTerminalMode && (
+        <div className={styles.terminalContainer}>
+          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
+        </div>
+      )}
     </section>
   );
 }

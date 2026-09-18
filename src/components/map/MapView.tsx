@@ -1,4 +1,3 @@
-// src/components/map/MapView.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,10 +14,10 @@ interface MapViewProps {
   address: string;
   lat?: number;
   lng?: number;
+  onCopySuccess?: () => void;
 }
 
-export default function MapView({ locationName, address, lat, lng }: MapViewProps) {
-  const [copiedAddress, setCopiedAddress] = useState(false);
+export default function MapView({ locationName, address, lat, lng, onCopySuccess }: MapViewProps) {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   useEffect(() => {
@@ -63,32 +62,26 @@ export default function MapView({ locationName, address, lat, lng }: MapViewProp
 
   const handleCopyAddress = (targetAddress: string) => {
     navigator.clipboard.writeText(targetAddress).then(() => {
-      setCopiedAddress(true);
-      setTimeout(() => setCopiedAddress(false), 2000);
+      if (onCopySuccess) {
+        onCopySuccess(); // 💡 부모의 토스트 실행
+      }
     });
   };
 
   return (
     <div className={styles.mapViewerWrapper}>
-      <div className={styles.terminalBlock}>
-        <div className={styles.blockHeader}>
-          <div className={styles.dots}>
-            <span className={styles.dotRed} />
-            <span className={styles.dotYellow} />
-            <span className={styles.dotGreen} />
-          </div>
-        </div>
-
-        {/* 💡 지도가 로드되지 않았거나 API 키가 없을 때 보여줄 터미널 감성 대체 화면 */}
+      {/* 지도 렌더링 영역 */}
+      <div className={styles.mapFrame}>
         <div id="map" className={styles.mapScreen}>
           {!isMapLoaded && (
-            <div style={{ padding: '1rem', fontFamily: 'monospace', fontSize: '0.7rem', color: '#6a737d' }}>
-              {`// MAP_LOADING_OR_OFFLINE\n// location: ${locationName || 'Unknown'}\n// lat: ${lat}, lng: ${lng}`}
+            <div className={styles.mapLoading}>
+              지도를 불러오는 중입니다...
             </div>
           )}
         </div>
       </div>
 
+      {/* 주소 및 복사 버튼 */}
       {address && (
         <div className={styles.addressRow}>
           <span className={styles.addressText}>{address}</span>
@@ -96,11 +89,12 @@ export default function MapView({ locationName, address, lat, lng }: MapViewProp
             className={styles.copyBtn} 
             onClick={() => handleCopyAddress(address)}
           >
-            {copiedAddress ? "복사완료!" : "주소복사"}
+            주소복사
           </button>
         </div>
       )}
 
+      {/* 지도 앱 바로가기 버튼 그룹 */}
       {address && (
         <div className={styles.mapBtnGroup}>
           <a href={`https://map.naver.com/v5/search/${encodeURIComponent(address)}`} target="_blank" rel="noopener noreferrer" className={styles.mapBtn}>

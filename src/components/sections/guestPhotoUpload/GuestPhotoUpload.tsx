@@ -1,4 +1,3 @@
-// src/components/sections/gallery/GuestPhotoUpload.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -14,10 +13,15 @@ interface GuestPhoto {
   created_at: string;
 }
 
-export default function GuestPhotoUpload() {
+interface GuestPhotoUploadProps {
+  isTerminalMode: boolean;
+  onCopyToast?: () => void;
+}
+
+export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestPhotoUploadProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [isWeddingPassed, setIsWeddingPassed] = useState(true); // 기본값 true (렌더링 직후 체크)
+  const [isWeddingPassed, setIsWeddingPassed] = useState(true);
 
   const [senderName, setSenderName] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -27,21 +31,18 @@ export default function GuestPhotoUpload() {
   const [photos, setPhotos] = useState<GuestPhoto[]>([]);
   const MAX_UPLOAD_COUNT = 20;
 
-  // 가로 스크롤 컨테이너 제어용 ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
     fetchPhotos();
 
-    // 결혼식 날짜 비교 체크
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const weddingDay = new Date(mockData.weddingDate);
     weddingDay.setHours(0, 0, 0, 0);
 
-    // 오늘이 결혼식 당일보다 이전인지 확인
     if (today < weddingDay) {
       setIsWeddingPassed(false);
     }
@@ -132,7 +133,6 @@ export default function GuestPhotoUpload() {
       setPreviews([]);
       setSenderName("");
 
-      // 업로드 완료 후 가로 스크롤을 맨 앞으로 확실하게 이동
       setTimeout(() => {
         if (scrollContainerRef.current) {
           scrollContainerRef.current.scrollTo({
@@ -149,18 +149,17 @@ export default function GuestPhotoUpload() {
     }
   };
 
-  // 1. 사진 업로드 모달
   const uploadModal = isUploadModalOpen && mounted ? createPortal(
     <div className={styles.modalOverlay} onClick={() => setIsUploadModalOpen(false)}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <span className={styles.modalTitle}>// UPLOAD_PHOTOS.sh</span>
+          <span className={styles.modalTitle}>사진 올리기</span>
           <button className={styles.closeBtn} onClick={() => setIsUploadModalOpen(false)}>×</button>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.fieldGroup}>
-            <label className={styles.labelKey}>sender_name</label>
+            <label className={styles.labelKey}>성함</label>
             <input
               type="text"
               placeholder="성함을 입력해주세요"
@@ -172,7 +171,7 @@ export default function GuestPhotoUpload() {
 
           <div className={styles.fieldGroup}>
             <label className={styles.labelKey}>
-              select_images ({files.length}/{MAX_UPLOAD_COUNT}장 선택됨)
+              사진 선택 ({files.length}/{MAX_UPLOAD_COUNT}장 선택됨)
             </label>
             <label className={styles.fileDropZone}>
               {previews.length > 0 ? (
@@ -208,49 +207,52 @@ export default function GuestPhotoUpload() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.container}>
-        <div className={styles.headerTag}>
-          <span>&gt; cat send_photos.config</span>
-        </div>
+      {!isTerminalMode && (
+        <div className={styles.container}>
+          <div className={styles.headerTag}>MEMORY</div>
+          <h2 className={styles.mainTitle}>하객 사진첩</h2>
 
-        <div className={styles.contentWrapper}>
-          <div className={styles.infoTextGroup}>
-            <span className={styles.configHeader}>// GUEST_MEMORY</span>
-            <p className={styles.desc}>
-              결식장에서 함께 찍은 사진이나 축하 순간을<br />
-              신랑·신부에게 전송해 주세요!
-            </p>
-          </div>
-
-          {/* 결혼식 전에는 버튼 비활성화 및 문구 변경, 당일 이후에는 활성화 */}
-          <button 
-            className={`${styles.primaryBtn} ${!isWeddingPassed ? styles.disabledBtn : ""}`} 
-            onClick={() => isWeddingPassed && setIsUploadModalOpen(true)}
-            disabled={!isWeddingPassed}
-          >
-            {isWeddingPassed ? "사진 보내기" : "결혼식 당일 이후부터 업로드 가능합니다"}
-          </button>
-
-          {/* 하단 가로 스크롤 피드 영역 */}
-          {photos.length > 0 && (
-            <div className={styles.uploadedPhotosSection}>
-              <div className={styles.feedHeaderRow}>
-                <span className={styles.subHeader}>// RECENT_UPLOADS ({photos.length})</span>
-              </div>
-              <div className={styles.horizontalScrollRow} ref={scrollContainerRef}>
-                {photos.map((item) => (
-                  <div key={item.id} className={styles.scrollThumb}>
-                    <img src={item.photo_url} alt={item.sender_name} />
-                    <span className={styles.miniAuthorLabel}>{item.sender_name}</span>
-                  </div>
-                ))}
-              </div>
+          <div className={styles.contentWrapper}>
+            <div className={styles.infoTextGroup}>
+              <p className={styles.desc}>
+                예식장에서 함께 찍은 사진이나 축하 순간을<br />
+                신랑·신부에게 전송해 주세요!
+              </p>
             </div>
-          )}
-        </div>
 
-        {uploadModal}
-      </div>
+            <button 
+              className={`${styles.primaryBtn} ${!isWeddingPassed ? styles.disabledBtn : ""}`} 
+              onClick={() => isWeddingPassed && setIsUploadModalOpen(true)}
+              disabled={!isWeddingPassed}
+            >
+              {isWeddingPassed ? "사진 보내기" : "결혼식 당일 이후부터 업로드 가능합니다"}
+            </button>
+
+            {photos.length > 0 && (
+              <div className={styles.uploadedPhotosSection}>
+                <div className={styles.feedHeaderRow}>
+                  <span className={styles.subHeader}>최근 업로드된 사진 ({photos.length})</span>
+                </div>
+                <div className={styles.horizontalScrollRow} ref={scrollContainerRef}>
+                  {photos.map((item) => (
+                    <div key={item.id} className={styles.scrollThumb}>
+                      <img src={item.photo_url} alt={item.sender_name} />
+                      <span className={styles.miniAuthorLabel}>{item.sender_name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          {uploadModal}
+        </div>
+      )}
+
+      {isTerminalMode && (
+        <div className={styles.terminalContainer}>
+          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
+        </div>
+      )}
     </section>
   );
 }

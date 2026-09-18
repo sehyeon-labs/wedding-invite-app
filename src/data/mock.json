@@ -1,41 +1,74 @@
 {
+  "weddingDate": "2026-09-18T12:00:00",
+  "location": {
+    "name": "루이비스 컨벤션 강서점 7층",
+    "address": "서울 강서구 양천로 476",
+    "transport": [
+      {
+        "category": "subway",
+        "line": "9호선",
+        "text": "가양역 9번 출구 도보 5분"
+      },
+      {
+        "category": "bus",
+        "busType": "blue", 
+        "text": "간선버스 652, 660, 672번 이용"
+      },
+      {
+        "category": "bus",
+        "busType": "green",
+        "text": "지선버스 6632번 이용"
+      },
+      {
+        "category": "parking",
+        "text": "건물 내 주차 가능 (주차권 제공)"
+      }
+    ]
+  },
   "groom": {
     "name": "강준구",
     "englishName": "JUNGU",
-    "phone": "010-1234-5678",
+    "phone": "010-5661-5313",
+    "relation": "장남",
+    "account" : {
+      "bank" : "농협은행",
+      "number" : "1234567890",
+      "holder" : "강준구"
+    },
     "isFatherDeceased": false,
     "father": {
-      "name": "강영구",
+      "name": "강",
       "isDeceased": false,
       "phone": "010-1234-5678",
       "account" : {
-        "bank" : "국민은행",
+        "bank" : "농협은행",
         "number" : "1234567890",
-        "holder" : "강영구"
+        "holder" : "강"
       }
     },
+    "isMotherDeceased": false,
     "mother": {
       "name": "조언아",
       "isDeceased": false,
       "phone": "010-1234-5678",
       "account" : {
-        "bank" : "국민은행",
+        "bank" : "농협은행",
         "number" : "1234567890",
         "holder" : "조언아"
       }
-    },
-    "isMotherDeceased": false,
-    "relation": "장남",
-    "account" : {
-      "bank" : "국민은행",
-      "number" : "1234567890",
-      "holder" : "강준구"
     }
   },
   "bride": {
     "name": "김세현",
     "englishName": "SEHYEON",
-    "phone": "010-1234-5678",
+    "phone": "010-3252-6481",
+    "relation": "차녀",
+    "account" : {
+      "bank" : "우리은행",
+      "number" : "1002-036-317449",
+      "holder" : "김세현"
+    },
+    "isFatherDeceased": true,
     "father": {
       "name": "김덕용",
       "isDeceased": true,
@@ -46,68 +79,32 @@
         "holder" : null
       }
     },
-    "isFatherDeceased": true,
+    "isMotherDeceased": false,
     "mother": {
       "name": "문정희",
       "isDeceased": false,
-      "phone": "010-1234-5678",
+      "phone": "010-7200-6481",
       "account" : {
         "bank" : "우리은행",
         "number" : "1234567890",
         "holder" : "문정희"
       }
-    },
-    "isMotherDeceased": false,
-    "relation": "차녀",
-    "account" : {
-      "bank" : "우리은행",
-      "number" : "1234567890",
-      "holder" : "김세현"
     }
-  },
-  "weddingDate": "2027-10-25T12:00:00",
-  "location": {
-    "name": "더라포레 3층 그레이스홀",
-    "address": "서울시 강남구 테헤란로 123",
-    "transport": [
-      "역삼역 3번 출구 도보 5분",
-      "버스 146, 341, 360, 740, 144, 145, 146, 360, 740번 이용 가능",
-      "주차 가능 (주차권 제공)"
-    ]
   },
   "greeting": { 
     "title": "소중한 분들을 초대합니다",
-    "content": "두 사람이 사랑과 믿음으로\n한 가정을 이루어 맺어지려고 합니다.\n오셔서 축복해 주시면 감사하겠습니다."
-  },
-  "prayers": [
-    {
-      "id": 1,
-      "content": "말을 앞세우기보다, 우리의 삶을 통해 하나님의 사랑과 복음이 흘러가는 가정이 되기를"
-    },
-    {
-      "id": 2,
-      "content": "삶의 중요한 기로마다 우리의 생각보다 기도로 먼저 나아가는 부부가 되기를"
-    },
-    {
-      "id": 3,
-      "content": "우리의 욕심이나 세상의 기준이 아닌, 늘 하나님의 때와 뜻을 구하며 겸손히 나아가기를"
-    },
-    {
-      "id": 4,
-      "content": "영과 육의 건강을 지켜주셔서, 오랫동안 서로의 곁에서 함께 복음을 전하는 삶을 살아가기를"
-    },
-    {
-      "id": 5,
-      "content": "서로가 하나님의 귀한 자녀임을 늘 기억하며, 주님이 나를 사랑하시듯 상대방을 깊이 사랑하고 존중하며 살아가기를"
+    "content": "두 사람이 사랑과 믿음으로\n한 가정을 이루어 맺어지려고 합니다.\n오셔서 축복해 주시면 감사하겠습니다.",
+    "bibleVerse": {
+      "verse": "사랑은 오래 참고 사랑은 온유하며 시기하지 아니하며\n사랑은 자랑하지 아니하며 교만하지 아니하며",
+      "reference": "고린도전서 13:4"
     }
-  ],
+  },
   "reception": {
-    "description": "예식에 직접 참석하시기 어려운 지인분들을 위해 \n감사의 마음을 담아 미리 식사 자리를 준비했습니다.\n따뜻한 발걸음으로 축하해 주세요.",
-    "date": "2027년 9월 12일 (토)",
-    "time": "오후 12시 ~ 오후 3시",
-    "locationName": "영주식당 (OO시 OO구 OO로 45)",
+    "description": "기쁜 날을 함께 나누지 못하는 아쉬움을 담아,\n작은 식사 자리를 마련했습니다.\n소중한 발걸음으로 축복해 주세요.",
+    "date": "2027-09-04T12:00:00",
+    "locationName": "영주축협한우프라자 본점",
     "address": "서울시 강남구 테헤란로 123",
-    "lat": null,
+    "lat": null, 
     "lng": null,
     "mealType": "점심 식사 및 다과"
   }

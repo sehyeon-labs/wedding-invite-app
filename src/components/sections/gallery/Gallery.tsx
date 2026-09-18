@@ -1,4 +1,3 @@
-// src/components/sections/Gallery.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -17,122 +16,50 @@ const GALLERY_IMAGES = [
   "/images/tomato.jpeg",
   "/images/tomato.jpeg",
   "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
-  "/images/tomato.jpeg",
 ];
 
-export default function Gallery() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+interface GalleryProps {
+  isTerminalMode: boolean;
+}
 
-  // 타이핑 애니메이션 상태
-  const [isVisible, setIsVisible] = useState(false);
-  const [typedTitle, setTypedTitle] = useState("");
+export default function Gallery({ isTerminalMode }: GalleryProps) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false); // 더보기 펼침 상태
+  const [hasAnimated, setHasAnimated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   
-  // 가로 스크롤 트랙을 제어하기 위한 Ref
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
-
-  // 모달 하단 썸네일 리스트를 제어하기 위한 Ref
   const thumbnailTrackRef = useRef<HTMLDivElement>(null);
-
-  const headerText = `// PHOTO_GALLERY.log`;
-  const subTitleText = `소중한 순간들`;
-
-  const [typedSubTitle, setTypedSubTitle] = useState("");
-  const [step, setStep] = useState(0);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   // 스크롤 진입 감지
   useEffect(() => {
+    setHasAnimated(false);
+    const currentRef = sectionRef.current;
+    if (!currentRef) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isVisible) {
-          setIsVisible(true);
-          setStep(1);
+        if (entry.isIntersecting) {
+          setHasAnimated(true);
+          observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.4 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    observer.observe(currentRef);
+
+    const rect = currentRef.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom >= 0) {
+      setHasAnimated(true);
+      observer.disconnect();
     }
 
     return () => observer.disconnect();
-  }, [isVisible]);
+  }, [isTerminalMode]);
 
-  // 타이핑 효과
-  useEffect(() => {
-    if (!isVisible) return;
-
-    if (step === 1) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= headerText.length) {
-          setTypedTitle(headerText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(2);
-        }
-      }, 70);
-      return () => clearInterval(timer);
-    }
-
-    if (step === 2) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= subTitleText.length) {
-          setTypedSubTitle(subTitleText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(3);
-        }
-      }, 90);
-      return () => clearInterval(timer);
-    }
-  }, [isVisible, step, headerText, subTitleText]);
-
-  // 자동 가로 스크롤 (Auto-Scroll) 애니메이션 효과
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    let animationFrameId: number;
-    let scrollPos = track.scrollLeft;
-    const speed = 0.3;
-
-    const stepScroll = () => {
-      if (!isPaused && selectedIndex === null) {
-        scrollPos += speed;
-        track.scrollLeft = scrollPos;
-        
-        if (track.scrollLeft >= track.scrollWidth - track.clientWidth) {
-          scrollPos = 0;
-          track.scrollLeft = 0;
-        }
-      } else {
-        scrollPos = track.scrollLeft;
-      }
-      animationFrameId = requestAnimationFrame(stepScroll);
-    };
-
-    animationFrameId = requestAnimationFrame(stepScroll);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isPaused, selectedIndex]);
-
-  // 선택된 사진이 바뀔 때 하단 썸네일 바가 해당 위치를 자동으로 스크롤하여 보여주도록 연동
+  // 모달 썸네일 자동 포커스
   useEffect(() => {
     if (selectedIndex !== null && thumbnailTrackRef.current) {
       const selectedThumb = thumbnailTrackRef.current.children[selectedIndex] as HTMLElement;
@@ -146,7 +73,6 @@ export default function Gallery() {
     }
   }, [selectedIndex]);
 
-  // 모달 슬라이드 이전/다음 이동 함수
   const handlePrev = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (selectedIndex === null) return;
@@ -159,72 +85,93 @@ export default function Gallery() {
     setSelectedIndex(selectedIndex === GALLERY_IMAGES.length - 1 ? 0 : selectedIndex + 1);
   };
 
+  // 모달 내 스와이프 제스처
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance) {
+      handleNext();
+    } else if (distance < -minSwipeDistance) {
+      handlePrev();
+    }
+  };
+
+  // 기본 2줄(3열 기준 총 6장)만 보여주기, 펼치면 전체
+  const displayedImages = isExpanded ? GALLERY_IMAGES : GALLERY_IMAGES.slice(0, 6);
+
   return (
     <section ref={sectionRef} className={styles.gallerySection}>
-      <div className={`${styles.container} ${isVisible ? styles.visible : ""}`}>
-        
-        {/* 타이핑되는 상단 태그 */}
-        <div className={styles.headerTag}>
-          <span>{typedTitle}</span>
-          {step === 1 && <span className={styles.cursor}>_</span>}
-        </div>
+      {!isTerminalMode && (
+        <div className={`${styles.normalContainer} ${hasAnimated ? styles.visible : ""}`}>
+          
+          <div className={styles.headerTag}>GALLERY</div>
+          <h2 className={styles.mainTitle}>우리의 순간</h2>
 
-        {/* 타이핑되는 메인 타이틀 */}
-        <h2 className={styles.mainTitle}>
-          {typedSubTitle}
-          {step === 2 && <span className={styles.cursor}>_</span>}
-        </h2>
-
-        {/* 가로로 자동 흘러가는 트랙 (마우스 올리면 멈춤) */}
-        <div 
-          ref={trackRef}
-          className={styles.horizontalScrollTrack}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={() => setIsPaused(true)}
-          onTouchEnd={() => setIsPaused(false)}
-        >
-          {GALLERY_IMAGES.map((src, index) => (
-            <div 
-              key={index} 
-              className={styles.imageCard}
-              onClick={() => setSelectedIndex(index)}
-            >
-              <img src={src} alt={`웨딩 갤러리 사진 ${index + 1}`} loading="lazy" />
-              <div className={styles.overlay}>
-                <span className={styles.zoomIcon}>[ + view ]</span>
+          {/* 앨범형 그리드 레이아웃 */}
+          <div className={styles.albumGrid}>
+            {displayedImages.map((src, index) => (
+              <div 
+                key={index} 
+                className={styles.imageCard}
+                onClick={() => setSelectedIndex(index)}
+              >
+                <img src={src} alt={`웨딩 갤러리 사진 ${index + 1}`} loading="lazy" />
+                <div className={styles.overlay}>
+                  <span className={styles.zoomIcon}>zoom</span>
+                </div>
               </div>
+            ))}
+          </div>
+
+          {/* 더보기 버튼 (사진이 6장 이상일 때만 표시) */}
+          {GALLERY_IMAGES.length > 6 && (
+            <div className={styles.actionRow}>
+              <button 
+                className={styles.expandBtn}
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? "접기 ∧" : `더보기 (${GALLERY_IMAGES.length - 6}장 더) ∨`}
+              </button>
             </div>
-          ))}
+          )}
+
         </div>
+      )}
 
-        {/* 안내 문구와 함께 [처음부터 보기] 버튼 추가 */}
-        <div className={styles.actionRow}>
-          <p className={styles.guideText}>* 터치하여 멈추거나 스와이프 하세요</p>
-          <button 
-            className={styles.startViewBtn}
-            onClick={() => setSelectedIndex(0)}
-          >
-            [ ▶ 처음부터 보기 <span className={styles.btnCursor}>_</span> ]
-          </button>
+      {isTerminalMode && (
+        <div className={styles.terminalContainer}>
+          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
         </div>
+      )}
 
-      </div>
-
-      {/* 이미지 확대 슬라이드 모달 */}
+      {/* 이미지 확대 모달 */}
       {selectedIndex !== null && (
         <div className={styles.modalBackdrop} onClick={() => setSelectedIndex(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalInner}>
               <button className={styles.closeBtn} onClick={() => setSelectedIndex(null)}>
-                [CLOSE X]
+                ✕
               </button>
 
               <button className={`${styles.slideBtn} ${styles.prevBtn}`} onClick={handlePrev}>
                 &lt;
               </button>
               
-              <div className={styles.imageContainer}>
+              <div 
+                className={styles.imageContainer}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
                 <img src={GALLERY_IMAGES[selectedIndex]} alt="확대된 웨딩 사진" />
                 <span className={styles.imageCounter}>
                   {selectedIndex + 1} / {GALLERY_IMAGES.length}
@@ -236,7 +183,6 @@ export default function Gallery() {
               </button>
             </div>
 
-            {/* 하단에 모든 사진들이 조그맣게 나열되는 썸네일 네비게이터 독(Dock) */}
             <div ref={thumbnailTrackRef} className={styles.thumbnailDock}>
               {GALLERY_IMAGES.map((src, index) => (
                 <div

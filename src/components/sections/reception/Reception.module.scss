@@ -1,27 +1,25 @@
-// src/components/sections/Reception.module.scss
-
 .section {
   width: 100%;
   min-height: 100vh;
   padding: 4rem 1.5rem;
-  background-color: #ffffff;
-  color: #24292e;
+  background-color: var(--bg-main);
+  color: var(--text-sub);
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  border-bottom: 1px solid #eaecef;
+  box-sizing: border-box;
 
   .container {
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 2.0s cubic-bezier(0.16, 1, 0.3, 1), transform 2.0s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 
     &.visible {
       opacity: 1;
@@ -29,27 +27,20 @@
     }
 
     .headerTag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #22863a;
+      font-size: 0.8rem;
+      font-family: "Schoolbell", cursive;
+      color: var(--text-muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      font-weight: 600;
-      min-height: 1.2rem;
-      display: flex;
-      align-items: center;
-
-      .cursor {
-        display: inline-block;
-        animation: blink 1s step-end infinite;
-        margin-left: 2px;
-        font-weight: 700;
-      }
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+    .mainTitle {
+      font-size: 1.15rem;
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-weight: 500;
+      color: var(--text-main);
+      letter-spacing: 0.05em;
+      margin-top: -0.4rem;
     }
 
     .contentWrapper {
@@ -57,65 +48,70 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.9rem;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 1.0s ease, transform 1.0s ease;
-
-      &.showContent {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .mainTitle {
-      font-size: 1.0rem;
-      font-family: "Nanum Gothic Coding", monospace;
-      font-weight: 700;
-      color: #24292e;
-      letter-spacing: 0.05em;
+      gap: 1.2rem;
     }
 
     .subDescription {
-      font-family: "Nanum Gothic Coding", monospace;
-      font-size: 0.75rem;
-      color: #586069;
-      line-height: 1.9;
+      font-family: 'SeoulHangang', sans-serif;
+      font-size: 0.85rem;
+      padding: 0.9rem;
+      color: var(--text-muted-dark);
+      line-height: 1.8;
       white-space: pre-line;
-      letter-spacing: 0.09em;
-      margin-bottom: 0.2rem;
+      letter-spacing: 0.1em;
     }
 
-    /* 설정 파일 감성의 정보 블록 */
+    /* 피로연 정보 그룹 */
     .infoTextGroup {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.5rem;
       text-align: left;
-      padding: 0.4rem 0.8rem;
-      border-left: 3px solid #22863a;
-      margin: 0.9rem 0;
+      padding: 0.8rem 1rem;
+      background-color: var(--bg-sub);
+      border-radius: 6px;
 
       .infoRow {
         display: flex;
-        align-items: center;
-        font-family: 'JetBrains Mono', monospace;
+        align-items: flex-start;
         font-size: 0.75rem;
-        line-height: 1.5;
+        line-height: 1.6;
 
         .key {
-          color: #005cc5;
-          font-weight: 600;
+          font-family: 'SeoulHangang', sans-serif;
+          color: var(--text-muted);
+          font-weight: 500;
           width: 45px;
           flex-shrink: 0;
         }
 
         .val {
-          color: #24292e;
-          font-family: "Nanum Gothic Coding", monospace;
+          color: var(--text-sub);
+          font-family: 'SeoulHangang', sans-serif;
+          word-break: break-all;
+          letter-spacing: 0.1rem;
         }
       }
+    }
+
+    .mapContainer {
+      width: 100%;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+  }
+
+  .terminalContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .todo {
+      color: var(--dev-green);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
     }
   }
 }

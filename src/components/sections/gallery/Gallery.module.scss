@@ -1,27 +1,24 @@
-// src/components/sections/Gallery.module.scss
-
 .gallerySection {
   width: 100%;
-  height: 100vh;
-  padding: 3rem 0;
-  background-color: #ffffff;
-  color: #24292e;
+  padding: 8rem 1.5rem;
+  background-color: var(--bg-main);
+  color: var(--text-sub);
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
-  border-bottom: 1px solid #eaecef;
+  overflow-y: auto;
+  box-sizing: border-box;
 
-  .container {
+  .normalContainer {
     width: 100%;
-    max-width: 450px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.2rem;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 
     &.visible {
       opacity: 1;
@@ -29,49 +26,38 @@
     }
 
     .headerTag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #22863a;
+      font-size: 0.8rem;
+      font-family: "Schoolbell", cursive;
+      color: var(--text-muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      font-weight: 600;
-      min-height: 1.2rem;
     }
 
     .mainTitle {
-      font-size: 1.0rem;
-      font-family: "Nanum Gothic Coding", monospace;
-      font-weight: 400;
-      color: #24292e;
+      font-size: 1.15rem;
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-weight: 500;
+      color: var(--text-main);
       letter-spacing: 0.05em;
-      margin-top: -0.8rem;
-      min-height: 1.5rem;
+      margin-top: -0.4rem;
     }
 
-    /* 부드럽게 자동으로 흘러가는 트랙 */
-    .horizontalScrollTrack {
+    /* 3열 그리드 앨범형 레이아웃 */
+    .albumGrid {
       width: 100%;
-      display: flex;
-      gap: 0.8rem;
-      overflow-x: auto;
-      padding: 0.5rem 1.5rem;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      padding: 0.5rem 0;
 
       .imageCard {
         position: relative;
-        flex: 0 0 68%;
-        aspect-ratio: 4 / 5;
-        border-radius: 8px;
+        aspect-ratio: 1 / 1;
+        border-radius: 4px;
         overflow: hidden;
         cursor: pointer;
-        background-color: #f6f8fa;
-        border: 1px solid #e1e4e8;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background-color: var(--bg-sub);
+        box-shadow: 0 2px 8px var(--image-shadow);
         user-select: none;
         -webkit-user-drag: none;
 
@@ -79,12 +65,18 @@
           width: 100%;
           height: 100%;
           object-fit: cover;
+          pointer-events: none;
+          transition: transform 0.3s ease;
+        }
+
+        &:hover img {
+          transform: scale(1.05);
         }
 
         .overlay {
           position: absolute;
           inset: 0;
-          background-color: rgba(36, 41, 46, 0.3);
+          background-color: rgba(30, 41, 59, 0.2);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -92,15 +84,13 @@
           transition: opacity 0.2s ease;
 
           .zoomIcon {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            color: #ffffff;
-            font-weight: bold;
+            font-family: "Schoolbell", cursive;
+            font-size: 0.75rem;
+            color: var(--bg-main);
             letter-spacing: 0.05em;
-            background: rgba(27, 31, 35, 0.85);
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #444d56;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 2px 6px;
+            border-radius: 3px;
           }
         }
 
@@ -110,74 +100,47 @@
       }
     }
 
-    /* [처음부터 보기] 버튼과 안내 텍스트 영역 */
     .actionRow {
       width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.3rem;
-      padding: 0 0.5rem;
-      margin-top: -0.2rem;
+      justify-content: center;
+      margin-top: 0.5rem;
 
-      .guideText {
-        font-family: "Nanum Gothic Coding", monospace;
-        font-size: 0.65rem;
-        color: #8b949e;
-        letter-spacing: 0.05em;
-      }
-
-      .startViewBtn {
-        background: #1f2428;
-        border: 1px solid #22863a;
-        color: #22863a;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.7rem;
-        padding: 4px 10px;
-        margin-top: 0.6rem;
-        border-radius: 4px;
+      .expandBtn {
+        background: var(--bg-main);
+        border: 1px solid var(--text-icon);
+        color: var(--text-sub);
+        font-family: "NostalgicOnHandwriting", cursive;
+        font-size: 0.85rem;
+        padding: 6px 20px;
+        border-radius: 20px;
         cursor: pointer;
         letter-spacing: 0.05em;
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        animation: blinkGlow 0.8s infinite ease-in-out;
-        transition: background 0.2s;
+        transition: all 0.2s ease;
 
         &:hover {
-          background: #282e33;
-          animation: none; 
-          color: #22863a;
-          border-color: #22863a;
-        }
-
-        .btnCursor {
-          display: inline-block;
-          animation: blinkCursor 0.8s infinite;
-          font-weight: bold;
-          color: inherit;
+          background: var(--border-light);
+          border-color: var(--text-light);
         }
       }
     }
   }
 
-  /* 🔍 모달 뷰 스타일 */
   .modalBackdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(4px);
     z-index: 100;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 1rem;
-    touch-action: none;
 
     .modalContent {
       position: relative;
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -191,21 +154,18 @@
 
         .closeBtn {
           position: absolute;
-          top: 12px;
-          right: 12px;
-          background: rgba(36, 41, 46, 0.8);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: #e1e4e8;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.7rem;
-          padding: 4px 10px;
-          border-radius: 4px;
+          top: -30px;
+          right: 0;
+          background: transparent;
+          border: none;
+          color: var(--bg-main);
+          font-size: 1.1rem;
           cursor: pointer;
           z-index: 20;
-          transition: background 0.2s;
+          opacity: 0.8;
 
           &:hover {
-            background: rgba(36, 41, 46, 1);
+            opacity: 1;
           }
         }
 
@@ -213,12 +173,12 @@
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          background: rgba(0, 0, 0, 0.5);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: #ffffff;
-          font-size: 1.1rem;
-          width: 36px;
-          height: 36px;
+          background: rgba(255, 255, 255, 0.15);
+          border: none;
+          color: var(--bg-main);
+          font-size: 1rem;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           display: flex;
           justify-content: center;
@@ -228,92 +188,65 @@
           transition: background 0.2s;
 
           &:hover {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.3);
           }
 
-          &.prevBtn {
-            left: 12px;
-          }
-
-          &.nextBtn {
-            right: 12px;
-          }
+          &.prevBtn { left: 8px; }
+          &.nextBtn { right: 8px; }
         }
 
         .imageContainer {
           position: relative;
           width: 100%;
           display: flex;
-          justify-content: center;
+          flex-direction: column;
           align-items: center;
+          touch-action: pan-y;
 
           img {
             width: 100%;
             height: auto;
-            max-height: 70vh;
+            max-height: 68vh;
             object-fit: contain;
             border-radius: 6px;
             user-select: none;
             -webkit-user-drag: none;
+            pointer-events: none;
           }
 
           .imageCounter {
-            position: absolute;
-            bottom: -25px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: #8b949e;
+            margin-top: 0.8rem;
+            font-family: "Schoolbell", cursive;
+            font-size: 0.85rem;
+            color: var(--text-icon);
             letter-spacing: 0.1em;
           }
         }
       }
 
-      /* 모달 하단 썸네일 나열 영역 (독 바) 및 오버 시 보이는 스크롤바 */
       .thumbnailDock {
         width: 100%;
         display: flex;
-        gap: 0.5rem;
+        gap: 0.4rem;
         overflow-x: auto;
-        padding: 0.6rem 0.2rem 0.4rem 0.2rem;
-        margin-top: 1.5rem;
-
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-        transition: scrollbar-color 0.3s;
-
-        &:hover {
-          scrollbar-color: rgba(34, 134, 58, 0.7) rgba(255, 255, 255, 0.1);
-        }
+        padding: 0.6rem 0.2rem;
+        margin-top: 1.2rem;
+        scrollbar-width: none;
 
         &::-webkit-scrollbar {
-          height: 5px;
-        }
-
-        &::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 3px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 3px;
-          transition: background 0.3s;
-        }
-
-        &:hover::-webkit-scrollbar-thumb {
-          background: #22863a;
+          display: none;
         }
 
         .thumbItem {
-          flex: 0 0 52px;
-          width: 52px;
-          height: 52px;
-          border-radius: 6px;
+          flex: 0 0 46px;
+          width: 46px;
+          height: 46px;
+          border-radius: 4px;
           overflow: hidden;
           cursor: pointer;
-          opacity: 0.45;
+          opacity: 0.4;
           border: 2px solid transparent;
-          transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+          transition: all 0.2s ease;
 
           img {
             width: 100%;
@@ -327,36 +260,25 @@
 
           &.activeThumb {
             opacity: 1;
-            border-color: #22863a;
+            border-color: var(--bg-main);
             transform: scale(1.05);
           }
         }
       }
     }
   }
-}
 
-.cursor {
-  display: inline-block;
-  animation: blinkCursor 0.8s infinite;
-  font-weight: bold;
-  color: #22863a;
-  margin-left: 2px;
-}
+  /* 개발자 모드 */
+  .terminalContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-@keyframes blinkCursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-@keyframes blinkGlow {
-  0%, 100% {
-    color: #22863a;
-    border-color: #22863a;
-  }
-  50% {
-    color: #8b949e;
-    border-color: #30363d;
-    box-shadow: none;
+    .todo {
+      color: var(--dev-green);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
   }
 }

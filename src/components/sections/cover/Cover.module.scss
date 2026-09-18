@@ -1,96 +1,238 @@
-// src/components/sections/Cover.module.scss
-
 .coverSection {
   position: relative;
   width: 100%;
   height: 100vh;
-  background-color: #121212;
+  background-color: var(--bg-main);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Courier New', Courier, monospace;
 
-  /* 💻 터미널 로딩 화면 스타일 */
+  .mainContent {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.8rem 0 2.2rem 0;
+    box-sizing: border-box;
+
+    /* 상단 이름 영역 */
+    .headerArea {
+      z-index: 3;
+      text-align: center;
+      margin-top: 1rem;
+
+      .names {
+        font-size: 1.15rem;
+        font-family: "Schoolbell", cursive;
+        color: var(--text-main);
+        letter-spacing: 0.1em;
+
+        .heart {
+          color: var(--text-sub);
+          font-size: 0.85rem;
+          margin: 0 0.4rem;
+          display: inline-block;
+        }
+      }
+    }
+
+    /* 중앙 사진 프레임 및 세로 레터링 영역 */
+    .imageContainer {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      max-height: 100vh;
+      margin: 1rem 0;
+      overflow: visible;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .bgImage {
+        width: 80%;
+        height: 100vh;
+        object-fit: cover;
+        border-radius: 0px;
+        box-shadow: 0 10px 30px var(--image-shadow);
+      }
+
+      /* 사이드 레터링 */
+      .vertical {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1.5rem;
+
+        /* 좌측 세로 날짜 레터링 (사진 왼쪽 사이드) */
+        .verticalDate {
+          position: absolute;
+          left: -5.9rem;
+          top: 50%;
+          transform: translateY(-50%) rotate(-90deg);
+          font-family: "Schoolbell", cursive;
+          font-size: 1rem;
+          letter-spacing: 0.5em;
+          color: var(--text-sub);
+          white-space: nowrap;
+          opacity: 0.85;
+        }
+  
+        /* 우측 세로 시간 레터링 (사진 오른쪽 사이드) */
+        .verticalTime {
+          position: absolute;
+          right: -5.6rem;
+          top: 20%;
+          transform: translateY(-50%) rotate(90deg);
+          font-family: "Schoolbell", cursive;
+          font-size: 1rem;
+          letter-spacing: 0.5em;
+          color: var(--text-sub);
+          white-space: nowrap;
+          opacity: 0.85;
+        }
+      }
+    }
+  }
+
+  /* 터미널 라이트모드 디자인 (클로드 CLI풍) */
   .terminalLoader {
     position: absolute;
     inset: 0;
-    background-color: #0d1117;
+    background-color: var(--bg-terminal-loader);
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 1.0rem;
-    z-index: 10;
-    font-family: 'JetBrains Mono', monospace, 'Courier New';
-    transition: opacity 1.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 1.6s;
-
-    &.fadeAway {
-      opacity: 0;
-      visibility: hidden;
-    }
+    z-index: 20;
+    font-family: 'JetBrains Mono', monospace;
 
     .terminalBox {
       width: 100%;
       max-width: 420px;
-      padding: 0 0.5rem;
+      padding: 1rem 1.2rem;
       text-align: left;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.6rem;
+      background: var(--bg-main);
+      border: 1px solid var(--dev-border-color);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px var(--terminal-box-shadow);
 
-      /* 로그 한 줄 스타일 */
       .logRow {
         display: flex;
         align-items: flex-start;
-        font-size: 0.65rem;
-        line-height: 1.5;
+        font-size: 0.7rem;
+        line-height: 1.6;
         width: 100%;
 
+        .promptSymbol {
+          color: var(--dev-blue);
+          font-weight: bold;
+          margin-right: 0.5rem;
+        }
+
         .timeLabel {
-          color: #484f58;
+          color: var(--dev-text-sub);
           font-weight: 500;
           flex-shrink: 0;
           margin-right: 0.75rem;
-          letter-spacing: -0.02em;
         }
 
-        /* 💡 터미널 고유의 다채로운 가독성 컬러 적용 */
-        .cyanText { color: #79c0ff; } /* 변수명, 시스템 키워드 (시안 블루) */
-        .blueText { color: #58a6ff; } /* 일반 경로 및 안내 텍스트 (소프트 블루) */
+        .cyanText { color: var(--cyan-text); font-weight: 500; }
+        .blueText { color: var(--dev-blue); }
+        .infoText { color: var(--dev-text-sub); }
+        .successLog { color: var(--success-green); font-weight: bold; }
+      }
+    }
+  }
 
-        .infoText {
-          color: #8b949e;
-        }
+  /* 터미널 완료 결과 화면 (라이트모드 클로드 대시보드 스타일) */
+  .terminalResultScreen {
+    position: absolute;
+    inset: 0;
+    background-color: var(--bg-main);
+    z-index: 15;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: 'JetBrains Mono', 'Nanum Gothic Coding', monospace;
+    color: var(--text-dark);
+    padding: 1.5rem;
 
-        .successLog {
-          color: #3fb950; /* 성공 로그만 선명한 에메랄드 그린 */
-          font-weight: bold;
-          animation: terminalBlink 0.8s ease-in-out infinite;
+    .terminalContentBox {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+
+      .cliStatusBar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.65rem;
+        color: var(--dev-text-sub);
+        background: var(--bg-cli-status);
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+        border: 1px solid var(--dev-border-color);
+
+        .cliDot {
+          width: 7px;
+          height: 7px;
+          background-color: var(--status-dot-green);
+          border-radius: 50%;
         }
       }
 
-      /* 💡 터미널 박스 스타일 */
       .claudeBox {
         width: 100%;
-        border: 1px solid #30363d;
+        border: 1px solid var(--dev-border-color);
         border-radius: 6px;
-        background-color: #161b22;
-        padding: 0.8rem 1rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        background-color: var(--bg-main);
+        padding: 1.1rem;
+        box-shadow: 0 4px 16px var(--terminal-result-shadow);
         display: flex;
         flex-direction: column;
-        gap: 0.6rem;
-        animation: fadeInLogs 0.4s ease-out forwards;
+        gap: 0.8rem;
+        text-align: left;
 
         .boxHeader {
-          font-size: 0.6rem;
-          color: #58a6ff; /* 박스 헤더는 깔끔한 블루 톤으로 포인트 */
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.65rem;
+          color: var(--dev-text-sub);
           font-weight: 600;
-          border-bottom: 1px solid #30363d;
-          padding-bottom: 0.4rem;
-          letter-spacing: 0.05em;
+          border-bottom: 1px solid var(--dev-border-color);
+          padding-bottom: 0.5rem;
+          background-color: var(--bg-cli-status);
+          margin: -1.1rem -1.1rem 0.5rem -1.1rem;
+          padding: 0.5rem 1.1rem;
+          border-top-left-radius: 5px;
+          border-top-right-radius: 5px;
+
+          .activeBadge {
+            background: var(--bg-badge-active);
+            color: var(--success-green);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.55rem;
+          }
         }
 
         .boxBody {
@@ -98,263 +240,110 @@
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 0.5rem;
+          gap: 0.6rem;
 
           .welcomeText {
-            font-size: 0.75rem;
-            color: #f0f6fc;
+            font-size: 0.8rem;
+            color: var(--text-dark);
             font-weight: bold;
           }
 
           .pixelArt {
-            font-family: 'JetBrains Mono', monospace, 'Courier New';
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.65rem;
-            color: #79c0ff; /* 픽셀아트는 시안 블루로 시원한 느낌 부여 */
-            background: rgba(0, 0, 0, 0.4);
-            padding: 0.5rem;
-            border-radius: 4px;
-            line-height: 1.3;
+            color: var(--dev-blue);
+            background: var(--bg-cli-status);
+            padding: 0.6rem;
+            border-radius: 6px;
             white-space: pre;
+            border: 1px solid var(--dev-border-color);
+            width: 100%;
           }
 
           .boxFooterInfo {
             width: 100%;
             display: flex;
-            flex-direction: column;
-            gap: 0.15rem;
+            justify-content: space-between;
+            align-items: center;
             font-size: 0.65rem;
-            color: #8b949e;
+            color: var(--footer-info-text);
+            padding-top: 0.2rem;
+
+            .targetPair {
+              font-weight: 600;
+              color: var(--text-dark-bold);
+            }
 
             .pathText {
-              color: #3fb950; /* 핵심 성공 경로는 초록색 포인트 유지 */
+              color: var(--dev-blue);
               font-family: 'JetBrains Mono', monospace;
             }
           }
         }
-      }
 
-      .sequentialLogs {
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-        margin-top: 0.3rem;
-        animation: fadeInLogs 0.4s ease-out forwards;
+        .terminalNames {
+          margin-top: 1.15rem;
+          font-size: 1.2rem;
+          font-weight: 700;
+          color: var(--text-dark-bold);
+          font-family: "Schoolbell", cursive;
+        }
+  
+        .terminalDate {
+          font-size: 0.65rem;
+          color: var(--dev-text-sub);
+        }
+
+        .terminalLocation {
+          font-size: 0.65rem;
+          color: var(--dev-text-sub);
+        }
       }
     }
   }
 
-  /* ✨ 비 효과 (Matrix Rain) 색상 조합 */
   .globalRainContainer {
     position: absolute;
     inset: 0;
-    z-index: 12;
+    z-index: 1;
     pointer-events: none;
-    opacity: 1;
-    transition: opacity 2s ease-out;
-
-    &.fadeOutRain {
-      opacity: 0;
-    }
 
     .terminalRain {
       position: absolute;
       inset: 0;
       overflow: hidden;
-      pointer-events: none;
 
       span {
         position: absolute;
         top: -10%;
-        font-family: 'Courier New', Courier, monospace;
+        font-family: 'Courier New', monospace;
         font-size: 1.1rem;
         font-weight: bold;
-        opacity: 0;
+        opacity: 0.3;
         animation: terminalFall linear infinite;
       }
 
-      /* 💡 비 내리는 글자 색상도 초록/블루/골드를 섞어 다채롭게 연출 */
-      span:nth-child(odd) { color: #3fb950; }
-      span:nth-child(even) { color: #58a6ff; }
-      span:nth-child(3n) { color: #e3b341; }
-
-      span:nth-child(1)  { left: 5%;   animation-duration: 2.2s; animation-delay: 0s; }
-      span:nth-child(2)  { left: 15%;  animation-duration: 3.1s; animation-delay: 0.4s; }
-      span:nth-child(3)  { left: 25%;  animation-duration: 2.5s; animation-delay: 0.1s; }
-      span:nth-child(4)  { left: 35%;  animation-duration: 3.8s; animation-delay: 0.7s; }
-      span:nth-child(5)  { left: 45%;  animation-duration: 2.1s; animation-delay: 0.3s; }
-      span:nth-child(6)  { left: 55%;  animation-duration: 3.4s; animation-delay: 0.5s; }
-      span:nth-child(7)  { left: 65%;  animation-duration: 2.7s; animation-delay: 0.2s; }
-      span:nth-child(8)  { left: 75%;  animation-duration: 3.0s; animation-delay: 0.6s; }
-      span:nth-child(9)  { left: 85%;  animation-duration: 2.3s; animation-delay: 0.1s; }
-      span:nth-child(10) { left: 92%;  animation-duration: 3.5s; animation-delay: 0.8s; }
-      span:nth-child(11) { left: 10%;  animation-duration: 2.9s; animation-delay: 0.5s; }
-      span:nth-child(12) { left: 30%;  animation-duration: 2.4s; animation-delay: 0.2s; }
-      span:nth-child(13) { left: 50%;  animation-duration: 3.2s; animation-delay: 0.9s; }
-      span:nth-child(14) { left: 70%;  animation-duration: 2.6s; animation-delay: 0.4s; }
-      span:nth-child(15) { left: 88%;  animation-duration: 3.6s; animation-delay: 0.3s; }
-      span:nth-child(16) { left: 20%;  animation-duration: 2.8s; animation-delay: 0.7s; }
-      span:nth-child(17) { left: 60%;  animation-duration: 2.3s; animation-delay: 0.1s; }
-      span:nth-child(18) { left: 80%;  animation-duration: 3.3s; animation-delay: 0.5s; }
+      span:nth-child(odd) { color: var(--success-green); }
+      span:nth-child(even) { color: var(--dev-blue); }
+      span:nth-child(3n) { color: var(--rain-yellow); }
+      
+      span:nth-child(1)  { left: 5%;   animation-duration: 2.2s; }
+      span:nth-child(2)  { left: 15%;  animation-duration: 3.1s; }
+      span:nth-child(3)  { left: 25%;  animation-duration: 2.5s; }
+      span:nth-child(4)  { left: 35%;  animation-duration: 3.8s; }
+      span:nth-child(5)  { left: 45%;  animation-duration: 2.1s; }
+      span:nth-child(6)  { left: 55%;  animation-duration: 3.4s; }
+      span:nth-child(7)  { left: 65%;  animation-duration: 2.7s; }
+      span:nth-child(8)  { left: 75%;  animation-duration: 3.0s; }
+      span:nth-child(9)  { left: 85%;  animation-duration: 2.3s; }
+      span:nth-child(10) { left: 92%;  animation-duration: 3.5s; }
     }
   }
-
-  .mainContent {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    padding: 3.5rem 1.5rem 3rem 1.5rem;
-    opacity: 0;
-    transform: scale(1.06);
-    pointer-events: none;
-    transition: opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
-
-    &.show {
-      opacity: 1;
-      transform: scale(1);
-      pointer-events: auto;
-    }
-
-    &.hidden {
-      opacity: 0;
-    }
-
-    .bgImageWrapper {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      animation: imageZoomIn 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-
-      .bgImage {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: brightness(0.85);
-      }
-
-      .gradientOverlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          to bottom,
-          rgba(0, 0, 0, 0.4) 0%,
-          rgba(0, 0, 0, 0) 35%,
-          rgba(0, 0, 0, 0) 60%,
-          rgba(0, 0, 0, 0.75) 100%
-        );
-      }
-    }
-
-    .headerArea {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      color: #ffffff;
-      opacity: 0;
-      animation: contentFadeIn 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      animation-delay: 0.3s;
-
-      .subTitle {
-        font-size: 0.75rem;
-        letter-spacing: 0.4em;
-        text-transform: uppercase;
-        font-family: serif;
-        opacity: 0.9;
-      }
-
-      .dateText {
-        font-size: 0.75rem;
-        letter-spacing: 0.15em;
-        font-weight: 400;
-        opacity: 0.45;
-        font-family: 'Pretendard', sans-serif;
-      }
-    }
-
-    .footerArea {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      color: #ffffff;
-      width: 100%;
-      margin-bottom: 1rem;
-      opacity: 0;
-      animation: contentFadeIn 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      animation-delay: 0.5s;
-
-      .names {
-        font-size: 1.2rem;
-        font-family: serif;
-        letter-spacing: 0.05em;
-        font-weight: 400;
-
-        .ampersand {
-          color: #b5b5b4;
-          font-weight: 300;
-          font-size: 1.2rem;
-          margin: 0 0.3rem;
-        }
-      }
-
-      .locationName {
-        font-size: 0.8rem;
-        letter-spacing: 0.08em;
-        opacity: 0.85;
-        margin-top: 0.25rem;
-      }
-    }
-  }
-}
-
-/* 애니메이션 Keyframes */
-@keyframes fadeInLogs {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes imageZoomIn {
-  0% { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-
-@keyframes contentFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes terminalFall {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.9;
-  }
-  85% {
-    opacity: 0.9;
-  }
-  100% {
-    transform: translateY(110vh) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-@keyframes terminalBlink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  15% { opacity: 0.4; }
+  85% { opacity: 0.4; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
 }

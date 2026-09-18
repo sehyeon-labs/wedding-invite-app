@@ -1,28 +1,25 @@
-// src/components/sections/Dday.module.scss
-
 .ddaySection {
   width: 100%;
   height: 100vh;
   padding: 4.5rem 1.5rem;
-  background-color: #ffffff;
-  color: #24292e;
+  background-color: var(--bg-main);
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  border-bottom: 1px solid #eaecef;
+  box-sizing: border-box;
   overflow: hidden;
 
-  .container {
+  .normalContainer {
     width: 100%;
-    max-width: 380px;
+    max-width: 360px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.8rem;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 
     &.visible {
       opacity: 1;
@@ -30,66 +27,53 @@
     }
 
     .headerTag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #22863a;
+      font-size: 0.8rem;
+      font-family: "Schoolbell", cursive;
+      color: var(--text-muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      font-weight: 600;
     }
 
-    /* 미니 달력 */
     .calendarBox {
       width: 100%;
-      background-color: #ffffff;
-      padding: 1.5rem 1.2rem;
+      background-color: var(--bg-main);
+      padding: 0.9rem 0;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-
-      &.showCalendar {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+      gap: 0.8rem;
 
       .calendarHeader {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #24292e;
+        font-size: 1.05rem;
+        font-family: "Schoolbell", cursive;
+        font-weight: 600;
+        color: var(--text-main);
         letter-spacing: 0.08em;
-        text-align: left;
-        padding: 0.3rem 0.8rem;
-        border-left: 3px solid #22863a;
-        background-color: rgba(246, 248, 250, 0.943);
-        line-height: 1;
-        min-height: 1.5rem;
+        text-align: center;
+        margin-bottom: 0.2rem;
       }
 
       .weekGrid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: 'Pretendard', sans-serif;
         font-size: 0.65rem;
-        color: #6a737d;
+        color: var(--text-light);
         font-weight: 600;
-        padding-bottom: 0.6rem;
-        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 0.4rem;
 
-        .weekDay:first-child { color: #d73a49; }
-        .weekDay:last-child { color: #22863a; }
+        .sun { color: var(--accent-red); }
+        .sat { color: var(--accent-blue); }
       }
 
       .daysGrid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        row-gap: 0.5rem;
-        font-family: 'JetBrains Mono', monospace;
+        row-gap: 0.4rem;
+        font-family: 'Pretendard', sans-serif;
         font-size: 0.8rem;
-        color: #24292e;
+        color: var(--text-sub);
 
         .dayCell {
           aspect-ratio: 1;
@@ -101,13 +85,21 @@
           margin: auto;
           width: 30px;
           height: 30px;
-          transition: background-color 0.2s;
+
+          &.redDay {
+            color: var(--accent-red);
+            font-weight: 600;
+          }
+
+          &.satDay {
+            color: var(--accent-blue);
+          }
 
           &.weddingDay {
-            background-color: #22863a;
-            color: #ffffff;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(34, 134, 58, 0.25);
+            background-color: var(--text-muted-dark);
+            color: var(--bg-main);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
           }
         }
       }
@@ -117,79 +109,75 @@
       display: flex;
       align-items: baseline;
       justify-content: center;
-      gap: 1rem;
+      gap: 0.8rem;
       width: 100%;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-
-      &.showTimer {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      padding: 0.5rem 0;
 
       .timeUnit {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.3rem;
+        gap: 0.2rem;
 
         .number {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 1.3rem;
+          font-family: "Schoolbell", cursive;
+          font-size: 1.1rem;
           font-weight: 700;
-          color: #24292e;
+          color: #1e293b;
         }
 
         .label {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.6rem;
-          color: #22863a;
+          font-family: "Schoolbell", cursive;
+          font-size: 0.55rem;
+          color: #94a3b8;
           letter-spacing: 0.1em;
         }
       }
 
       .divider {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 1.4rem;
-        color: #b2bec3;
-        margin-bottom: 1rem;
+        font-family: 'Pretendard', sans-serif;
+        font-size: 1rem;
+        color: var(--text-icon);
+        margin-bottom: 0.8rem;
       }
     }
 
     .subMessage {
-      font-family: "Nanum Gothic Coding", monospace;
-      font-size: 0.785rem;
-      color: #0c3d17;
-      letter-spacing: 0.02em;
-      line-height: 1.5;
-      min-height: 1.5rem;
-      
-      .highlight {
-        color: #22863a;
-        font-weight: 700;
-        font-family: "Nanum Gothic Coding", monospace;
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      letter-spacing: 0.03em;
+
+      .namesHighlight {
+        font-family: 'NostalgicOnHandwriting', sans-serif;
+        font-size: 1.0rem;
+        color: var(--text-sub);
       }
 
-      strong {
-        color: #22863a;
+      .highlight {
+        color: var(--accent-red);
+        font-size: 1.0rem;
         font-weight: 700;
-        font-family: "Nanum Gothic Coding", monospace;
       }
     }
 
-    /* 터미널 타이핑 커서 효과 */
-    .cursor {
-      display: inline-block;
-      animation: blinkCursor 0.8s infinite;
-      font-weight: bold;
-      color: #22863a;
-      margin-left: 2px;
+    .passedText {
+      font-family: "NostalgicOnHandwriting", sans-serif;
+      font-size: 0.85rem;
+      color: #64748b;
     }
   }
-}
 
-@keyframes blinkCursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  .terminalContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .todo {
+      color: var(--dev-green);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+  }
 }

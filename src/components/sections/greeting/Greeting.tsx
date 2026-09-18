@@ -1,58 +1,44 @@
-// src/components/sections/Greeting.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import data from "@/data/mock.json";
 import styles from "./Greeting.module.scss";
 
-export default function Greeting() {
-  const { groom, bride, greeting } = data;
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const [step, setStep] = useState(0);
-  const sectionRef = useRef<HTMLElement>(null);
+interface GreetingProps {
+  isTerminalMode: boolean;
+}
 
-  const subTitleText = "> cat greeting.txt";
-  const [typedSubTitle, setTypedSubTitle] = useState("");
+export default function Greeting({ isTerminalMode }: GreetingProps) {
+  const { groom, bride, greeting } = data;
+
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setHasAnimated(false);
+    const currentRef = sectionRef.current;
+    if (!currentRef) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (entry.isIntersecting) {
           setHasAnimated(true);
-          setStep(1);
+          observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.6 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    observer.observe(currentRef);
+
+    const rect = currentRef.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom >= 0) {
+      setHasAnimated(true);
+      observer.disconnect();
     }
 
     return () => observer.disconnect();
-  }, [hasAnimated]);
-
-  useEffect(() => {
-    if (!hasAnimated) return;
-
-    if (step === 1) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= subTitleText.length) {
-          setTypedSubTitle(subTitleText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(2);
-          
-          setTimeout(() => {
-            setStep(3);
-          }, 600);
-        }
-      }, 80);
-      return () => clearInterval(timer);
-    }
-  }, [hasAnimated, step, subTitleText]);
+  }, [isTerminalMode]);
 
   const renderParentName = (parent: { name: string; isDeceased?: boolean } | null) => {
     if (!parent) return null;
@@ -75,40 +61,43 @@ export default function Greeting() {
   };
 
   return (
-    <section ref={sectionRef} className={styles.greetingSection}>
-      <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-        
-        <div className={styles.headerTag}>
-          <span>{hasAnimated ? typedSubTitle : ""}</span>
-          {hasAnimated && <span className={styles.cursor}>_</span>}
-        </div>
+    <section className={styles.greetingSection}>
+      {/* 일반 모드 */}
+      {!isTerminalMode && (
+        <div ref={sectionRef} className={`${styles.normalContainer} ${hasAnimated ? styles.visible : ""}`}>
+          <div className={styles.normalContentWrapper}>
+            <span className={styles.quoteMark}>“</span>
+            <h2 className={styles.normalTitle}>{greeting.title}</h2>
+            <p className={styles.normalContent}>{greeting.content}</p>
 
-        <div className={`${styles.contentWrapper} ${hasAnimated && step >= 3 ? styles.showContent : ""}`}>
-          <h2 className={styles.title}>{greeting.title}</h2>
-          <p className={styles.content}>{greeting.content}</p>
+            <div className={styles.namesContainer}>
+              <div className={styles.nameRow}>
+                <span className={styles.parents}>
+                  {renderParentsElements(groom.father, groom.mother)}
+                </span>
+                <span className={styles.relation}>의 {groom.relation || "장남"}</span>
+                <span className={styles.name}>{groom.name}</span>
+              </div>
 
-          <div className={styles.namesContainer}>
-            {/* 신랑 측 */}
-            <div className={styles.nameRow}>
-              <span className={styles.parents}>
-                {renderParentsElements(groom.father, groom.mother)}
-              </span>
-              <span className={styles.relation}>의 {groom.relation || "장남"}</span>
-              <span className={styles.name}>{groom.name}</span>
-            </div>
-
-            {/* 신부 측 */}
-            <div className={styles.nameRow}>
-              <span className={styles.parents}>
-                {renderParentsElements(bride.father, bride.mother)}
-              </span>
-              <span className={styles.relation}>의 {bride.relation || "차녀"}</span>
-              <span className={styles.name}>{bride.name}</span>
+              <div className={styles.nameRow}>
+                <span className={styles.parents}>
+                  {renderParentsElements(bride.father, bride.mother)}
+                </span>
+                <span className={styles.relation}>의 {bride.relation || "차녀"}</span>
+                <span className={styles.name}>{bride.name}</span>
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-      </div>
+      {/* 개발자 모드 */}
+      {isTerminalMode && (
+        <div ref={sectionRef} className={`${styles.terminalContainer} ${hasAnimated ? styles.visible : ""}`}>
+          {/* TODO: 개발자 모드는 추후 필요할 때 구현 */}
+          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
+        </div>
+      )}
     </section>
   );
 }

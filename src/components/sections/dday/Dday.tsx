@@ -1,24 +1,27 @@
-// src/components/sections/Dday.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import data from "@/data/mock.json";
 import styles from "./Dday.module.scss";
 
-export default function Dday() {
+interface DdayProps {
+  isTerminalMode: boolean;
+}
+
+export default function Dday({ isTerminalMode }: DdayProps) {
   const { weddingDate, groom, bride } = data;
 
+  // 타이머 및 디데이 초기화
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
     isAfter: false,
+    isToday: false,
   });
 
-  // 애니메이션 및 타이핑 상태
   const [hasAnimated, setHasAnimated] = useState(false);
-  const [step, setStep] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
 
   // 날짜 데이터 파싱
@@ -26,188 +29,213 @@ export default function Dday() {
   const year = targetDateObj.getFullYear();
   const month = targetDateObj.getMonth();
   const weddingDay = targetDateObj.getDate();
+  const formattedMonth = `${year}. ${String(month + 1).padStart(2, "0")}`;
 
-  // 타이핑할 텍스트 정의
-  const headerText = `// TIME_TO_WEDDING.tsx`;
-  const headerMonthText = `${year}. ${String(month + 1).padStart(2, "0")}`;
-  const subMessageText = `${groom.name} & ${bride.name}의 결혼식이 ${timeLeft.days}일 남았습니다.`;
-
-  // 타이핑된 문자열 상태
-  const [typedTitle, setTypedTitle] = useState("");
-  const [typedMonth, setTypedMonth] = useState("");
-  const [typedSub, setTypedSub] = useState("");
-
-  // 1. 스크롤 진입 감지 (단 1번만 실행되도록 체크)
+  // 스크롤 진입 감지
   useEffect(() => {
+    setHasAnimated(false);
+    const currentRef = sectionRef.current;
+    if (!currentRef) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
+        if (entry.isIntersecting) {
           setHasAnimated(true);
-          setStep(1);
+          observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.4 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    observer.observe(currentRef);
+
+    const rect = currentRef.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom >= 0) {
+      setHasAnimated(true);
+      observer.disconnect();
     }
 
     return () => observer.disconnect();
-  }, [hasAnimated]);
+  }, [isTerminalMode]);
 
-  // 2. 순차적 타이핑 효과 제어 (한 번 실행되면 끝)
-  useEffect(() => {
-    if (!hasAnimated) return;
-
-    if (step === 1) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= headerText.length) {
-          setTypedTitle(headerText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(2);
-        }
-      }, 60);
-      return () => clearInterval(timer);
-    }
-
-    if (step === 2) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= headerMonthText.length) {
-          setTypedMonth(headerMonthText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(3);
-        }
-      }, 120);
-      return () => clearInterval(timer);
-    }
-
-    if (step === 3) {
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i <= subMessageText.length) {
-          setTypedSub(subMessageText.slice(0, i));
-          i++;
-        } else {
-          clearInterval(timer);
-          setStep(4);
-        }
-      }, 80);
-      return () => clearInterval(timer);
-    }
-  }, [hasAnimated, step, headerText, headerMonthText, subMessageText]);
-
-  // 3. 실시간 카운트다운 타이머
+  // 실시간 타이머 및 당일/지남/남음 계산 로직
   useEffect(() => {
     const targetTime = new Date(weddingDate).getTime();
 
-    const updateCountdown = () => {
+    const updateTimer = () => {
       const now = new Date().getTime();
-      const difference = targetTime - now;
+      
+      // 연, 월, 일을 기준으로 '오늘'인지 판별하기 위한 객체 생성
+      const nowDateObj = new Date();
+      const isSameDay = 
+        nowDateObj.getFullYear() === year &&
+        nowDateObj.getMonth() === month &&
+        nowDateObj.getDate() === weddingDay;
 
-      if (difference < 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isAfter: true });
+      if (isSameDay) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isAfter: false, isToday: true });
         return;
       }
 
+      // 이미 예식일이 지난 경우
+      if (now > targetTime) {
+        const passedDiff = now - targetTime;
+        const days = Math.floor(passedDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((passedDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((passedDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((passedDiff % (1000 * 60)) / 1000);
+
+        setTimeLeft({ days, hours, minutes, seconds, isAfter: true, isToday: false });
+        return;
+      }
+
+      // 예식일이 남은 경우
+      const difference = targetTime - now;
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
       const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      setTimeLeft({ days, hours, minutes, seconds, isAfter: false });
+      setTimeLeft({ days, hours, minutes, seconds, isAfter: false, isToday: false });
     };
 
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [weddingDate]);
+  }, [weddingDate, year, month, weddingDay]);
+
+  // 대한민국 고정 공휴일 체크 함수
+  const isHoliday = (y: number, m: number, d: number) => {
+    const mStr = String(m + 1).padStart(2, "0");
+    const dStr = String(d).padStart(2, "0");
+    const mmdd = `${mStr}-${dStr}`;
+
+    const fixedHolidays = [
+      "01-01", "03-01", "05-05", "06-06", 
+      "08-15", "10-03", "10-09", "12-25"
+    ];
+
+    return fixedHolidays.includes(mmdd);
+  };
 
   // 달력 배열 만들기
   const firstDayIndex = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
   const calendarDays = [];
+  
   for (let i = 0; i < firstDayIndex; i++) {
     calendarDays.push(null);
   }
   for (let i = 1; i <= totalDays; i++) {
-    calendarDays.push(i);
+    const currentDayOfWeek = new Date(year, month, i).getDay();
+    const holidayCheck = isHoliday(year, month, i);
+    calendarDays.push({
+      day: i,
+      isSun: currentDayOfWeek === 0,
+      isSat: currentDayOfWeek === 6,
+      isHoliday: holidayCheck,
+    });
   }
   const weekDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
   return (
     <section ref={sectionRef} className={styles.ddaySection}>
-      {/* hasAnimated가 true가 되면 항상 visible 클래스를 유지하여 사라지지 않음 */}
-      <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-        {/* 상단 타이핑 태그 */}
-        <div className={styles.headerTag}>
-          <span>{hasAnimated ? typedTitle : ""}</span>
-          {step === 1 && <span className={styles.cursor}>_</span>}
-        </div>
+      {!isTerminalMode && (
+        <div className={`${styles.normalContainer} ${hasAnimated ? styles.visible : ""}`}>
+          <div className={styles.headerTag}>WEDDING DAY</div>
 
-        {/* 미니 달력 */}
-        <div className={`${styles.calendarBox} ${hasAnimated && step >= 2 ? styles.showCalendar : ""}`}>
-          <div className={styles.calendarHeader}>
-            <span>{hasAnimated ? typedMonth : ""}</span>
-            {step === 2 && <span className={styles.cursor}>_</span>}
+          {/* 미니 달력 */}
+          <div className={styles.calendarBox}>
+            <div className={styles.calendarHeader}>
+              <span>{formattedMonth}</span>
+            </div>
+            <div className={styles.weekGrid}>
+              {weekDays.map((day, idx) => (
+                <span key={idx} className={`${styles.weekDay} ${idx === 0 ? styles.sun : idx === 6 ? styles.sat : ""}`}>
+                  {day}
+                </span>
+              ))}
+            </div>
+            <div className={styles.daysGrid}>
+              {calendarDays.map((item, idx) => {
+                if (!item) return <div key={idx} className={styles.dayCell} />;
+                
+                const isRed = item.isSun || item.isHoliday;
+                const isWedding = item.day === weddingDay;
+
+                return (
+                  <div 
+                    key={idx} 
+                    className={`
+                      ${styles.dayCell} 
+                      ${isRed ? styles.redDay : ""} 
+                      ${item.isSat ? styles.satDay : ""} 
+                      ${isWedding ? styles.weddingDay : ""}
+                    `}
+                  >
+                    {item.day}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className={styles.weekGrid}>
-            {weekDays.map((day, idx) => (
-              <span key={idx} className={styles.weekDay}>{day}</span>
-            ))}
-          </div>
-          <div className={styles.daysGrid}>
-            {calendarDays.map((day, idx) => (
-              <div 
-                key={idx} 
-                className={`${styles.dayCell} ${day === weddingDay ? styles.weddingDay : ""}`}
-              >
-                {day !== null ? day : ""}
+
+          {/* 타이머 영역 (당일인 경우 D-DAY 강조 문구 표시) */}
+          {timeLeft.isToday ? (
+            <div className={styles.countdownWrapper}>
+              <div className={styles.timeUnit}>
+                <span className={styles.number}>D-DAY</span>
+                <span className={styles.label}>TODAY IS THE DAY</span>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className={styles.countdownWrapper}>
+              <div className={styles.timeUnit}>
+                <span className={styles.number}>{timeLeft.days}</span>
+                <span className={styles.label}>{timeLeft.isAfter ? "DAYS PASSED" : "DAYS"}</span>
+              </div>
+              <span className={styles.divider}>·</span>
+              <div className={styles.timeUnit}>
+                <span className={styles.number}>{String(timeLeft.hours).padStart(2, "0")}</span>
+                <span className={styles.label}>HOURS</span>
+              </div>
+              <span className={styles.divider}>·</span>
+              <div className={styles.timeUnit}>
+                <span className={styles.number}>{String(timeLeft.minutes).padStart(2, "0")}</span>
+                <span className={styles.label}>MIN</span>
+              </div>
+              <span className={styles.divider}>·</span>
+              <div className={styles.timeUnit}>
+                <span className={styles.number}>{String(timeLeft.seconds).padStart(2, "0")}</span>
+                <span className={styles.label}>SEC</span>
+              </div>
+            </div>
+          )}
+
+          {/* 하단 메시지 (당일 / 지난 후 / 남은 날 분기) */}
+          {timeLeft.isToday ? (
+            <p className={styles.subMessage}>
+              오늘, <span className={styles.namesHighlight}>{groom.name} & {bride.name}</span> 의 소중한 결혼식이 열립니다.
+            </p>
+          ) : timeLeft.isAfter ? (
+            <p className={styles.subMessage}>
+              <span className={styles.namesHighlight}>{groom.name} & {bride.name}</span> 의 결혼식으로부터 <span className={styles.highlight}>{timeLeft.days}일째</span> 함께하고 있습니다.
+            </p>
+          ) : (
+            <p className={styles.subMessage}>
+              <span className={styles.namesHighlight}>{groom.name} & {bride.name}</span> 의 결혼식이 <span className={styles.highlight}>{timeLeft.days}일</span> 남았습니다.
+            </p>
+          )}
         </div>
+      )}
 
-        {/* 카운트다운 타이머 */}
-        {timeLeft.isAfter ? (
-          <p className={styles.passedText}>두 사람이 함께 한 지 어느덧 시간이 흘렀습니다.</p>
-        ) : (
-          <div className={`${styles.countdownWrapper} ${hasAnimated && step >= 2 ? styles.showTimer : ""}`}>
-            <div className={styles.timeUnit}>
-              <span className={styles.number}>{timeLeft.days}</span>
-              <span className={styles.label}>DAYS</span>
-            </div>
-            <span className={styles.divider}>:</span>
-            <div className={styles.timeUnit}>
-              <span className={styles.number}>{String(timeLeft.hours).padStart(2, "0")}</span>
-              <span className={styles.label}>HOURS</span>
-            </div>
-            <span className={styles.divider}>:</span>
-            <div className={styles.timeUnit}>
-              <span className={styles.number}>{String(timeLeft.minutes).padStart(2, "0")}</span>
-              <span className={styles.label}>MIN</span>
-            </div>
-            <span className={styles.divider}>:</span>
-            <div className={styles.timeUnit}>
-              <span className={styles.number}>{String(timeLeft.seconds).padStart(2, "0")}</span>
-              <span className={styles.label}>SEC</span>
-            </div>
-          </div>
-        )}
-
-        {/* 하단 설명 문구 타이핑 (완료 후에도 step >= 3 이므로 커서 깜빡임 유지) */}
-        <p className={styles.subMessage}>
-          <span>{hasAnimated ? typedSub : ""}</span>
-          {hasAnimated && <span className={styles.cursor}>_</span>}
-        </p>
-      </div>
+      {/* 개발자 모드 */}
+      {isTerminalMode && (
+        <div className={styles.terminalContainer}>
+          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
+        </div>
+      )}
     </section>
   );
 }

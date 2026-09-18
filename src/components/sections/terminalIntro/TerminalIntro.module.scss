@@ -1,0 +1,100 @@
+// src/components/sections/TerminalIntro.module.scss
+
+.terminalLoader {
+  position: fixed;
+  inset: 0;
+  background-color: #fafbfc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.0rem;
+  z-index: 1000;
+  font-family: 'JetBrains Mono', monospace;
+
+  .terminalBox {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 420px;
+    padding: 1rem 1.2rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+
+    .logRow {
+      display: flex;
+      align-items: flex-start;
+      font-size: 0.7rem;
+      line-height: 1.6;
+      width: 100%;
+
+      .promptSymbol {
+        color: #0969da;
+        font-weight: bold;
+        margin-right: 0.5rem;
+      }
+
+      .timeLabel {
+        color: #57606a;
+        font-weight: 500;
+        flex-shrink: 0;
+        margin-right: 0.75rem;
+      }
+
+      .cyanText { color: #0550ae; font-weight: 500; }
+      .blueText { color: #0969da; }
+      .infoText { color: #57606a; }
+      .successLog { color: #1a7f37; font-weight: bold; }
+    }
+  }
+
+  .globalRainContainer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    .terminalRain {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+
+      span {
+        position: absolute;
+        top: -10%;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        font-weight: bold;
+        opacity: 0.3;
+        animation: terminalFall linear infinite;
+      }
+
+      span:nth-child(odd) { color: #1a7f37; }
+      span:nth-child(even) { color: #0969da; }
+      span:nth-child(3n) { color: #9a6700; }
+      
+      span:nth-child(1)  { left: 5%;   animation-duration: 2.2s; }
+      span:nth-child(2)  { left: 15%;  animation-duration: 3.1s; }
+      span:nth-child(3)  { left: 25%;  animation-duration: 2.5s; }
+      span:nth-child(4)  { left: 35%;  animation-duration: 3.8s; }
+      span:nth-child(5)  { left: 45%;  animation-duration: 2.1s; }
+      span:nth-child(6)  { left: 55%;  animation-duration: 3.4s; }
+      span:nth-child(7)  { left: 65%;  animation-duration: 2.7s; }
+      span:nth-child(8)  { left: 75%;  animation-duration: 3.0s; }
+      span:nth-child(9)  { left: 85%;  animation-duration: 2.3s; }
+      span:nth-child(10) { left: 92%;  animation-duration: 3.5s; }
+    }
+  }
+}
+
+@keyframes terminalFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  15% { opacity: 0.4; }
+  85% { opacity: 0.4; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}

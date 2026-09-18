@@ -1,115 +1,95 @@
-// src/components/map/MapView.module.scss
-
 .mapViewerWrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  position: relative;
+
+  .mapFrame {
+    width: 100%;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--image-shadow);
+
+    .mapScreen {
+      width: 100%;
+      height: 220px;
+      background-color: var(--bg-sub);
+      position: relative;
+
+      .mapLoading {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'SeoulHangang', sans-serif;
+        font-size: 0.78rem;
+        color: var(--text-light);
+      }
+    }
+  }
 
   .addressRow {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    margin-top: -0.1rem;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
 
     .addressText {
-      font-family: "Nanum Gothic Coding", monospace;
-      font-size: 0.72rem;
-      color: #586069;
+      font-family: 'SeoulHangang', sans-serif;
+      letter-spacing: 0.2rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
     }
 
     .copyBtn {
-      background: none;
-      border: 1px solid #d1d5da;
-      border-radius: 3px;
-      padding: 2px 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.62rem;
-      color: #24292e;
+      background: var(--bg-main);
+      border: 1px solid var(--text-icon);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-family: 'SeoulHangang', sans-serif;
+      font-size: 0.72rem;
+      color: var(--text-sub);
       cursor: pointer;
-      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+      transition: all 0.2s ease;
 
       &:hover {
-        background-color: #f1f8ff;
-        border-color: #22863a;
-        color: #22863a;
+        background-color: var(--border-light);
+        border-color: var(--text-light);
       }
     }
   }
 
-  /* Mac 터미널 창 (실제 지도 렌더링 전용) */
-  .terminalBlock {
-    width: 100%;
-    background-color: #f6f8fa;
-    border: 1px solid #e1e4e8;
-    border-radius: 6px;
-    overflow: hidden;
-    text-align: left;
-    margin-top: 0.2rem;
-
-    .blockHeader {
-      background-color: #e1e4e8;
-      padding: 0.4rem 0.8rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .dots {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-
-        .dotRed, .dotYellow, .dotGreen {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          display: inline-block;
-        }
-        .dotRed { background-color: #ff5f56; }
-        .dotYellow { background-color: #ffbd2e; }
-        .dotGreen { background-color: #27c93f; }
-      }
-
-      .fileName {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
-        color: #586069;
-      }
-    }
-
-    .mapScreen {
-      width: 100%;
-      height: 200px;
-      background-color: #ffffff;
-    }
-  }
-
-  /* 지도 앱 바로가기 버튼 그룹 */
   .mapBtnGroup {
     width: 100%;
     display: flex;
     gap: 0.5rem;
+    margin-top: 0.2rem;
 
     .mapBtn {
       flex: 1;
-      background-color: #fafbfc;
-      border: 1px solid #d1d5da;
+      background-color: var(--bg-sub);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 0.65rem 0;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #24292e;
+      padding: 0.6rem 0;
+      font-family: 'SeoulHangang', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1rem;
+      color: var(--text-sub);
       text-decoration: none;
       cursor: pointer;
       text-align: center;
-      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+      transition: all 0.2s ease;
 
       &:hover {
-        background-color: #f1f8ff;
-        border-color: #22863a;
-        color: #22863a;
+        background-color: var(--border-light);
+        border-color: var(--text-icon);
+        color: var(--text-main);
       }
     }
   }

@@ -1,195 +1,120 @@
 // src/components/sections/Cover.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, MutableRefObject } from "react";
 import data from "@/data/mock.json";
 import { formatWeddingDate } from "@/utils/Utils";
 import styles from "./Cover.module.scss";
+import TerminalIntro from "@/components/sections/terminalIntro/TerminalIntro";
 
-export default function Cover() {
-  const { groom, bride, weddingDate } = data;
+interface CoverProps {
+  isTerminalMode: boolean;
+  hasLoadedRef: MutableRefObject<boolean>; 
+  onLoadingChange?: (isLoading: boolean) => void;
+}
+
+export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }: CoverProps) {
+  const { groom, bride, weddingDate, location } = data;
   const formattedDate = formatWeddingDate(weddingDate);
 
-  const [loadingStep, setLoadingStep] = useState(0);
-
-  const [isMounted, setIsMounted] = useState(false);
-  const [logTimes, setLogTimes] = useState({
-    t1: "13:20:32",
-    t2: "13:20:35",
-    t3: "13:20:39",
-    t4: "13:20:42",
-    t5: "13:20:45",
-  });
+  const [isLoadingAnimation, setIsLoadingAnimation] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-    const base = new Date();
-    const format = (d: Date) => d.toTimeString().split(" ")[0];
-    
-    setLogTimes({
-      t1: format(base),
-      t2: format(new Date(base.getTime() + 400)),
-      t3: format(new Date(base.getTime() + 900)),
-      t4: format(new Date(base.getTime() + 1400)),
-      t5: format(new Date(base.getTime() + 2000)),
-    });
-  }, []);
-
-  // 💡 단계별로 로그 -> 클로드 박스 -> 성공 로그 -> 메인 전환 순서로 부드럽게 진행
-  useEffect(() => {
-    if (loadingStep === 1) {
-      const t = setTimeout(() => setLoadingStep(2), 400); // SERVICE WAKING UP
-      return () => clearTimeout(t);
-    }
-    if (loadingStep === 2) {
-      const t = setTimeout(() => setLoadingStep(3), 500); // ALLOCATING LOVE
-      return () => clearTimeout(t);
-    }
-    if (loadingStep === 3) {
-      const t = setTimeout(() => setLoadingStep(4), 500); // LOADING FOREVER
-      return () => clearTimeout(t);
-    }
-    if (loadingStep === 4) {
-      const t = setTimeout(() => setLoadingStep(5), 700); // 💡 여기서 클로드 로그인 박스 등장!
-      return () => clearTimeout(t);
-    }
-    if (loadingStep === 5) {
-      const t = setTimeout(() => setLoadingStep(6), 800); // SUCCESS 로그 등장
-      return () => clearTimeout(t);
-    }
-    if (loadingStep === 6) {
-      const t = setTimeout(() => setLoadingStep(7), 2000); // 메인 화면으로 시네마틱 전환
-      return () => clearTimeout(t);
-    }
-  }, [loadingStep]);
-
-  useEffect(() => {
-    // 최초 진입 시 0단계에서 1단계로 자동 트리거
-    const initTimer = setTimeout(() => {
-      if (loadingStep === 0) setLoadingStep(1);
-    }, 300);
-
-    return () => clearTimeout(initTimer);
-  }, [loadingStep]);
-
-  useEffect(() => {
-    if (loadingStep < 7) {
-      document.body.style.overflow = "hidden";
+    if (isTerminalMode && !hasLoadedRef.current) {
+      hasLoadedRef.current = true; 
+      setIsLoadingAnimation(true);
+      if (onLoadingChange) onLoadingChange(true);
     } else {
-      document.body.style.overflow = "auto";
+      setIsLoadingAnimation(false);
+      if (onLoadingChange) onLoadingChange(false);
     }
+  }, [isTerminalMode, hasLoadedRef, onLoadingChange]);
 
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [loadingStep]);
+  const handleIntroComplete = () => {
+    setIsLoadingAnimation(false);
+    if (onLoadingChange) onLoadingChange(false);
+  };
 
   return (
-    <section className={styles.coverSection}>
+    <section className={`${styles.coverSection} ${isTerminalMode ? styles.terminalBg : ""}`}>
       
-      {/* 터미널 로딩 화면 */}
-      {loadingStep < 7 && (
-        <div className={styles.terminalLoader}>
-          <div className={styles.terminalBox}>
-            
-            {/* 1단계 로그 */}
-            <div className={styles.logRow}>
-              <span className={styles.timeLabel}>{isMounted ? logTimes.t1 : "13:20:32"}</span>
-              <span className={styles.cyanText}>INCOMING HTTP REQUEST DETECTED ...</span>
+      {/* 1. 최초 진입 시에만 나타나는 인트로 로딩 컴포넌트 */}
+      {isTerminalMode && isLoadingAnimation && (
+        <TerminalIntro onComplete={handleIntroComplete} />
+      )}
+
+      {/* 2. 일반 모드 화면 */}
+      {!isTerminalMode && (
+        <div className={styles.mainContent}>
+          <div className={styles.headerArea}>
+            <h1 className={styles.names}>
+              {groom.englishName || groom.name} <span className={styles.heart}>/</span> {bride.englishName || bride.name}
+            </h1>
+          </div>
+
+          <div className={styles.imageContainer}>
+            <img 
+              src="/images/sample.jpg" 
+              alt="웨딩 대표 사진" 
+              className={styles.bgImage}
+            />
+
+            <div className={styles.vertical}>
+              <div className={styles.verticalDate}>
+                <span>October 25, 2027</span>
+              </div>
+              <div className={styles.verticalTime}>
+                <span>Sunday, PM 12:00</span>
+              </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            {/* 2단계 로그 */}
-            {loadingStep >= 1 && (
-              <div className={styles.logRow}>
-                <span className={styles.timeLabel}>{isMounted ? logTimes.t2 : "13:20:35"}</span>
-                <span className={styles.blueText}>SERVICE WAKING UP ...</span>
+      {/* 3. 터미널 모드 완료 결과 대시보드 화면 */}
+      {isTerminalMode && !isLoadingAnimation && (
+        <div className={styles.terminalResultScreen}>
+          <div className={styles.globalRainContainer}>
+            <div className={styles.terminalRain}>
+              <span>&lt;3</span><span>*</span><span>+</span><span>{`{}`}</span><span>♥︎</span>
+              <span>0</span><span>#</span><span>@</span><span>!</span><span>^o^</span>
+              <span>&lt;3</span><span>♥︎</span><span>++</span><span>[ ]</span><span>$</span>
+              <span>&amp;</span><span>&gt;</span><span>;</span><span>♥︎</span><span>0</span>
+            </div>
+          </div>
+          
+          <div className={styles.terminalContentBox}>
+            <div className={styles.cliStatusBar}>
+              <span className={styles.cliDot}></span>
+              <span className={styles.cliTitle}>wedding-cli — session active</span>
+            </div>
+            
+            <div className={styles.claudeBox}>
+              <div className={styles.boxHeader}>
+                <span>session://guest@wedding-env</span>
+                <span className={styles.activeBadge}>CONNECTED</span>
               </div>
-            )}
-
-            {/* 3단계 로그 */}
-            {loadingStep >= 2 && (
-              <div className={styles.logRow}>
-                <span className={styles.timeLabel}>{isMounted ? logTimes.t3 : "13:20:39"}</span>
-                <span className={styles.infoText}>ALLOCATING LOVE & MEMORIES ...</span>
-              </div>
-            )}
-
-            {/* 4단계 로그 */}
-            {loadingStep >= 3 && (
-              <div className={styles.logRow}>
-                <span className={styles.timeLabel}>{isMounted ? logTimes.t4 : "13:20:42"}</span>
-                <span className={styles.infoText}>LOADING FOREVER TOGETHER ...</span>
-              </div>
-            )}
-
-            {/* 💡 5단계: 로그가 흘러간 뒤 로그인 완료처럼 툭 튀어나오는 클로드 박스 */}
-            {loadingStep >= 4 && (
-              <div className={styles.claudeBox}>
-                <div className={styles.boxHeader}>
-                  <span>Wedding CLI v1.0.0</span>
-                </div>
-                <div className={styles.boxBody}>
-                  <p className={styles.welcomeText}>Welcome back, Guest!</p>
-                  <pre className={styles.pixelArt}>
+              <div className={styles.boxBody}>
+                <p className={styles.welcomeText}>Welcome back, Guest!</p>
+                <pre className={styles.pixelArt}>
 {`  /\\_/\\      ♥      /\\_/\\  
  ( o.o )  TOGETHER  ( o.o ) 
   > ^ <   FOREVER    > ^ <  `}
-                  </pre>
-                  <div className={styles.boxFooterInfo}>
-                    <p>{groom.englishName} & {bride.englishName}</p>
-                    <p className={styles.pathText}>~/wedding-invitation/main</p>
-                  </div>
+                </pre>
+                <div className={styles.boxFooterInfo}>
+                  <p className={styles.targetPair}>{groom.englishName} & {bride.englishName}</p>
+                  <p className={styles.pathText}>~/wedding-invitation/main</p>
                 </div>
               </div>
-            )}
-
-            {/* 6단계: 최종 성공 로그 */}
-            {loadingStep >= 5 && (
-              <div className={styles.logRow} style={{ animation: "fadeInLogs 0.3s ease-out forwards" }}>
-                <span className={styles.timeLabel}>{isMounted ? logTimes.t5 : "13:20:45"}</span>
-                <span className={styles.successLog}>[SUCCESS] READY TO INVITE YOU.</span>
-              </div>
-            )}
-
+              
+              <h1 className={styles.terminalNames}>{groom.englishName} & {bride.englishName}</h1>
+              <p className={styles.terminalDate}>// {formattedDate}</p>
+              <p className={styles.terminalLocation}>// {location.name}</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 비 효과 (6단계 이상일 때 작동) */}
-      {loadingStep >= 5 && (
-        <div className={`${styles.globalRainContainer} ${loadingStep === 7 ? styles.fadeOutRain : ""}`}>
-          <div className={styles.terminalRain}>
-            <span>&lt;3</span><span>*</span><span>+</span><span>{`{}`}</span><span>♥︎</span>
-            <span>0</span><span>#</span><span>@</span><span>!</span><span>^o^</span>
-            <span>&lt;3</span><span>♥︎</span><span>++</span><span>[ ]</span><span>$</span>
-            <span>&amp;</span><span>&gt;</span><span>;</span><span>♥︎</span><span>0</span>
-          </div>
-        </div>
-      )}
-
-      {/* 메인 화면 */}
-      <div className={`${styles.mainContent} ${loadingStep >= 7 ? styles.show : styles.hidden}`}>
-        <div className={styles.bgImageWrapper}>
-          <img 
-            src="/images/sample-cover.jpg" 
-            alt="웨딩 대표 사진" 
-            className={styles.bgImage}
-          />
-          <div className={styles.gradientOverlay} />
-        </div>
-
-        <div className={styles.headerArea}>
-          <span className={styles.subTitle}>Wedding Invitation</span>
-          <h2 className={styles.dateText}>{formattedDate}</h2>
-        </div>
-
-        <div className={styles.footerArea}>
-          <h1 className={styles.names}>
-            {groom.englishName} <span className={styles.ampersand}>&</span> {bride.englishName}
-          </h1>
-          <p className={styles.locationName}>{data.location.name}</p>
-        </div>
-      </div>
     </section>
   );
 }

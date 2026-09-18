@@ -1,27 +1,23 @@
-// src/components/sections/Location.module.scss
-
 .section {
   width: 100%;
-  min-height: 100vh;
-  padding: 4rem 1.5rem;
-  background-color: #ffffff;
-  color: #24292e;
+  padding: 8rem 1.5rem;
+  background-color: var(--bg-main);
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  border-bottom: 1px solid #eaecef;
+  box-sizing: border-box;
 
   .container {
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 2.0s cubic-bezier(0.16, 1, 0.3, 1), transform 2.0s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 
     &.visible {
       opacity: 1;
@@ -29,27 +25,20 @@
     }
 
     .headerTag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: #22863a;
+      font-size: 0.8rem;
+      font-family: "Schoolbell", cursive;
+      color: var(--text-muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      font-weight: 600;
-      min-height: 1.2rem;
-      display: flex;
-      align-items: center;
-
-      .cursor {
-        display: inline-block;
-        animation: blink 1s step-end infinite;
-        margin-left: 2px;
-        font-weight: 700;
-      }
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+    .mainTitle {
+      font-size: 1.15rem;
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-weight: 500;
+      color: var(--text-main);
+      letter-spacing: 0.05em;
+      margin-top: -0.4rem;
     }
 
     .contentWrapper {
@@ -57,65 +46,48 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.9rem;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 1.0s ease, transform 1.0s ease;
-
-      &.showContent {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      gap: 1.2rem;
     }
 
-    .mainTitle {
-      font-size: 1.0rem;
-      font-family: "Nanum Gothic Coding", monospace;
-      font-weight: 700;
-      color: #24292e;
-      letter-spacing: 0.05em;
-    }
-
-    /* 설정 파일 감성의 정보 블록 (일정 및 장소) */
     .infoTextGroup {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 0.5rem;
       text-align: left;
-      padding: 0.5rem 0.8rem;
-      border-left: 3px solid #22863a;
-      margin: 0.9rem 0;
-
-      .configHeader {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
-        color: #22863a;
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-        letter-spacing: 0.05em;
-      }
+      padding: 0.8rem 1rem;
+      background-color: var(--bg-sub);
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
 
       .infoRow {
         display: flex;
         align-items: flex-start;
-        font-family: 'JetBrains Mono', monospace;
         font-size: 0.75rem;
-        line-height: 1.5;
+        line-height: 1.6;
 
         .key {
-          color: #005cc5;
-          font-weight: 600;
-          width: 55px;
+          font-family: 'SeoulHangang', sans-serif;
+          color: var(--text-muted);
+          font-weight: 500;
+          width: 45px;
           flex-shrink: 0;
         }
 
         .val {
-          color: #24292e;
-          font-family: "Nanum Gothic Coding", monospace;
+          color: var(--text-sub);
+          font-family: 'SeoulHangang', sans-serif;
           word-break: break-all;
+          letter-spacing: 0.1rem;
         }
       }
+    }
+
+    /* 지도 영역 감싸기 */
+    .mapContainer {
+      width: 100%;
+      border-radius: 6px;
+      overflow: hidden;
     }
 
     /* 대중교통 안내 블록 */
@@ -123,44 +95,143 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 0.5rem;
       text-align: left;
-      padding: 0.6rem 0.8rem;
-      background-color: #fafbfc;
-      border: 1px solid #e1e4e8;
-      border-left: 3px solid #005cc5;
-      border-radius: 4px;
-      margin-top: 0.5rem;
+      padding: 0.8rem 1rem;
+      background-color: var(--bg-sub);
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
 
       .configHeader {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65rem;
-        color: #005cc5;
+        font-family: 'SeoulHangang', sans-serif;
+        font-size: 0.85rem;
+        color: var(--text-muted-dark);
         font-weight: 600;
         margin-bottom: 0.2rem;
-        letter-spacing: 0.05em;
       }
 
       .transportContent {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 0.8rem;
 
         .transitItem {
-          font-family: "Nanum Gothic Coding", monospace;
-          font-size: 0.72rem;
-          color: #24292e;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-family: 'SeoulHangang', sans-serif;
+          font-size: 0.78rem;
+          color: var(--text-sub);
           line-height: 1.5;
           word-break: break-all;
 
+          /* 공통 뱃지 스타일 */
+          .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            flex-shrink: 0;
+            font-family: 'Pretendard', sans-serif;
+
+            /* 지하철 뱃지 스타일 */
+            &.subwayBadge {
+              background-color: #BDB193;
+              color: var(--bg-main);
+            }
+
+            /* 주차 안내 뱃지 스타일 */
+            &.parkingBadge {
+              background-color: #b45309;
+              color: var(--bg-main);
+            }
+          }
+
           .bullet {
-            color: #005cc5;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
+            color: var(--text-muted);
+            font-weight: bold;
             margin-right: 4px;
+          }
+
+          .transitText {
+            flex: 1;
+          }
+        }
+
+        /* 버스 그룹화 레이아웃 스타일 */
+        .busGroupContainer {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+          width: 100%;
+
+          .busGroupHeader {
+            display: flex;
+            align-items: center;
+
+            .busGroupBadge {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-size: 0.7rem;
+              font-weight: 500;
+              font-family: 'Pretendard', sans-serif;
+              background-color: var(--cyan-text);
+              color: var(--bg-main);
+            }
+          }
+
+          .busList {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding-left: 0.2rem;
+
+            .busItemRow {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-family: 'SeoulHangang', sans-serif;
+              font-size: 0.78rem;
+              color: var(--text-sub);
+              line-height: 1.5;
+
+              .busDot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                flex-shrink: 0;
+
+                &.dotBlue { background-color: #2563eb; }
+                &.dotGreen { background-color: #16a34a; }
+                &.dotDefault { background-color: #64748b; }
+              }
+
+              .transitText {
+                flex: 1;
+              }
+            }
           }
         }
       }
+    }
+  }
+
+  .terminalContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .todo {
+      color: var(--dev-green);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
     }
   }
 }

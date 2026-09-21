@@ -6,11 +6,11 @@ import "./globals.css";
 import styles from "./layout.module.scss";
 
 export const metadata: Metadata = {
-  title: "준구 & 세현 결혼식에 초대합니다",
-  description: "2026년 O월 O일 토요일 오후 X시, OOO 웨딩홀",
+  title: "",
+  description: "",
   openGraph: {
-    title: "준구 & 세현 결혼식에 초대합니다",
-    description: "2026년 O월 O일 토요일 오후 X시, OOO 웨딩홀",
+    title: "",
+    description: "",
     images: [
       {
         url: "https://sehyeon-labs.github.io/wedding-invite-app/public/images/tomato.jpeg", 

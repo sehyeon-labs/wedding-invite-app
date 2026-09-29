@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import mockData from "@/data/mock.json";
 import styles from "./GuestPhotoUpload.module.scss";
 
 interface GuestPhoto {
@@ -20,7 +19,7 @@ interface GuestPhotoUploadProps {
 }
 
 /**
- * 하객들이 직접 사진을 업로드하고 피드 형태로 감상할 수 있는 메모리 섹션 컴포넌트
+ * Supabase에서 예식일을 조회하고, 하객들이 직접 사진을 업로드 및 감상할 수 있는 메모리 섹션 컴포넌트
  */
 export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestPhotoUploadProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -37,21 +36,39 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  /** 컴포넌트 마운트 시 사진 목록 조회 및 예식일 비교 */
+  /** 컴포넌트 마운트 시 사진 목록 조회 및 Supabase 예식일 비교 */
   useEffect(() => {
     setMounted(true);
     fetchPhotos();
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const weddingDay = new Date(mockData.weddingDate);
-    weddingDay.setHours(0, 0, 0, 0);
-
-    if (today < weddingDay) {
-      setIsWeddingPassed(false);
-    }
+    checkWeddingDate();
   }, []);
+
+  /** Supabase에서 예식일 조회 후 업로드 가능 여부 판단 */
+  const checkWeddingDate = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("weddings")
+        .select("wedding_date")
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+
+      if (data && data.wedding_date) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const weddingDay = new Date(data.wedding_date);
+        weddingDay.setHours(0, 0, 0, 0);
+
+        if (today < weddingDay) {
+          setIsWeddingPassed(false);
+        }
+      }
+    } catch (error) {
+      console.error("예식일 조회 실패:", error);
+    }
+  };
 
   /** Supabase에서 하객 업로드 사진 목록 조회 */
   const fetchPhotos = async () => {

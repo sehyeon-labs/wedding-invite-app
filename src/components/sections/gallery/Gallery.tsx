@@ -29,7 +29,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
       try {
         const { data, error } = await supabase.storage
           .from("photos")
-          .list("", {
+          .list("gallery", { // 'gallery' 폴더 지정
             limit: 100,
             sortBy: { column: "created_at", order: "asc" },
           });
@@ -42,7 +42,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
             .map((file) => {
               const { data: publicUrlData } = supabase.storage
                 .from("photos")
-                .getPublicUrl(file.name);
+                .getPublicUrl(`gallery/${file.name}`);
               return publicUrlData.publicUrl;
             });
 

@@ -24,16 +24,18 @@ interface WeddingInfo {
 }
 
 /**
- * 웨딩 청첩장 커버 및 터미널 모드 컴포넌트
+ * Supabase Storage(photos 버킷)의 main 폴더 목록에서 첫 번째 사진을 가져와 렌더링하는 웨딩 커버 컴포넌트
  */
 export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }: CoverProps) {
   const [weddingInfo, setWeddingInfo] = useState<WeddingInfo | null>(null);
   const [isLoadingAnimation, setIsLoadingAnimation] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
-  /** Supabase에서 웨딩 및 혼주 정보 조회 */
+  /** Supabase에서 웨딩 정보 및 Storage 이미지 목록 조회 */
   useEffect(() => {
-    async function fetchWeddingData() {
+    async function fetchCoverData() {
       try {
+        // 1. 웨딩 및 혼주 정보 조회
         const { data: weddingData, error: weddingError } = await supabase
           .from("weddings")
           .select("*")
@@ -60,12 +62,32 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
           weddingDate: weddingData.wedding_date,
           locationName: weddingData.location_name,
         });
+
+        // 2. Supabase Storage 'photos' 버킷의 'main' 폴더 목록 조회 (타입 안정성 확보)
+        const storageRef = supabase.storage.from("photos");
+        const { data: fileList, error: storageError } = await storageRef.list("main", {
+          limit: 10,
+          sortBy: { column: "name", order: "asc" },
+        });
+
+        if (!storageError && fileList && fileList.length > 0) {
+          const validFiles = fileList.filter((file) => file.name !== ".emptyFolderPlaceholder");
+
+          if (validFiles.length > 0) {
+            const firstFile = validFiles[0];
+            const { data: publicUrlData } = storageRef.getPublicUrl(`main/${firstFile.name}`);
+
+            if (publicUrlData?.publicUrl) {
+              setCoverImageUrl(publicUrlData.publicUrl);
+            }
+          }
+        }
       } catch (error) {
-        console.error("Failed to fetch wedding data from Supabase:", error);
+        console.error("Failed to fetch cover data from Supabase:", error);
       }
     }
 
-    fetchWeddingData();
+    fetchCoverData();
   }, []);
 
   /** 터미널 모드 진입 시 최초 1회 로딩 애니메이션 제어 */
@@ -80,7 +102,6 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
     }
   }, [isTerminalMode, hasLoadedRef, onLoadingChange]);
 
-  /** 터미널 인트로 애니메이션 완료 핸들러 */
   const handleIntroComplete = () => {
     setIsLoadingAnimation(false);
     onLoadingChange?.(false);
@@ -121,14 +142,20 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
           </motion.div>
 
           <div className={styles.imageContainer}>
-            <motion.img 
-              src={getAssetPath("/images/tomato.jpeg")} 
-              alt="웨딩 대표 사진" 
-              className={styles.bgImage}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-            />
+            {coverImageUrl ? (
+              <motion.img 
+                src={coverImageUrl} 
+                alt="웨딩 대표 사진" 
+                className={styles.bgImage}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
+              />
+            ) : (
+              <div className={styles.emptyPhotoBox}>
+                <span>등록된 대표 사진이 없습니다.</span>
+              </div>
+            )}
 
             <motion.div 
               className={styles.vertical}

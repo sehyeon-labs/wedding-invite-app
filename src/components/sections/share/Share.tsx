@@ -25,11 +25,11 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
 
         if (weddingError) throw weddingError;
         if (weddingData) {
-          setShareLink(weddingData.share_link || window.location.href);
+          setShareLink(weddingData.share_link || window.location.origin + window.location.pathname);
         }
       } catch (error) {
         console.error("Failed to fetch share link from Supabase:", error);
-        setShareLink(window.location.href);
+        setShareLink(window.location.origin + window.location.pathname);
       }
     }
 
@@ -63,15 +63,18 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
     fetchShareData();
     fetchFirstPhoto();
 
-    // 카카오 SDK 초기화
+    // 카카오 SDK 초기화 (전역 window.Kakao 활용)
     if (window.Kakao && !window.Kakao.isInitialized()) {
-      window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY);
+      const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+      if (kakaoKey) {
+        window.Kakao.init(kakaoKey);
+      }
     }
   }, []);
 
   const handleCopyLink = async () => {
     try {
-      const targetUrl = shareLink || window.location.href;
+      const targetUrl = shareLink || window.location.origin + window.location.pathname;
       await navigator.clipboard.writeText(targetUrl);
       if (onCopyToast) onCopyToast();
     } catch (err) {
@@ -79,46 +82,25 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
     }
   };
 
- /** 카카오톡 공유하기 핸들러 (안전한 동적 로드 방식) */
+  /** 카카오톡 공유하기 핸들러 */
   const handleKakaoShare = () => {
-    const targetUrl = shareLink || window.location.href;
+    // 공식 문서 기준: 등록된 웹 도메인과 일치하는 기본 주소 사용 (쿼리 및 불필요한 해시 제거)
+    const baseUrl = shareLink || window.location.origin + window.location.pathname;
     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
 
-    // 1. window.Kakao가 없으면 동적으로 스크립트 주입 시도
     if (!window.Kakao) {
-      if (!document.getElementById("kakao-sdk")) {
-        const script = document.createElement("script");
-        script.id = "kakao-sdk";
-        script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js";
-        script.crossOrigin = "anonymous";
-        script.onload = () => {
-          if (window.Kakao && !window.Kakao.isInitialized() && kakaoKey) {
-            window.Kakao.init(kakaoKey);
-            executeShare(targetUrl);
-          }
-        };
-        document.head.appendChild(script);
-      } else {
-        alert("카카오 SDK를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
-      }
+      alert("카카오 SDK가 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
-    // 2. 이미 존재하지만 초기화 안 된 경우
-    if (window.Kakao && !window.Kakao.isInitialized() && kakaoKey) {
+    if (!window.Kakao.isInitialized() && kakaoKey) {
       window.Kakao.init(kakaoKey);
     }
 
-    executeShare(targetUrl);
-  };
-
-  const executeShare = (targetUrl: string) => {
-    if (!window.Kakao || !window.Kakao.Share) {
+    if (!window.Kakao.Share) {
       alert("카카오톡 공유 기능을 사용할 수 없습니다.");
       return;
     }
-
-    const cacheBustedUrl = `${targetUrl}${targetUrl.includes('?') ? '&' : '?'}v=${Date.now()}`;
 
     try {
       window.Kakao.Share.sendDefault({
@@ -128,16 +110,16 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
           description: "모바일 청첩장에서 일정과 상세 내용을 확인해 보세요.",
           imageUrl: shareImage || "",
           link: {
-            mobileWebUrl: cacheBustedUrl,
-            webUrl: cacheBustedUrl,
+            mobileWebUrl: baseUrl,
+            webUrl: baseUrl,
           },
         },
         buttons: [
           {
             title: "청첩장 보기",
             link: {
-              mobileWebUrl: cacheBustedUrl,
-              webUrl: cacheBustedUrl,
+              mobileWebUrl: baseUrl,
+              webUrl: baseUrl,
             },
           },
         ],

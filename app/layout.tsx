@@ -49,6 +49,12 @@ export default function RootLayout({
 
       {/* Body */}
       <body>
+        {/* 카카오 공유하기 API 스크립트 */}
+        <script 
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" 
+          crossOrigin="anonymous" 
+          async
+        />
         <div className={styles.pcContainer}>
           <div className={styles.mobileFrame}>
             {children}

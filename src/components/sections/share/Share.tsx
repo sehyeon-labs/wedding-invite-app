@@ -12,27 +12,61 @@ interface ShareProps {
 
 export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
   const [shareLink, setShareLink] = useState<string>("");
+  const [shareImage, setShareImage] = useState<string>("");
 
   useEffect(() => {
     async function fetchShareData() {
       try {
-        const { data, error } = await supabase
+        const { data: weddingData, error: weddingError } = await supabase
           .from("weddings")
           .select("share_link")
           .limit(1)
           .single();
 
-        if (error) throw error;
-        if (data) {
-          setShareLink(data.share_link || window.location.href);
+        if (weddingError) throw weddingError;
+        if (weddingData) {
+          setShareLink(weddingData.share_link || window.location.href);
         }
       } catch (error) {
-        console.error("Failed to fetch share data from Supabase:", error);
+        console.error("Failed to fetch share link from Supabase:", error);
         setShareLink(window.location.href);
       }
     }
 
+    async function fetchFirstPhoto() {
+      try {
+        const { data: files, error: storageError } = await supabase.storage
+          .from("photos")
+          .list("main", {
+            limit: 1,
+            sortBy: { column: "name", order: "asc" },
+          });
+
+        if (storageError) throw storageError;
+
+        if (files && files.length > 0) {
+          const firstFileName = files[0].name;
+          
+          const { data: publicUrlData } = supabase.storage
+            .from("photos")
+            .getPublicUrl(`main/${firstFileName}`);
+
+          if (publicUrlData) {
+            setShareImage(publicUrlData.publicUrl);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch storage photo:", error);
+      }
+    }
+
     fetchShareData();
+    fetchFirstPhoto();
+
+    // 카카오 SDK 초기화
+    if (window.Kakao && !window.Kakao.isInitialized()) {
+      window.Kakao.init(process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY);
+    }
   }, []);
 
   const handleCopyLink = async () => {
@@ -45,14 +79,41 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
     }
   };
 
-  /** 카카오톡 링크 공유 (에러 없는 최신 공유 팝업 방식) */
+  /** 카카오톡 공유하기 핸들러 */
   const handleKakaoShare = () => {
+    if (!window.Kakao || !window.Kakao.Share) {
+      alert("카카오 SDK가 아직 준비되지 않았습니다.");
+      return;
+    }
+
     const targetUrl = shareLink || window.location.href;
-    
-    // 올바른 카카오 공유 picker 엔드포인트 사용
-    const kakaoShareUrl = `https://sharer.kakao.com/picker/link?url=${encodeURIComponent(targetUrl)}`;
-    
-    window.open(kakaoShareUrl, "kakaoShareWindow", "width=500,height=600");
+
+    try {
+      window.Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "준구와 세현이의 결혼식에 초대합니다",
+          description: "모바일 청첩장에서 일정과 상세 내용을 확인해 보세요.",
+          imageUrl: shareImage || "",
+          link: {
+            mobileWebUrl: targetUrl,
+            webUrl: targetUrl,
+          },
+        },
+        buttons: [
+          {
+            title: "청첩장 보기",
+            link: {
+              mobileWebUrl: targetUrl,
+              webUrl: targetUrl,
+            },
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("카카오 공유 에러:", err);
+      alert("카카오톡 공유 중 오류가 발생했습니다.");
+    }
   };
 
   return (

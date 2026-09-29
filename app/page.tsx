@@ -19,6 +19,7 @@ import CustomText from "@/components/sections/customText/CustomText";
 import Toast from "@/components/common/toast/Toast";
 import Notice from "@/components/sections/notice/Notice";
 import Share from "@/components/sections/share/Share";
+import BackgroundMusic from "@/components/bgm/BackgroundMusic";
 
 interface WeddingVerse {
   verse: string;
@@ -90,9 +91,11 @@ export default function Page() {
 
   return (
     <div 
-      ref={containerRef} 
-      className={`${styles.container} ${isLoaderActive ? styles.lockScroll : ""}`}
+    ref={containerRef} 
+    className={`${styles.container} ${isLoaderActive ? styles.lockScroll : ""}`}
     >
+      <BackgroundMusic />
+
       <Cover 
         isTerminalMode={isTerminalMode}
         hasLoadedRef={hasLoadedRef}

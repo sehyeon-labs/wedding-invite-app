@@ -1,0 +1,96 @@
+.musicContainer {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  .musicBtn {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    padding: 0.4rem; /* 패딩을 살짝 줄여 전체 버튼 컴팩트화 */
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+
+    /* 평소엔 숨겨져 있다가 호버 시에만 부드럽게 등장 */
+    .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #333;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: max-width 0.35s ease, opacity 0.3s ease, padding 0.3s ease;
+      padding-left: 0;
+    }
+
+    &:hover {
+      padding: 0.4rem 0.8rem 0.4rem 0.5rem;
+      gap: 0.5rem;
+
+      .label {
+        max-width: 70px;
+        opacity: 1;
+        padding-left: 0.2rem;
+      }
+    }
+
+    /* 9번 레이더 아크 디자인 (사이즈를 아주 조금 더 줄임: 18px -> 15px) */
+    .design9 {
+      position: relative;
+      width: 15px;
+      height: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .radarArc {
+        position: absolute;
+        inset: 0;
+        border: 2px dashed #64748b;
+        border-radius: 50%;
+        /* 기본 상태에서 선이 살짝 틀어져 보이도록 미세한 기울기 부여 */
+        transform: rotate(15deg);
+        transition: border-color 0.3s ease;
+      }
+    }
+
+    /* 🎵 [ON 상태일 때의 모션] */
+    &.playing {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 18px rgba(59, 130, 246, 0.2);
+
+      .label { 
+        color: #3b82f6; 
+      }
+
+      .design9 {
+        .radarArc {
+          border-color: #3b82f6;
+          /* 15도 틀어진 상태에서 자연스럽게 회전하도록 설정 */
+          animation: spinRadar 3.5s linear infinite;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spinRadar {
+  from {
+    transform: rotate(15deg);
+  }
+  to {
+    transform: rotate(375deg); /* 15도 + 360도 */
+  }
+}

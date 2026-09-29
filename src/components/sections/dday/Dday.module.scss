@@ -1,6 +1,8 @@
 .ddaySection {
+  position: relative;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   padding: 4.5rem 1.5rem;
   background-color: var(--bg-main);
   display: flex;
@@ -10,6 +12,7 @@
   box-sizing: border-box;
   overflow: hidden;
 
+  /* 일반 모드 컨테이너 (Framer Motion에서 애니메이션을 제어하므로 CSS 트랜지션 제거) */
   .normalContainer {
     width: 100%;
     max-width: 360px;
@@ -17,51 +20,45 @@
     flex-direction: column;
     align-items: center;
     gap: 1.8rem;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-
-    &.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    will-change: opacity, transform;
 
     .headerTag {
-      font-size: 0.8rem;
       font-family: "Schoolbell", cursive;
-      color: var(--text-muted);
+      font-size: 0.8rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
+      color: var(--text-muted);
     }
 
+    /* 미니 달력 박스 */
     .calendarBox {
       width: 100%;
-      background-color: var(--bg-main);
       padding: 0.9rem 0;
-      display: flex;
-      flex-direction: column;
+      background-color: var(--bg-main);
       border-top: 1px solid var(--border-light);
       border-bottom: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
       gap: 0.8rem;
 
       .calendarHeader {
-        font-size: 1.05rem;
-        font-family: "Schoolbell", cursive;
-        font-weight: 600;
-        color: var(--text-main);
-        letter-spacing: 0.08em;
-        text-align: center;
         margin-bottom: 0.2rem;
+        font-family: "Schoolbell", cursive;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--text-main);
+        text-align: center;
       }
 
       .weekGrid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
+        padding-bottom: 0.4rem;
         font-family: 'Pretendard', sans-serif;
         font-size: 0.65rem;
-        color: var(--text-light);
         font-weight: 600;
-        padding-bottom: 0.4rem;
+        color: var(--text-light);
 
         .sun { color: var(--accent-red); }
         .sat { color: var(--accent-blue); }
@@ -76,19 +73,19 @@
         color: var(--text-sub);
 
         .dayCell {
-          aspect-ratio: 1;
+          width: 30px;
+          height: 30px;
+          margin: auto;
           display: flex;
           justify-content: center;
           align-items: center;
           border-radius: 50%;
+          aspect-ratio: 1;
           font-weight: 400;
-          margin: auto;
-          width: 30px;
-          height: 30px;
 
           &.redDay {
-            color: var(--accent-red);
             font-weight: 600;
+            color: var(--accent-red);
           }
 
           &.satDay {
@@ -96,22 +93,23 @@
           }
 
           &.weddingDay {
-            background-color: var(--text-muted-dark);
-            color: var(--bg-main);
             font-weight: 600;
+            color: var(--bg-main);
+            background-color: var(--text-muted-dark);
             box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
           }
         }
       }
     }
 
+    /* 디데이 타이머 영역 */
     .countdownWrapper {
+      width: 100%;
+      padding: 0.5rem 0;
       display: flex;
       align-items: baseline;
       justify-content: center;
       gap: 0.8rem;
-      width: 100%;
-      padding: 0.5rem 0;
 
       .timeUnit {
         display: flex;
@@ -129,35 +127,36 @@
         .label {
           font-family: "Schoolbell", cursive;
           font-size: 0.55rem;
-          color: #94a3b8;
           letter-spacing: 0.1em;
+          color: #94a3b8;
         }
       }
 
       .divider {
+        margin-bottom: 0.8rem;
         font-family: 'Pretendard', sans-serif;
         font-size: 1rem;
         color: var(--text-icon);
-        margin-bottom: 0.8rem;
       }
     }
 
+    /* 하단 안내 메시지 */
     .subMessage {
       font-family: 'NostalgicOnHandwriting', sans-serif;
       font-size: 0.85rem;
-      color: var(--text-sub);
       letter-spacing: 0.03em;
+      color: var(--text-sub);
 
       .namesHighlight {
         font-family: 'NostalgicOnHandwriting', sans-serif;
-        font-size: 1.0rem;
+        font-size: 1rem;
         color: var(--text-sub);
       }
 
       .highlight {
-        color: var(--accent-red);
-        font-size: 1.0rem;
+        font-size: 1rem;
         font-weight: 700;
+        color: var(--accent-red);
       }
     }
 
@@ -168,6 +167,7 @@
     }
   }
 
+  /* 개발자 모드 */
   .terminalContainer {
     width: 100%;
     display: flex;
@@ -175,9 +175,9 @@
     align-items: center;
 
     .todo {
-      color: var(--dev-green);
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.8rem;
+      color: var(--dev-green);
     }
   }
 }

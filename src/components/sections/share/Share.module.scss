@@ -1,0 +1,99 @@
+.section {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 5rem 1.5rem;
+  background-color: var(--bg-main);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+
+  .container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    will-change: opacity, transform;
+
+    .headerTag {
+      font-family: "Schoolbell", cursive;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15rem;
+      text-transform: uppercase;
+    }
+
+    .mainTitle {
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text-main);
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+    }
+
+    .contentWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.8rem;
+      padding-top: 0.5rem;
+      box-sizing: border-box;
+
+      .buttonGroup {
+        width: 80%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+
+        button {
+          width: 100%;
+          padding: 0.85rem;
+          border-radius: 8px;
+          font-family: 'NostalgicOnHandwriting', sans-serif;
+          font-size: 0.83rem;
+          font-weight: 400;
+          cursor: pointer;
+          transition: opacity 0.2s ease, transform 0.1s ease;
+
+          &:hover {
+            opacity: 0.92;
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
+        }
+
+        .kakaoBtn {
+          background-color: #fee500;
+          color: #191919;
+          border: none;
+        }
+
+        .linkBtn {
+          background-color: var(--bg-sub);
+          color: var(--text-main);
+          border: 1px solid var(--border-color);
+        }
+      }
+    }
+  }
+
+  .terminalContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .todo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-light);
+    }
+  }
+}

@@ -1,6 +1,9 @@
 .customTextSection {
+  position: relative;
   width: 100%;
-  padding: 8rem 1.5rem 5rem 1.5rem;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 5rem 1.5rem;
   background-color: var(--bg-main);
   display: flex;
   justify-content: center;

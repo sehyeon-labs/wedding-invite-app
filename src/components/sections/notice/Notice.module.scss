@@ -1,0 +1,139 @@
+.section {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 5rem 3.0rem;
+  background-color: var(--bg-main);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+
+  .container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    will-change: opacity, transform;
+
+    .headerTag {
+      font-family: "Schoolbell", cursive;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15rem;
+      text-transform: uppercase;
+    }
+
+    .mainTitle {
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-size: 1.1rem;
+      color: var(--text-main);
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+    }
+
+    .contentWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding-bottom: 2rem;
+
+      /* 깔끔한 텍스트 버튼형 탭 */
+      .tabHeader {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 0.8rem;
+
+        .tabBtn {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: 'SeoulHangang', sans-serif;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          font-weight: 500;
+          cursor: pointer;
+          transition: color 0.2s ease, font-weight 0.2s ease;
+
+          &.active {
+            color: var(--text-main);
+            font-weight: 600;
+            position: relative;
+
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: -9px;
+              left: 0;
+              width: 100%;
+              height: 2px;
+              background-color: var(--text-main);
+            }
+          }
+        }
+      }
+
+      /* 상자 없는 패널 영역 */
+      .contentPanel {
+        width: 100%;
+        min-height: 100px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+
+        .panelInner {
+          width: 100%;
+          text-align: center;
+        }
+
+        .descriptionText {
+          font-family: 'SeoulHangang', sans-serif;
+          font-size: 0.82rem;
+          color: var(--text-sub);
+          line-height: 1.8;
+          margin: 0;
+          white-space: pre-line;
+          letter-spacing: 0.05em;
+        }
+
+        .bulletList {
+          margin: 0;
+          padding: 0;
+          list-style: none;
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+          text-align: center;
+
+          li {
+            font-family: 'SeoulHangang', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+            white-space: pre-line;
+            letter-spacing: 0.05em;
+          }
+        }
+      }
+    }
+  }
+
+  .terminalContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .todo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-light);
+    }
+  }
+}

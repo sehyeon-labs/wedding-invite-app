@@ -1,69 +1,76 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import data from "@/data/mock.json";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import styles from "./Reception.module.scss";
 import MapView from "@/components/map/MapView";
-import { formatDay, formatTime } from "@/utils/Utils";
+import { formatDay, formatTime } from "@/utils/format";
 
 interface ReceptionProps {
   isTerminalMode: boolean;
   onCopyToast?: () => void;
 }
 
+/**
+ * Supabase에서 피로연 일시, 장소, 식사 안내 및 지도 정보를 조회하여 렌더링하는 피로연 안내 컴포넌트
+ */
 export default function Reception({ isTerminalMode, onCopyToast }: ReceptionProps) {
-  const receptionData = (data as any).reception;
-
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const [receptionData, setReceptionData] = useState<any>(null);
 
   useEffect(() => {
-    setHasAnimated(false);
-    const currentRef = sectionRef.current;
-    if (!currentRef) return;
+    async function fetchReceptionData() {
+      try {
+        const { data, error } = await supabase
+          .from("weddings")
+          .select("reception_date, reception_location_name, reception_address, reception_lat, reception_lng, reception_meal_type")
+          .limit(1)
+          .single();
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHasAnimated(true);
-          observer.disconnect();
+        if (error) throw error;
+
+        if (data && data.reception_date) {
+          setReceptionData({
+            date: data.reception_date,
+            locationName: data.reception_location_name,
+            address: data.reception_address,
+            lat: data.reception_lat,
+            lng: data.reception_lng,
+            mealType: data.reception_meal_type,
+          });
         }
-      },
-      { threshold: 0.3 }
-    );
-
-    observer.observe(currentRef);
-
-    const rect = currentRef.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom >= 0) {
-      setHasAnimated(true);
-      observer.disconnect();
+      } catch (error) {
+        console.error("Failed to fetch reception data from Supabase:", error);
+      }
     }
 
-    return () => observer.disconnect();
-  }, [isTerminalMode]);
+    fetchReceptionData();
+  }, []);
 
   if (!receptionData) return null;
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section className={styles.section}>
       {!isTerminalMode && (
-        <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-          
-          {/* 상단 태그 */}
+        <motion.div 
+          className={styles.container}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className={styles.headerTag}>RECEPTION</div>
           <h2 className={styles.mainTitle}>피로연 안내</h2>
 
           <div className={styles.contentWrapper}>
             
-            {/* 상세 안내 문구 */}
-            {receptionData.description && (
-              <p className={styles.subDescription}>
-                {receptionData.description}
-              </p>
-            )}
+            {/* 제목 아래: 상자 형태 없는 감성적인 안내 텍스트 문구 */}
+            <p className={styles.subDescription}>
+              거리가 멀어 예식에 참석하시기 어려운 분들을 위해<br />
+              따뜻한 마음을 담아 작은 식사 자리를 마련했습니다.<br />
+            </p>
 
-            {/* 날짜, 시간, 장소 안내 블록 */}
+            {/* 일시, 장소, 주소 및 식사 안내가 포함된 정보 상자 */}
             <div className={styles.infoTextGroup}>
               {receptionData.date && (
                 <div className={styles.infoRow}>
@@ -83,9 +90,16 @@ export default function Reception({ isTerminalMode, onCopyToast }: ReceptionProp
                   <span className={styles.val}>{receptionData.address}</span>
                 </div>
               )}
+              {/* 정보 상자 내부의 식사 안내 */}
+              <div className={styles.infoRow}>
+                <span className={styles.key}>식사</span>
+                <span className={styles.val}>
+                  {receptionData.mealType ? receptionData.mealType : "정성스러운 식사가 준비되어 있습니다."}
+                </span>
+              </div>
             </div>
 
-            {/* MapView 컴포넌트 장착 */}
+            {/* 지도 컴포넌트 */}
             <div className={styles.mapContainer}>
               <MapView 
                 locationName={receptionData.locationName}
@@ -95,17 +109,20 @@ export default function Reception({ isTerminalMode, onCopyToast }: ReceptionProp
                 onCopySuccess={onCopyToast}
               />
             </div>
-
           </div>
-
-        </div>
+        </motion.div>
       )}
 
-      {/* 개발자 모드 비워두기 */}
       {isTerminalMode && (
-        <div className={styles.terminalContainer}>
+        <motion.div 
+          className={styles.terminalContainer}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </div>
+        </motion.div>
       )}
     </section>
   );

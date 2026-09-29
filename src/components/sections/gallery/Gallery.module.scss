@@ -1,12 +1,14 @@
 .gallerySection {
+  position: relative;
   width: 100%;
-  padding: 8rem 1.5rem;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 5rem 1.5rem;
   background-color: var(--bg-main);
   color: var(--text-sub);
   display: flex;
   justify-content: center;
-  align-items: center;
-  overflow-y: auto;
+  align-items: flex-start;
   box-sizing: border-box;
 
   .normalContainer {
@@ -16,30 +18,23 @@
     flex-direction: column;
     align-items: center;
     gap: 1.2rem;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-
-    &.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    will-change: opacity, transform;
 
     .headerTag {
-      font-size: 0.8rem;
       font-family: "Schoolbell", cursive;
-      color: var(--text-muted);
+      font-size: 0.8rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
+      color: var(--text-muted);
     }
 
     .mainTitle {
-      font-size: 1.15rem;
-      font-family: 'NostalgicOnHandwriting', sans-serif;
-      font-weight: 500;
-      color: var(--text-main);
-      letter-spacing: 0.05em;
       margin-top: -0.4rem;
+      font-family: 'NostalgicOnHandwriting', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
     }
 
     /* 3열 그리드 앨범형 레이아웃 */
@@ -53,10 +48,10 @@
       .imageCard {
         position: relative;
         aspect-ratio: 1 / 1;
+        background-color: var(--bg-sub);
         border-radius: 4px;
         overflow: hidden;
         cursor: pointer;
-        background-color: var(--bg-sub);
         box-shadow: 0 2px 8px var(--image-shadow);
         user-select: none;
         -webkit-user-drag: none;
@@ -76,22 +71,9 @@
         .overlay {
           position: absolute;
           inset: 0;
-          background-color: rgba(30, 41, 59, 0.2);
-          display: flex;
-          justify-content: center;
-          align-items: center;
+          background-color: rgba(30, 41, 59, 0.15);
           opacity: 0;
           transition: opacity 0.2s ease;
-
-          .zoomIcon {
-            font-family: "Schoolbell", cursive;
-            font-size: 0.75rem;
-            color: var(--bg-main);
-            letter-spacing: 0.05em;
-            background: rgba(30, 41, 59, 0.7);
-            padding: 2px 6px;
-            border-radius: 3px;
-          }
         }
 
         &:hover .overlay {
@@ -105,17 +87,18 @@
       display: flex;
       justify-content: center;
       margin-top: 0.5rem;
+      padding-bottom: 1rem;
 
       .expandBtn {
+        padding: 6px 20px;
         background: var(--bg-main);
         border: 1px solid var(--text-icon);
-        color: var(--text-sub);
+        border-radius: 20px;
         font-family: "NostalgicOnHandwriting", cursive;
         font-size: 0.85rem;
-        padding: 6px 20px;
-        border-radius: 20px;
-        cursor: pointer;
         letter-spacing: 0.05em;
+        color: var(--text-sub);
+        cursor: pointer;
         transition: all 0.2s ease;
 
         &:hover {
@@ -126,16 +109,17 @@
     }
   }
 
+  /* 이미지 확대 모달 */
   .modalBackdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(4px);
     z-index: 100;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 1rem;
+    background-color: rgba(44, 42, 40, 0.85);
+    backdrop-filter: blur(4px);
 
     .modalContent {
       position: relative;
@@ -156,12 +140,12 @@
           position: absolute;
           top: -30px;
           right: 0;
+          z-index: 20;
           background: transparent;
           border: none;
-          color: var(--bg-main);
           font-size: 1.1rem;
+          color: var(--bg-main);
           cursor: pointer;
-          z-index: 20;
           opacity: 0.8;
 
           &:hover {
@@ -173,26 +157,24 @@
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          background: rgba(255, 255, 255, 0.15);
+          z-index: 20;
           border: none;
-          color: var(--bg-main);
-          font-size: 1rem;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          z-index: 20;
           transition: background 0.2s;
+          background: transparent;
 
-          &:hover {
-            background: rgba(255, 255, 255, 0.3);
+          &.prevBtn { 
+            left: 8px; 
+            transform: translateY(-50%) rotate(90deg);
+          }
+          &.nextBtn { 
+            right: 8px; 
+            transform: translateY(-50%) rotate(-90deg);
           }
 
-          &.prevBtn { left: 8px; }
-          &.nextBtn { right: 8px; }
         }
 
         .imageContainer {
@@ -218,20 +200,22 @@
             margin-top: 0.8rem;
             font-family: "Schoolbell", cursive;
             font-size: 0.85rem;
-            color: var(--text-icon);
             letter-spacing: 0.1em;
+            color: var(--text-icon);
           }
         }
       }
 
+      /* 썸네일 독 영역: 양 끝 사진도 정중앙에 올 수 있도록 좌우 패딩을 50% 부여 */
       .thumbnailDock {
         width: 100%;
         display: flex;
         gap: 0.4rem;
         overflow-x: auto;
-        padding: 0.6rem 0.2rem;
+        padding: 0.6rem calc(50% - 23px); /* 썸네일 아이템 너비(46px)의 절반만큼 좌우 여백을 주어 첫/끝 사진이 정중앙에 위치하게 함 */
         margin-top: 1.2rem;
         scrollbar-width: none;
+        scroll-behavior: smooth;
 
         &::-webkit-scrollbar {
           display: none;
@@ -243,9 +227,9 @@
           height: 46px;
           border-radius: 4px;
           overflow: hidden;
-          cursor: pointer;
           opacity: 0.4;
           border: 2px solid transparent;
+          cursor: pointer;
           transition: all 0.2s ease;
 
           img {
@@ -276,9 +260,9 @@
     align-items: center;
 
     .todo {
-      color: var(--dev-green);
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.8rem;
+      color: var(--dev-green);
     }
   }
 }

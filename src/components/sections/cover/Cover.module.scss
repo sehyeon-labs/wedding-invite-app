@@ -89,7 +89,7 @@
         /* 우측 세로 시간 레터링 (사진 오른쪽 사이드) */
         .verticalTime {
           position: absolute;
-          right: -5.6rem;
+          right: -6.6rem;
           top: 20%;
           transform: translateY(-50%) rotate(90deg);
           font-family: "Schoolbell", cursive;
@@ -302,6 +302,7 @@
     }
   }
 
+  /* 글로벌 레인 컨테이너 */
   .globalRainContainer {
     position: absolute;
     inset: 0;
@@ -341,6 +342,7 @@
   }
 }
 
+/* 터미널 낙하 애니메이션 */
 @keyframes terminalFall {
   0% { transform: translateY(0) rotate(0deg); opacity: 0; }
   15% { opacity: 0.4; }

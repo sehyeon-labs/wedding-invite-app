@@ -107,5 +107,20 @@
     "lat": null, 
     "lng": null,
     "mealType": "점심 식사 및 다과"
+  },
+  "notice": {
+    "brideRoomTime": "예식 1시간 전부터 신부대기실에서 입장이 가능합니다.",
+    "venuePrecautions": [
+      "식 내 화환 및 화분은 정중히 사양합니다. 마음만 감사히 받겠습니다.",
+      "주차 공간이 혼잡하오니 가능하면 대중교통을 이용해 주시기 바랍니다.",
+      "식장 내 모든 구역은 금연입니다."
+    ],
+    "wreathMessage": "화환은 영수증 처리 및 공간 제약으로 인해 정중히 거절하는 점 양해 부탁드립니다."
+  },
+  "share": {
+    "title": "소중한 분들께 모바일 청첩장을 공유해 주세요",
+    "kakaoText": "카카오톡으로 공유하기",
+    "linkText": "링크 복사하기",
+    "link" : "https://sehyeon-labs.github.io/wedding-invite-app/"
   }
 }

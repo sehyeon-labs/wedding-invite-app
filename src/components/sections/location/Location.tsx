@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import data from "@/data/mock.json";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import styles from "./Location.module.scss";
 import MapView from "@/components/map/MapView";
-import { formatDay, formatTime } from "@/utils/Utils";
+import { formatDay, formatTime } from "@/utils/format";
 
 interface LocationProps {
   isTerminalMode: boolean;
-  onCopyToast?: () => void; // 💡 상위 페이지에서 내려주는 전역 토스트 함수
+  onCopyToast?: () => void;
 }
 
 interface TransportItem {
@@ -18,38 +19,41 @@ interface TransportItem {
   text: string;
 }
 
+/**
+ * Supabase에서 예식장 위치 및 대중교통 정보를 조회하여 렌더링하는 오시는 길 컴포넌트
+ */
 export default function Location({ isTerminalMode, onCopyToast }: LocationProps) {
-  const locationData = (data as any).location;
-  const weddingDate = (data as any).weddingDate;
-
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
+  const [locationData, setLocationData] = useState<any>(null);
+  const [weddingDate, setWeddingDate] = useState<string>("");
 
   useEffect(() => {
-    setHasAnimated(false);
-    const currentRef = sectionRef.current;
-    if (!currentRef) return;
+    async function fetchLocationData() {
+      try {
+        const { data, error } = await supabase
+          .from("weddings")
+          .select("wedding_date, location_name, location_address, location_lat, location_lng, transport")
+          .limit(1)
+          .single();
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHasAnimated(true);
-          observer.disconnect();
+        if (error) throw error;
+
+        if (data) {
+          setWeddingDate(data.wedding_date);
+          setLocationData({
+            name: data.location_name,
+            address: data.location_address,
+            lat: data.location_lat,
+            lng: data.location_lng,
+            transport: data.transport || [],
+          });
         }
-      },
-      { threshold: 0.3 }
-    );
-
-    observer.observe(currentRef);
-
-    const rect = currentRef.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom >= 0) {
-      setHasAnimated(true);
-      observer.disconnect();
+      } catch (error) {
+        console.error("Failed to fetch location data from Supabase:", error);
+      }
     }
 
-    return () => observer.disconnect();
-  }, [isTerminalMode]);
+    fetchLocationData();
+  }, []);
 
   if (!locationData) return null;
 
@@ -60,15 +64,19 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
   const otherItems = rawTransport.filter((item: TransportItem) => !["subway", "bus", "parking"].includes(item.category));
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section className={styles.section}>
       {!isTerminalMode && (
-        <div className={`${styles.container} ${hasAnimated ? styles.visible : ""}`}>
-          
+        <motion.div 
+          className={styles.container}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className={styles.headerTag}>LOCATION</div>
           <h2 className={styles.mainTitle}>오시는 길</h2>
 
           <div className={styles.contentWrapper}>
-            
             <div className={styles.infoTextGroup}>
               <div className={styles.infoRow}>
                 <span className={styles.key}>일시</span>
@@ -98,13 +106,10 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
               />
             </div>
 
-            {/* 대중교통 및 주차 안내 블록 */}
             {rawTransport.length > 0 && (
               <div className={styles.transportWrapper}>
                 <span className={styles.configHeader}>교통안내</span>
                 <div className={styles.transportContent}>
-                  
-                  {/* 지하철 안내 */}
                   {subwayItems.map((item: TransportItem, index: number) => (
                     <div key={`subway-${index}`} className={styles.transitItem}>
                       <span className={`${styles.badge} ${styles.subwayBadge}`}>{item.line || "지하철"}</span>
@@ -112,7 +117,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                     </div>
                   ))}
 
-                  {/* 버스 안내 */}
                   {busItems.length > 0 && (
                     <div className={styles.busGroupContainer}>
                       <div className={styles.busGroupHeader}>
@@ -134,7 +138,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                     </div>
                   )}
 
-                  {/* 주차 안내 */}
                   {parkingItems.map((item: TransportItem, index: number) => (
                     <div key={`parking-${index}`} className={styles.transitItem}>
                       <span className={`${styles.badge} ${styles.parkingBadge}`}>주차</span>
@@ -142,27 +145,29 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                     </div>
                   ))}
 
-                  {/* 기타 항목들 */}
                   {otherItems.map((item: TransportItem, index: number) => (
                     <div key={`other-${index}`} className={styles.transitItem}>
                       <span className={styles.bullet}>·</span>
                       <span className={styles.transitText}>{item.text}</span>
                     </div>
                   ))}
-
                 </div>
               </div>
             )}
-
           </div>
-
-        </div>
+        </motion.div>
       )}
 
       {isTerminalMode && (
-        <div className={styles.terminalContainer}>
+        <motion.div 
+          className={styles.terminalContainer}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </div>
+        </motion.div>
       )}
     </section>
   );

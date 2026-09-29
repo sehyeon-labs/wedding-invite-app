@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import mockData from "@/data/mock.json";
 import styles from "./GuestPhotoUpload.module.scss";
@@ -18,6 +19,9 @@ interface GuestPhotoUploadProps {
   onCopyToast?: () => void;
 }
 
+/**
+ * 하객들이 직접 사진을 업로드하고 피드 형태로 감상할 수 있는 메모리 섹션 컴포넌트
+ */
 export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestPhotoUploadProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -33,6 +37,7 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  /** 컴포넌트 마운트 시 사진 목록 조회 및 예식일 비교 */
   useEffect(() => {
     setMounted(true);
     fetchPhotos();
@@ -48,6 +53,7 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
     }
   }, []);
 
+  /** Supabase에서 하객 업로드 사진 목록 조회 */
   const fetchPhotos = async () => {
     const { data, error } = await supabase
       .from("guest_photos")
@@ -61,6 +67,7 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
     }
   };
 
+  /** 파일 선택 핸들러 */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     
@@ -76,6 +83,7 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
     }
   };
 
+  /** 사진 업로드 제출 핸들러 */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!senderName.trim()) {
@@ -149,6 +157,7 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
     }
   };
 
+  /** 업로드 모달 포탈 */
   const uploadModal = isUploadModalOpen && mounted ? createPortal(
     <div className={styles.modalOverlay} onClick={() => setIsUploadModalOpen(false)}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -207,8 +216,15 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
 
   return (
     <section className={styles.section}>
+      {/* 일반 모드 */}
       {!isTerminalMode && (
-        <div className={styles.container}>
+        <motion.div 
+          className={styles.container}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className={styles.headerTag}>MEMORY</div>
           <h2 className={styles.mainTitle}>하객 사진첩</h2>
 
@@ -245,13 +261,20 @@ export default function GuestPhotoUpload({ isTerminalMode, onCopyToast }: GuestP
             )}
           </div>
           {uploadModal}
-        </div>
+        </motion.div>
       )}
 
+      {/* 개발자 모드 */}
       {isTerminalMode && (
-        <div className={styles.terminalContainer}>
+        <motion.div 
+          className={styles.terminalContainer}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
           <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </div>
+        </motion.div>
       )}
     </section>
   );

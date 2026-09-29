@@ -10,13 +10,9 @@ interface ShareProps {
   onCopyToast?: () => void;
 }
 
-/**
- * Supabase에서 공유 링크 정보를 조회하여 미니멀한 텍스트와 버튼 중심으로 공유 기능을 제공하는 컴포넌트
- */
 export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
   const [shareLink, setShareLink] = useState<string>("");
 
-  /** Supabase에서 청첩장 공유 링크 데이터 조회 */
   useEffect(() => {
     async function fetchShareData() {
       try {
@@ -39,7 +35,6 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
     fetchShareData();
   }, []);
 
-  /** 현재 페이지 또는 Supabase 링크 복사 핸들러 */
   const handleCopyLink = async () => {
     try {
       const targetUrl = shareLink || window.location.href;
@@ -50,8 +45,14 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
     }
   };
 
+  /** 카카오톡 링크 공유 (에러 없는 최신 공유 팝업 방식) */
   const handleKakaoShare = () => {
-    alert("카카오톡 공유 기능은 SDK 설정 후 사용 가능합니다.");
+    const targetUrl = shareLink || window.location.href;
+    
+    // 올바른 카카오 공유 picker 엔드포인트 사용
+    const kakaoShareUrl = `https://sharer.kakao.com/picker/link?url=${encodeURIComponent(targetUrl)}`;
+    
+    window.open(kakaoShareUrl, "kakaoShareWindow", "width=500,height=600");
   };
 
   return (
@@ -67,7 +68,6 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
           <div className={styles.headerTag}>SHARE</div>
           <h2 className={styles.mainTitle}>청첩장 공유하기</h2>
 
-          {/* 상자 없는 미니멀한 컨텐츠 영역 */}
           <div className={styles.contentWrapper}>
             <div className={styles.buttonGroup}>
               <button className={styles.kakaoBtn} onClick={handleKakaoShare}>

@@ -23,9 +23,6 @@ interface WeddingInfo {
   locationName: string;
 }
 
-/**
- * Supabase Storage(photos 버킷)의 main 폴더 목록에서 첫 번째 사진을 가져와 렌더링하는 웨딩 커버 컴포넌트
- */
 export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }: CoverProps) {
   const [weddingInfo, setWeddingInfo] = useState<WeddingInfo | null>(null);
   const [isLoadingAnimation, setIsLoadingAnimation] = useState(false);
@@ -35,7 +32,6 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
   useEffect(() => {
     async function fetchCoverData() {
       try {
-        // 1. 웨딩 및 혼주 정보 조회
         const { data: weddingData, error: weddingError } = await supabase
           .from("weddings")
           .select("*")
@@ -63,7 +59,6 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
           locationName: weddingData.location_name,
         });
 
-        // 2. Supabase Storage 'photos' 버킷의 'main' 폴더 목록 조회 (타입 안정성 확보)
         const storageRef = supabase.storage.from("photos");
         const { data: fileList, error: storageError } = await storageRef.list("main", {
           limit: 10,
@@ -90,7 +85,7 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
     fetchCoverData();
   }, []);
 
-  /** 터미널 모드 진입 시 최초 1회 로딩 애니메이션 제어 */
+  /** 터미널 모드 */
   useEffect(() => {
     if (isTerminalMode && !hasLoadedRef.current) {
       hasLoadedRef.current = true; 
@@ -102,6 +97,7 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
     }
   }, [isTerminalMode, hasLoadedRef, onLoadingChange]);
 
+  /** 인트로 완료 시 호출되는 함수 */
   const handleIntroComplete = () => {
     setIsLoadingAnimation(false);
     onLoadingChange?.(false);

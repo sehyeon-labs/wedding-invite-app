@@ -84,7 +84,6 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
 
   /** 카카오톡 공유하기 핸들러 */
   const handleKakaoShare = () => {
-    // 공식 문서 기준: 등록된 웹 도메인과 일치하는 기본 주소 사용 (쿼리 및 불필요한 해시 제거)
     const baseUrl = shareLink || window.location.origin + window.location.pathname;
     const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
 

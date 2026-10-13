@@ -1,88 +1,60 @@
+// src/app/page.module.scss
 .container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  background-color: var(--bg-main);
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg-main, #ffffff);
+  
+  /* 부드러운 스크롤 및 터치 최적화 */
+  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 
-  /* 스크롤바 숨기기 */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* 로딩 등으로 인한 스크롤 방지 */
+  /* 로딩 중 스크롤 잠금 */
   &.lockScroll {
     overflow: hidden;
-  }
-
-  /* 개발자 모드 토글 버튼 영역 */
-  .mode {
-    margin: 2rem auto;
-    text-align: center;
-
-    .cliToggleBtn {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: #1e293b;
-      background-color: transparent;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      padding: 0.35rem 0.65rem;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  
-      &:hover {
-        background-color: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-      }
-    }
+    height: 100vh;
   }
 }
 
+/* 일반 섹션 공통 스타일: 고정 100vh 대신 min-height 사용 */
 .section {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-/* footer */
+/* Footer 영역 */
 .footer {
   width: 100%;
-  background-color: var(--bg-main);
+  background-color: var(--bg-main, #ffffff);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  padding: 3rem 1.5rem 5rem 1.5rem;
-  box-sizing: border-box;
+  padding: 3.5rem 1.5rem 5rem 1.5rem;
   text-align: center;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-light, #f1f5f9);
 
   .footerText {
     font-family: 'SeoulHangang', sans-serif;
-    font-size: 0.78rem;
-    color: var(--text-muted);
+    font-size: 0.8rem;
+    color: var(--text-muted, #64748b);
     letter-spacing: 0.05em;
     margin: 0;
   }
 
   .copyright {
     font-family: 'SeoulHangang', sans-serif;
-    font-size: 0.6rem;
-    color: var(--text-light);
+    font-size: 0.65rem;
+    color: var(--text-light, #94a3b8);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-top: 0.2rem;
+    margin-top: 0.25rem;
   }
 }

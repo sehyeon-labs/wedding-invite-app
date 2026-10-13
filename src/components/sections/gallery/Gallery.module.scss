@@ -113,7 +113,7 @@
   .modalBackdrop {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 1100;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -140,7 +140,7 @@
           position: absolute;
           top: -30px;
           right: 0;
-          z-index: 20;
+          z-index: 1100;
           background: transparent;
           border: none;
           font-size: 1.1rem;
@@ -157,7 +157,7 @@
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          z-index: 20;
+          z-index: 1100;
           border: none;
           display: flex;
           justify-content: center;

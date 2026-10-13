@@ -6,7 +6,7 @@ import styles from "./BackgroundMusic.module.scss";
 
 export default function BackgroundMusic() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {

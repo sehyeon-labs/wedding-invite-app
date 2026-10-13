@@ -2,19 +2,18 @@
 
 import { useState, useEffect, MutableRefObject } from "react";
 import { motion } from "framer-motion";
-import { formatWeddingDate, formatCoverDate, formatCoverTime } from "@/utils/format";
+import { formatCoverDate, formatCoverTime } from "@/utils/format";
 import styles from "./Cover.module.scss";
-import { getAssetPath } from "@/utils/path";
-import TerminalIntro from "@/components/sections/terminalIntro/TerminalIntro";
 import { supabase } from "@/lib/supabase";
+import TerminalCover from "@/components/developer/TerminalCover/TerminalCover";
 
 interface CoverProps {
   isTerminalMode: boolean;
-  hasLoadedRef: MutableRefObject<boolean>; 
+  hasLoadedRef: MutableRefObject<boolean>;
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
-interface WeddingInfo {
+export interface WeddingCoverInfo {
   groomName: string;
   groomEnglishName: string;
   brideName: string;
@@ -24,11 +23,9 @@ interface WeddingInfo {
 }
 
 export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }: CoverProps) {
-  const [weddingInfo, setWeddingInfo] = useState<WeddingInfo | null>(null);
-  const [isLoadingAnimation, setIsLoadingAnimation] = useState(false);
+  const [weddingInfo, setWeddingInfo] = useState<WeddingCoverInfo | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
-  /** Supabase에서 웨딩 정보 및 Storage 이미지 목록 조회 */
   useEffect(() => {
     async function fetchCoverData() {
       try {
@@ -61,164 +58,108 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
 
         const storageRef = supabase.storage.from("photos");
         const { data: fileList, error: storageError } = await storageRef.list("main", {
-          limit: 10,
+          limit: 5,
           sortBy: { column: "name", order: "asc" },
         });
 
         if (!storageError && fileList && fileList.length > 0) {
           const validFiles = fileList.filter((file) => file.name !== ".emptyFolderPlaceholder");
-
           if (validFiles.length > 0) {
-            const firstFile = validFiles[0];
-            const { data: publicUrlData } = storageRef.getPublicUrl(`main/${firstFile.name}`);
-
+            const { data: publicUrlData } = storageRef.getPublicUrl(`main/${validFiles[0].name}`);
             if (publicUrlData?.publicUrl) {
               setCoverImageUrl(publicUrlData.publicUrl);
             }
           }
         }
       } catch (error) {
-        console.error("Failed to fetch cover data from Supabase:", error);
+        console.error("커버 데이터 로드 실패:", error);
       }
     }
 
     fetchCoverData();
   }, []);
 
-  /** 터미널 모드 */
-  useEffect(() => {
-    if (isTerminalMode && !hasLoadedRef.current) {
-      hasLoadedRef.current = true; 
-      setIsLoadingAnimation(true);
-      onLoadingChange?.(true);
-    } else {
-      setIsLoadingAnimation(false);
-      onLoadingChange?.(false);
-    }
-  }, [isTerminalMode, hasLoadedRef, onLoadingChange]);
-
-  /** 인트로 완료 시 호출되는 함수 */
-  const handleIntroComplete = () => {
-    setIsLoadingAnimation(false);
-    onLoadingChange?.(false);
-  };
-
-  const formattedDate = weddingInfo ? formatWeddingDate(weddingInfo.weddingDate) : "";
   const formattedCoverDate = weddingInfo ? formatCoverDate(weddingInfo.weddingDate) : "";
   const formattedCoverTime = weddingInfo ? formatCoverTime(weddingInfo.weddingDate) : "";
 
   return (
-    <section className={`${styles.coverSection} ${isTerminalMode ? styles.terminalBg : ""}`}>
-
-      {/* 일반 모드 화면 */}
-      {!isTerminalMode && weddingInfo && (
-        <motion.div 
-          className={styles.mainContent}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <motion.div 
-            className={styles.headerArea}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+    <section className={styles.coverSection}>
+      {isTerminalMode ? (
+        <TerminalCover
+          weddingInfo={weddingInfo}
+          hasLoadedRef={hasLoadedRef}
+          onLoadingChange={onLoadingChange}
+        />
+      ) : (
+        weddingInfo && (
+          <motion.div
+            className={styles.mainContent}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <h1 className={styles.names}>
-              {weddingInfo.groomEnglishName} 
-              <motion.span 
-                className={styles.heart}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              >
-                /
-              </motion.span> 
-              {weddingInfo.brideEnglishName}
-            </h1>
-          </motion.div>
-
-          <div className={styles.imageContainer}>
-            {coverImageUrl ? (
-              <motion.img 
-                src={coverImageUrl} 
-                alt="웨딩 대표 사진" 
-                className={styles.bgImage}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-              />
-            ) : (
-              <div className={styles.emptyPhotoBox}>
-                <span>등록된 대표 사진이 없습니다.</span>
-              </div>
-            )}
-
-            <motion.div 
-              className={styles.vertical}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.8 }}
+            <motion.div
+              className={styles.headerArea}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
             >
-              <div className={styles.verticalDate}>
-                <span>{formattedCoverDate}</span>
-              </div>
-              <div className={styles.verticalTime}>
-                <span>{formattedCoverTime}</span>
-              </div>
+              <h1 className={styles.names}>
+                <span>{weddingInfo.groomEnglishName}</span>
+                <motion.span
+                  className={styles.heart}
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+                >
+                  /
+                </motion.span>
+                <span>{weddingInfo.brideEnglishName}</span>
+              </h1>
             </motion.div>
-          </div>
-        </motion.div>
-      )}
 
-      {/* 터미널 모드 인트로 애니메이션 */}
-      {isTerminalMode && isLoadingAnimation && (
-        <TerminalIntro onComplete={handleIntroComplete} />
-      )}
-
-      {/* 터미널 모드 완료 결과 대시보드 화면 */}
-      {isTerminalMode && !isLoadingAnimation && weddingInfo && (
-        <div className={styles.terminalResultScreen}>
-          <div className={styles.globalRainContainer}>
-            <div className={styles.terminalRain}>
-              <span>&lt;3</span><span>*</span><span>+</span><span>{`{}`}</span><span>♥︎</span>
-              <span>0</span><span>#</span><span>@</span><span>!</span><span>^o^</span>
-              <span>&lt;3</span><span>♥︎</span><span>++</span><span>[ ]</span><span>$</span>
-              <span>&amp;</span><span>&gt;</span><span>;</span><span>♥︎</span><span>0</span>
-            </div>
-          </div>
-          
-          <div className={styles.terminalContentBox}>
-            <div className={styles.cliStatusBar}>
-              <span className={styles.cliDot}></span>
-              <span className={styles.cliTitle}>wedding-cli — session active</span>
-            </div>
-            
-            <div className={styles.claudeBox}>
-              <div className={styles.boxHeader}>
-                <span>session://guest@wedding-env</span>
-                <span className={styles.activeBadge}>CONNECTED</span>
+            <div className={styles.contentRow}>
+              <div className={`${styles.sideColumn} ${styles.leftSide}`}>
+                <motion.span
+                  className={styles.verticalText}
+                  initial={{ opacity: 0, y: 20, rotate: 90 }}
+                  animate={{ opacity: 0.85, y: 0, rotate: 90 }}
+                  transition={{ duration: 0.8, delay: 0.65, ease: "easeOut" }}
+                >
+                  {formattedCoverDate}
+                </motion.span>
               </div>
-              <div className={styles.boxBody}>
-                <p className={styles.welcomeText}>Welcome back, Guest!</p>
-                <pre className={styles.pixelArt}>
-{`  /\\_/\\      ♥      /\\_/\\  
- ( o.o )  TOGETHER  ( o.o ) 
-  > ^ <   FOREVER    > ^ <  `}
-                </pre>
-                <div className={styles.boxFooterInfo}>
-                  <p className={styles.targetPair}>{weddingInfo.groomEnglishName} & {weddingInfo.brideEnglishName}</p>
-                  <p className={styles.pathText}>~/wedding-invitation/main</p>
-                </div>
-              </div>
-              
-              <h1 className={styles.terminalNames}>{weddingInfo.groomEnglishName} & {weddingInfo.brideEnglishName}</h1>
-              <p className={styles.terminalDate}>// {formattedDate}</p>
-              <p className={styles.terminalLocation}>// {weddingInfo.locationName}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
+              <div className={styles.imageCenter}>
+                {coverImageUrl ? (
+                  <motion.img
+                    src={coverImageUrl}
+                    alt="웨딩 대표 사진"
+                    className={styles.bgImage}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.9, delay: 0.25, ease: "easeOut" }}
+                  />
+                ) : (
+                  <div className={styles.emptyPhotoBox}>
+                    <span>대표 사진 준비 중</span>
+                  </div>
+                )}
+              </div>
+
+              <div className={`${styles.sideColumn} ${styles.rightSide}`}>
+                <motion.span
+                  className={styles.verticalText}
+                  initial={{ opacity: 0, y: -20, rotate: 90 }}
+                  animate={{ opacity: 0.85, y: 0, rotate: 90 }}
+                  transition={{ duration: 0.8, delay: 0.95, ease: "easeOut" }}
+                >
+                  {formattedCoverTime}
+                </motion.span>
+              </div>
+            </div>
+          </motion.div>
+        )
+      )}
     </section>
   );
 }

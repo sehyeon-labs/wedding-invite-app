@@ -1,183 +1,188 @@
 .ddaySection {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  padding: 0 1.5rem;
-  background-color: var(--bg-main);
+  min-height: 80vh;
+  min-height: 80dvh;
+  padding: 4.5rem 1.4rem 4rem 1.4rem;
+  background-color: var(--bg-main, #fbf9f5);
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   box-sizing: border-box;
-  overflow: hidden;
 
-  /* 일반 모드 컨테이너 (Framer Motion에서 애니메이션을 제어하므로 CSS 트랜지션 제거) */
   .normalContainer {
     width: 100%;
-    max-width: 360px;
+    max-width: 330px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.8rem;
-    will-change: opacity, transform;
+    gap: 2rem;
 
-    .headerTag {
-      font-family: "Schoolbell", cursive;
-      font-size: 0.8rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    /* 미니 달력 박스 */
-    .calendarBox {
+    /* 달력 영역 래퍼 */
+    .calendarSectionWrapper {
       width: 100%;
-      padding: 0.9rem 0;
-      background-color: var(--bg-main);
-      border-top: 1px solid var(--border-light);
-      border-bottom: 1px solid var(--border-light);
       display: flex;
       flex-direction: column;
-      gap: 0.8rem;
+      align-items: center;
+      gap: 1.2rem;
 
-      .calendarHeader {
-        margin-bottom: 0.2rem;
+      .headerTag {
         font-family: "Schoolbell", cursive;
-        font-size: 1.05rem;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        color: var(--text-main);
-        text-align: center;
+        font-size: 0.85rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted, #94a3b8);
+        user-select: none;
       }
 
-      .weekGrid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        padding-bottom: 0.4rem;
-        font-family: 'Pretendard', sans-serif;
-        font-size: 0.65rem;
-        font-weight: 600;
-        color: var(--text-light);
-
-        .sun { color: var(--accent-red); }
-        .sat { color: var(--accent-blue); }
-      }
-
-      .daysGrid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        row-gap: 0.4rem;
-        font-family: 'Pretendard', sans-serif;
-        font-size: 0.8rem;
-        color: var(--text-sub);
-
-        .dayCell {
-          width: 30px;
-          height: 30px;
-          margin: auto;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          border-radius: 50%;
-          aspect-ratio: 1;
-          font-weight: 400;
-
-          &.redDay {
-            font-weight: 600;
-            color: var(--accent-red);
-          }
-
-          &.satDay {
-            color: var(--accent-blue);
-          }
-
-          &.weddingDay {
-            font-weight: 600;
-            color: var(--bg-main);
-            background-color: var(--text-muted-dark);
-            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
-          }
-        }
-      }
-    }
-
-    /* 디데이 타이머 영역 */
-    .countdownWrapper {
-      width: 100%;
-      padding: 0.5rem 0;
-      display: flex;
-      align-items: baseline;
-      justify-content: center;
-      gap: 0.8rem;
-
-      .timeUnit {
+      .calendarBox {
+        width: 100%;
+        padding: 1.4rem 0.5rem;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 12px;
+        border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+        box-shadow: 0 4px 20px rgba(17, 50, 34, 0.03);
         display: flex;
         flex-direction: column;
+        gap: 0.9rem;
+        box-sizing: border-box;
+
+        .calendarHeader {
+          font-family: "Schoolbell", cursive;
+          font-size: 1.15rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          color: var(--text-main, #113222);
+        }
+
+        .weekGrid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          padding-bottom: 0.3rem;
+          font-family: "JetBrains Mono", monospace;
+          font-size: 0.65rem;
+          font-weight: 600;
+          color: var(--text-light, #94a3b8);
+          letter-spacing: 0.04em;
+
+          .sun {
+            color: var(--accent-red, #e11d48);
+          }
+          .sat {
+            color: var(--accent-blue, #2563eb);
+          }
+        }
+
+        .daysGrid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          row-gap: 0.35rem;
+          font-family: "Pretendard", sans-serif;
+          font-size: 0.78rem;
+          color: var(--text-sub, #475569);
+
+          .dayCell {
+            width: 28px;
+            height: 28px;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            font-weight: 400;
+
+            &.redDay {
+              font-weight: 600;
+              color: var(--accent-red, #e11d48);
+            }
+
+            &.satDay {
+              color: var(--accent-blue, #2563eb);
+            }
+
+            &.weddingDay {
+              font-weight: 700;
+              color: #ffffff;
+              background-color: var(--text-main, #113222);
+              box-shadow: 0 3px 10px rgba(17, 50, 34, 0.25);
+            }
+          }
+        }
+      }
+    }
+
+    /* 타이머 및 메시지 영역 래퍼 */
+    .timerSectionWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+
+      .countdownWrapper {
+        width: 100%;
+        display: flex;
         align-items: center;
-        gap: 0.2rem;
+        justify-content: center;
+        gap: 0.65rem;
+        padding: 0.2rem 0;
 
-        .number {
-          font-family: "Schoolbell", cursive;
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: #1e293b;
+        .timeUnit {
+          min-width: 48px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.15rem;
+
+          .number {
+            font-family: "Schoolbell", cursive;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main, #113222);
+            line-height: 1;
+          }
+
+          .label {
+            font-family: "Schoolbell", cursive;
+            font-size: 0.58rem;
+            letter-spacing: 0.12em;
+            color: var(--text-muted, #94a3b8);
+          }
         }
 
-        .label {
-          font-family: "Schoolbell", cursive;
-          font-size: 0.55rem;
-          letter-spacing: 0.1em;
-          color: #94a3b8;
+        .divider {
+          font-family: "Pretendard", sans-serif;
+          font-size: 0.9rem;
+          font-weight: 300;
+          color: var(--text-light, #cbd5e1);
+          margin-bottom: 0.6rem;
         }
       }
 
-      .divider {
-        margin-bottom: 0.8rem;
-        font-family: 'Pretendard', sans-serif;
-        font-size: 1rem;
-        color: var(--text-icon);
+      .messageBox {
+        width: 100%;
+
+        .subMessage {
+          font-family: "NostalgicOnHandwriting", serif;
+          font-size: 0.88rem;
+          line-height: 1.9;
+          letter-spacing: 0.16em;
+          color: var(--text-sub, #475569);
+          word-break: keep-all;
+          margin: 0;
+
+          .namesHighlight {
+            font-weight: 600;
+            color: var(--text-main, #113222);
+          }
+
+          .highlight {
+            font-weight: 700;
+            color: var(--accent-red, #e11d48);
+          }
+        }
       }
-    }
-
-    /* 하단 안내 메시지 */
-    .subMessage {
-      font-family: 'NostalgicOnHandwriting', sans-serif;
-      font-size: 0.85rem;
-      letter-spacing: 0.03em;
-      color: var(--text-sub);
-
-      .namesHighlight {
-        font-family: 'NostalgicOnHandwriting', sans-serif;
-        font-size: 1rem;
-        color: var(--text-sub);
-      }
-
-      .highlight {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--accent-red);
-      }
-    }
-
-    .passedText {
-      font-family: "NostalgicOnHandwriting", sans-serif;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-  }
-
-  /* 개발자 모드 */
-  .terminalContainer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .todo {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--dev-green);
     }
   }
 }

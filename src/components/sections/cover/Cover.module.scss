@@ -1,118 +1,142 @@
 .coverSection {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  background-color: var(--bg-main, #fbf9f5);
-  overflow: hidden;
+  background-color: var(--bg-main);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 3rem 1rem 2rem 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
 
   .mainContent {
-    position: relative;
     width: 100%;
-    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2.2rem 0.2rem 1.6rem 0.2rem;
-    box-sizing: border-box;
+    gap: 1.2rem;
 
+    /* 상단 이름 영역 */
     .headerArea {
-      z-index: 3;
-      text-align: center;
-      margin-top: 0.2rem;
-      margin-bottom: 0.5rem;
+      user-select: none;
+      margin-bottom: 0.2rem;
 
       .names {
-        font-size: 1.35rem;
-        font-family: "Schoolbell", cursive;
-        color: var(--text-main, #113222);
-        letter-spacing: 0.12em;
-        display: inline-flex;
+        font-family: 'NostalgicOnHandwriting', cursive, sans-serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--text-main);
+        letter-spacing: 0.04em;
+        margin: 0;
+        display: flex;
         align-items: center;
+        gap: 0.4rem;
 
         .heart {
-          color: var(--text-sub, #64748b);
-          font-size: 0.9rem;
-          margin: 0 0.5rem;
+          font-size: 0.95rem;
+          color: var(--text-main);
         }
       }
     }
 
+    /* 중앙 사진 + 좌우 회전 레이아웃 */
     .contentRow {
       position: relative;
       width: 100%;
-      flex: 1;
       display: flex;
+      justify-content: center;
       align-items: center;
-      justify-content: space-between;
-      box-sizing: border-box;
 
+      /* 좌/우측 공통 컬럼 */
       .sideColumn {
-        flex: 0 0 24px;
-        height: 100%;
-        position: relative;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
         pointer-events: none;
         user-select: none;
-
-        .verticalText {
-          position: absolute;
-          font-family: "Schoolbell", cursive;
-          font-size: 0.95rem;
-          letter-spacing: 0.45em;
-          color: #556980;
-          white-space: nowrap;
-          transform-origin: center center;
-        }
+        z-index: 2;
+        letter-spacing: 0.35em;
 
         &.leftSide {
-          .verticalText {
-            right: -6.1rem;
-            bottom: 24%;
+          left: -11.0rem;
+          bottom: 11.5rem;
+          align-items: flex-end;
+
+          .verticalGroupLeft {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            white-space: nowrap;
+            transform-origin: center center;
+            font-family: 'Schoolbell', 'NostalgicOnHandwriting', cursive, sans-serif;
+            color: var(--text-sub);
+            font-size: 1.25rem;
+
+            .saveTheDate {
+              font-weight: 600;
+            }
+
+            .dateText {
+              font-weight: 500;
+            }
           }
         }
 
         &.rightSide {
-          .verticalText {
-            left: -6.1rem;
-            top: 24%;
+          right: -7.0rem;
+          top: 7.0rem;
+          align-items: flex-start;
+
+          .verticalGroupRight {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            white-space: nowrap;
+            transform-origin: center center;
+            font-family: 'Schoolbell', 'NostalgicOnHandwriting', cursive, sans-serif;
+            color: var(--text-sub);
+            font-size: 1.25rem;
+
+            .handLine {
+              width: 50px;
+              height: 1.5px;
+              background-color: var(--text-sub);
+              border-radius: 2px;
+            }
+
+            .timeText {
+              font-weight: 500;
+            }
           }
         }
       }
 
+      /* 중앙 사진 프레임 */
       .imageCenter {
-        flex: 1;
-        max-width: 350px;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        box-sizing: border-box;
+        width: 100%;
+        aspect-ratio: 3 / 4.4;
+        position: relative;
+        z-index: 1;
 
         .bgImage {
           width: 100%;
           height: 100%;
-          max-height: 75dvh;
-          aspect-ratio: 3 / 4;
           object-fit: cover;
-          border-radius: 4px;
-          box-shadow: 0 10px 25px rgba(17, 50, 34, 0.08);
+          display: block;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
 
         .emptyPhotoBox {
           width: 100%;
-          height: 68dvh;
-          background-color: var(--bg-sub, #f8fafc);
-          border: 1px dashed var(--border-color, #e2e8f0);
+          height: 100%;
+          background: #eaeaea;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.75rem;
-          color: var(--text-light, #94a3b8);
+          color: var(--text-muted);
+          font-size: 0.85rem;
         }
       }
     }

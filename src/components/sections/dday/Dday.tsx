@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import styles from "./Dday.module.scss";
+import TerminalDday from "@/components/developer/TerminalDday/TerminalDday";
 
 interface DdayProps {
   isTerminalMode: boolean;
@@ -24,9 +25,45 @@ interface TimeLeft {
   isToday: boolean;
 }
 
-/**
- * 예식일까지의 디데이 및 미니 달력을 렌더링하는 섹션 컴포넌트
- */
+// 1. 달력 묶음 애니메이션
+const calendarGroupVariants: Variants = {
+  hidden: { opacity: 0, y: 18, filter: "blur(2px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.85,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
+// 2. 타이머 묶음 애니메이션
+const timerGroupVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const timerItemVariants: Variants = {
+  hidden: { opacity: 0, y: 15, filter: "blur(2px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
 export default function Dday({ isTerminalMode }: DdayProps) {
   const [weddingInfo, setWeddingInfo] = useState<DdayWeddingInfo | null>(null);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
@@ -38,7 +75,6 @@ export default function Dday({ isTerminalMode }: DdayProps) {
     isToday: false,
   });
 
-  /** Supabase에서 웨딩 날짜 및 혼주 정보 조회 */
   useEffect(() => {
     async function fetchDdayData() {
       try {
@@ -66,7 +102,7 @@ export default function Dday({ isTerminalMode }: DdayProps) {
           brideName: bride?.name || "신부",
         });
       } catch (error) {
-        console.error("Failed to fetch D-day data from Supabase:", error);
+        console.error("D-day 데이터 로드 실패:", error);
       }
     }
 
@@ -79,7 +115,6 @@ export default function Dday({ isTerminalMode }: DdayProps) {
   const weddingDay = targetDateObj.getDate();
   const formattedMonth = `${year}. ${String(month + 1).padStart(2, "0")}`;
 
-  /** 실시간 타이머 및 당일/지남/남음 계산 로직 */
   useEffect(() => {
     if (!weddingInfo) return;
 
@@ -88,8 +123,8 @@ export default function Dday({ isTerminalMode }: DdayProps) {
     const updateTimer = () => {
       const now = new Date().getTime();
       const nowDateObj = new Date();
-      
-      const isSameDay = 
+
+      const isSameDay =
         nowDateObj.getFullYear() === year &&
         nowDateObj.getMonth() === month &&
         nowDateObj.getDate() === weddingDay;
@@ -125,148 +160,163 @@ export default function Dday({ isTerminalMode }: DdayProps) {
     return () => clearInterval(interval);
   }, [weddingInfo, year, month, weddingDay]);
 
-  /** 대한민국 고정 공휴일 체크 함수 */
-  const isHoliday = (y: number, m: number, d: number) => {
+  const isHoliday = (m: number, d: number) => {
     const mStr = String(m + 1).padStart(2, "0");
     const dStr = String(d).padStart(2, "0");
     const mmdd = `${mStr}-${dStr}`;
 
     const fixedHolidays = [
-      "01-01", "03-01", "05-05", "06-06", 
-      "08-15", "10-03", "10-09", "12-25"
+      "01-01", "03-01", "05-05", "06-06",
+      "08-15", "10-03", "10-09", "10-04", "10-11", "12-25"
     ];
 
     return fixedHolidays.includes(mmdd);
   };
 
-  /** 미니 달력 날짜 배열 생성 */
   const firstDayIndex = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
   const calendarDays = [];
-  
+
   for (let i = 0; i < firstDayIndex; i++) {
     calendarDays.push(null);
   }
   for (let i = 1; i <= totalDays; i++) {
     const currentDayOfWeek = new Date(year, month, i).getDay();
-    const holidayCheck = isHoliday(year, month, i);
     calendarDays.push({
       day: i,
       isSun: currentDayOfWeek === 0,
       isSat: currentDayOfWeek === 6,
-      isHoliday: holidayCheck,
+      isHoliday: isHoliday(month, i),
     });
   }
   const weekDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
   return (
     <section className={styles.ddaySection}>
-      {!isTerminalMode && weddingInfo && (
-        <motion.div 
-          className={styles.normalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className={styles.headerTag}>WEDDING DAY</div>
+      {isTerminalMode ? (
+        <TerminalDday />
+      ) : (
+        weddingInfo && (
+          <div className={styles.normalContainer}>
+            {/* 1단계: 달력 섹션 독립 트리거 */}
+            <motion.div
+              className={styles.calendarSectionWrapper}
+              variants={calendarGroupVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{
+                once: true,
+                margin: "0px 0px -80px 0px",
+                amount: 0.25,
+              }}
+            >
+              <div className={styles.headerTag}>WEDDING DAY</div>
 
-          {/* 미니 달력 */}
-          <div className={styles.calendarBox}>
-            <div className={styles.calendarHeader}>
-              <span>{formattedMonth}</span>
-            </div>
-            <div className={styles.weekGrid}>
-              {weekDays.map((day, idx) => (
-                <span key={idx} className={`${styles.weekDay} ${idx === 0 ? styles.sun : idx === 6 ? styles.sat : ""}`}>
-                  {day}
-                </span>
-              ))}
-            </div>
-            <div className={styles.daysGrid}>
-              {calendarDays.map((item, idx) => {
-                if (!item) return <div key={idx} className={styles.dayCell} />;
-                
-                const isRed = item.isSun || item.isHoliday;
-                const isWedding = item.day === weddingDay;
+              <div className={styles.calendarBox}>
+                <div className={styles.calendarHeader}>
+                  <span>{formattedMonth}</span>
+                </div>
+                <div className={styles.weekGrid}>
+                  {weekDays.map((day, idx) => (
+                    <span
+                      key={idx}
+                      className={`${styles.weekDay} ${
+                        idx === 0 ? styles.sun : idx === 6 ? styles.sat : ""
+                      }`}
+                    >
+                      {day}
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.daysGrid}>
+                  {calendarDays.map((item, idx) => {
+                    if (!item) return <div key={idx} className={styles.dayCell} />;
 
-                return (
-                  <div 
-                    key={idx} 
-                    className={`
-                      ${styles.dayCell} 
-                      ${isRed ? styles.redDay : ""} 
-                      ${item.isSat ? styles.satDay : ""} 
-                      ${isWedding ? styles.weddingDay : ""}
-                    `}
-                  >
-                    {item.day}
+                    const isRed = item.isSun || item.isHoliday;
+                    const isBlue = item.isSat && !item.isHoliday;
+                    const isWedding = item.day === weddingDay;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`
+                          ${styles.dayCell} 
+                          ${isRed ? styles.redDay : ""} 
+                          ${isBlue ? styles.satDay : ""} 
+                          ${isWedding ? styles.weddingDay : ""}
+                        `}
+                      >
+                        {item.day}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 2단계: 타이머 및 메시지 독립 트리거 (스크롤이 더 도달했을 때 실행) */}
+            <motion.div
+              className={styles.timerSectionWrapper}
+              variants={timerGroupVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{
+                once: true,
+                margin: "0px 0px -70px 0px",
+                amount: 0.3,
+              }}
+            >
+              <motion.div className={styles.countdownWrapper} variants={timerItemVariants}>
+                {timeLeft.isToday ? (
+                  <div className={styles.timeUnit}>
+                    <span className={styles.number}>D-DAY</span>
+                    <span className={styles.label}>TODAY IS THE DAY</span>
                   </div>
-                );
-              })}
-            </div>
+                ) : (
+                  <>
+                    <div className={styles.timeUnit}>
+                      <span className={styles.number}>{timeLeft.days}</span>
+                      <span className={styles.label}>{timeLeft.isAfter ? "DAYS PASSED" : "DAYS"}</span>
+                    </div>
+                    <span className={styles.divider}>:</span>
+                    <div className={styles.timeUnit}>
+                      <span className={styles.number}>{String(timeLeft.hours).padStart(2, "0")}</span>
+                      <span className={styles.label}>HOURS</span>
+                    </div>
+                    <span className={styles.divider}>:</span>
+                    <div className={styles.timeUnit}>
+                      <span className={styles.number}>{String(timeLeft.minutes).padStart(2, "0")}</span>
+                      <span className={styles.label}>MIN</span>
+                    </div>
+                    <span className={styles.divider}>:</span>
+                    <div className={styles.timeUnit}>
+                      <span className={styles.number}>{String(timeLeft.seconds).padStart(2, "0")}</span>
+                      <span className={styles.label}>SEC</span>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+
+              <motion.div className={styles.messageBox} variants={timerItemVariants}>
+                {timeLeft.isToday ? (
+                  <p className={styles.subMessage}>
+                    오늘, <span className={styles.namesHighlight}>{weddingInfo.groomName} & {weddingInfo.brideName}</span> 의 소중한 결혼식이 열립니다.
+                  </p>
+                ) : timeLeft.isAfter ? (
+                  <p className={styles.subMessage}>
+                    <span className={styles.namesHighlight}>{weddingInfo.groomName} & {weddingInfo.brideName}</span> 의 결혼식으로부터{" "}
+                    <span className={styles.highlight}>{timeLeft.days}일째</span> 함께하고 있습니다.
+                  </p>
+                ) : (
+                  <p className={styles.subMessage}>
+                    <span className={styles.namesHighlight}>{weddingInfo.groomName} & {weddingInfo.brideName}</span> 의 결혼식이{" "}
+                    <span className={styles.highlight}>{timeLeft.days}일</span> 남았습니다.
+                  </p>
+                )}
+              </motion.div>
+            </motion.div>
           </div>
-
-          {/* 타이머 영역 */}
-          {timeLeft.isToday ? (
-            <div className={styles.countdownWrapper}>
-              <div className={styles.timeUnit}>
-                <span className={styles.number}>D-DAY</span>
-                <span className={styles.label}>TODAY IS THE DAY</span>
-              </div>
-            </div>
-          ) : (
-            <div className={styles.countdownWrapper}>
-              <div className={styles.timeUnit}>
-                <span className={styles.number}>{timeLeft.days}</span>
-                <span className={styles.label}>{timeLeft.isAfter ? "DAYS PASSED" : "DAYS"}</span>
-              </div>
-              <span className={styles.divider}>·</span>
-              <div className={styles.timeUnit}>
-                <span className={styles.number}>{String(timeLeft.hours).padStart(2, "0")}</span>
-                <span className={styles.label}>HOURS</span>
-              </div>
-              <span className={styles.divider}>·</span>
-              <div className={styles.timeUnit}>
-                <span className={styles.number}>{String(timeLeft.minutes).padStart(2, "0")}</span>
-                <span className={styles.label}>MIN</span>
-              </div>
-              <span className={styles.divider}>·</span>
-              <div className={styles.timeUnit}>
-                <span className={styles.number}>{String(timeLeft.seconds).padStart(2, "0")}</span>
-                <span className={styles.label}>SEC</span>
-              </div>
-            </div>
-          )}
-
-          {/* 하단 메시지 */}
-          {timeLeft.isToday ? (
-            <p className={styles.subMessage}>
-              오늘, <span className={styles.namesHighlight}>{weddingInfo.groomName} & {weddingInfo.brideName}</span> 의 소중한 결혼식이 열립니다.
-            </p>
-          ) : timeLeft.isAfter ? (
-            <p className={styles.subMessage}>
-              <span className={styles.namesHighlight}>{weddingInfo.groomName} & {weddingInfo.brideName}</span> 의 결혼식으로부터 <span className={styles.highlight}>{timeLeft.days}일째</span> 함께하고 있습니다.
-            </p>
-          ) : (
-            <p className={styles.subMessage}>
-              <span className={styles.namesHighlight}>{weddingInfo.groomName} & {weddingInfo.brideName}</span> 의 결혼식이 <span className={styles.highlight}>{timeLeft.days}일</span> 남았습니다.
-            </p>
-          )}
-        </motion.div>
-      )}
-
-      {/* 개발자 모드 */}
-      {isTerminalMode && (
-        <motion.div 
-          className={styles.terminalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </motion.div>
+        )
       )}
     </section>
   );

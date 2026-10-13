@@ -49,9 +49,9 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
 
         setWeddingInfo({
           groomName: groom?.name || "신랑",
-          groomEnglishName: groom?.english_name || groom?.name || "Groom",
+          groomEnglishName: groom?.english_name || groom?.name || "Jinho",
           brideName: bride?.name || "신부",
-          brideEnglishName: bride?.english_name || bride?.name || "Bride",
+          brideEnglishName: bride?.english_name || bride?.name || "Naeun",
           weddingDate: weddingData.wedding_date,
           locationName: weddingData.location_name,
         });
@@ -98,6 +98,7 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
+            {/* 상단 신랑 & 신부 영문 이름 */}
             <motion.div
               className={styles.headerArea}
               initial={{ opacity: 0, y: -12 }}
@@ -106,29 +107,27 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
             >
               <h1 className={styles.names}>
                 <span>{weddingInfo.groomEnglishName}</span>
-                <motion.span
-                  className={styles.heart}
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-                >
-                  /
-                </motion.span>
+                <span className={styles.heart}>♥</span>
                 <span>{weddingInfo.brideEnglishName}</span>
               </h1>
             </motion.div>
 
+            {/* 메인 레이아웃 행 */}
             <div className={styles.contentRow}>
+              {/* 좌측 90도 회전 텍스트: Save the date! + 날짜 */}
               <div className={`${styles.sideColumn} ${styles.leftSide}`}>
-                <motion.span
-                  className={styles.verticalText}
-                  initial={{ opacity: 0, y: 20, rotate: 90 }}
-                  animate={{ opacity: 0.85, y: 0, rotate: 90 }}
+                <motion.div
+                  className={styles.verticalGroupLeft}
+                  initial={{ opacity: 0, y: 20, rotate: -90 }}
+                  animate={{ opacity: 0.85, y: 0, rotate: -90 }}
                   transition={{ duration: 0.8, delay: 0.65, ease: "easeOut" }}
-                >
-                  {formattedCoverDate}
-                </motion.span>
+                > 
+                  <span className={styles.saveTheDate}>Save the date!</span>
+                  <span className={styles.dateText}>{formattedCoverDate}</span>
+                </motion.div>
               </div>
 
+              {/* 중앙 대표 사진 */}
               <div className={styles.imageCenter}>
                 {coverImageUrl ? (
                   <motion.img
@@ -146,15 +145,17 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
                 )}
               </div>
 
+              {/* 우측 90도 회전 텍스트: 드로잉 선 + 시간 */}
               <div className={`${styles.sideColumn} ${styles.rightSide}`}>
-                <motion.span
-                  className={styles.verticalText}
+                <motion.div
+                  className={styles.verticalGroupRight}
                   initial={{ opacity: 0, y: -20, rotate: 90 }}
                   animate={{ opacity: 0.85, y: 0, rotate: 90 }}
                   transition={{ duration: 0.8, delay: 0.95, ease: "easeOut" }}
                 >
-                  {formattedCoverTime}
-                </motion.span>
+                  <div className={styles.handLine} />
+                  <span className={styles.timeText}>{formattedCoverTime}</span>
+                </motion.div>
               </div>
             </div>
           </motion.div>

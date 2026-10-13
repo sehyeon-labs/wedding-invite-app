@@ -1,8 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
 import React from "react";
+import { motion, Variants } from "framer-motion";
 import styles from "./CustomText.module.scss";
+import TerminalCustomText from "@/components/developer/TerminalCustomText/TerminalCustomText";
 
 interface CustomTextProps {
   isTerminalMode: boolean;
@@ -10,11 +11,35 @@ interface CustomTextProps {
   content?: string;
 }
 
-/**
- * 텍스트 내의 \n 기호를 <br /> 태그로 변환하여 렌더링하는 유틸 함수
- */
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.18,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { 
+    opacity: 0, 
+    y: 12, 
+    filter: "blur(3px)" 
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.1,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
 const renderWithLineBreaks = (text: string) => {
-  // 실제 줄바꿈(\n) 혹은 문자열 "\n" (\\n) 모두 처리 가능하도록 정규식 사용
   return text.split(/\\n|\n/).map((line, index) => (
     <React.Fragment key={index}>
       {line}
@@ -23,51 +48,40 @@ const renderWithLineBreaks = (text: string) => {
   ));
 };
 
-/**
- * 외부에서 타이틀과 텍스트를 전달받아 렌더링하는 범용 텍스트 섹션 컴포넌트
- */
-export default function CustomText({ 
-  isTerminalMode, 
-  title, 
-  content 
+export default function CustomText({
+  isTerminalMode,
+  title,
+  content,
 }: CustomTextProps) {
   return (
     <section className={styles.customTextSection}>
-      {/* 일반 모드 */}
-      {!isTerminalMode && (
-        <motion.div 
+      {isTerminalMode ? (
+        <TerminalCustomText />
+      ) : (
+        <motion.div
           className={styles.normalContainer}
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
         >
           <div className={styles.textWrapper}>
-            <span className={styles.quoteMark}>“</span>
+            <motion.span className={styles.quoteMark} variants={itemVariants}>
+              “
+            </motion.span>
+
             {title && (
-              <p className={styles.verseText}>
+              <motion.p className={styles.verseText} variants={itemVariants}>
                 {renderWithLineBreaks(title)}
-              </p>
+              </motion.p>
             )}
+
             {content && (
-              <p className={styles.verseRef}>
+              <motion.p className={styles.verseRef} variants={itemVariants}>
                 {renderWithLineBreaks(content)}
-              </p>
+              </motion.p>
             )}
           </div>
-        </motion.div>
-      )}
-
-      {/* 개발자 모드 */}
-      {isTerminalMode && (
-        <motion.div 
-          className={styles.terminalContainer}
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
         </motion.div>
       )}
     </section>

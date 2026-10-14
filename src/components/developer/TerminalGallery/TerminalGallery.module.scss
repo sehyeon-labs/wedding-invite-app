@@ -1,0 +1,13 @@
+.terminalContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .todo {
+    color: var(--dev-green, #10b981);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+}

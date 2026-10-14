@@ -96,14 +96,16 @@ export default function Page() {
         onLoadingChange={setIsLoaderActive}
       />
       
+      <Greeting isTerminalMode={isTerminalMode} />
+
+      <Dday isTerminalMode={isTerminalMode} />
+
       <CustomText
         isTerminalMode={isTerminalMode}
         title={verseData.verse}
         content={verseData.reference}
       />
-
-      <Dday isTerminalMode={isTerminalMode} />
-      <Greeting isTerminalMode={isTerminalMode} />
+      
       <Gallery isTerminalMode={isTerminalMode} />
 
       <Location 

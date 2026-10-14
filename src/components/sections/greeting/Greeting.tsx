@@ -1,24 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import styles from "./Greeting.module.scss";
+import TerminalGreeting from "@/components/developer/TerminalGreeting/TerminalGreeting";
 
 interface GreetingProps {
   isTerminalMode: boolean;
 }
 
-interface ParentInfo {
+interface ContactPerson {
+  role: string;
+  relationLabel: string;
   name: string;
+  phone?: string;
   isDeceased?: boolean;
-}
-
-interface FamilyMemberRow {
-  role_type: string;
-  name: string;
-  relation?: string;
-  is_deceased?: boolean;
 }
 
 interface GreetingData {
@@ -27,22 +24,21 @@ interface GreetingData {
   groom: {
     name: string;
     relation: string;
-    parents: ParentInfo[];
+    phone?: string;
+    parents: ContactPerson[];
   };
   bride: {
     name: string;
     relation: string;
-    parents: ParentInfo[];
+    phone?: string;
+    parents: ContactPerson[];
   };
 }
 
-/**
- * 인사말 및 혼주 정보를 렌더링하는 섹션 컴포넌트
- */
 export default function Greeting({ isTerminalMode }: GreetingProps) {
   const [greetingInfo, setGreetingInfo] = useState<GreetingData | null>(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
-  /** Supabase에서 인사말 및 가족 구성원(혼주/신랑신부) 데이터 조회 */
   useEffect(() => {
     async function fetchGreetingData() {
       try {
@@ -61,22 +57,54 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
 
         if (familyError) throw familyError;
 
-        const members = familyData as FamilyMemberRow[];
+        const members = (familyData || []) as any[];
         const groomMember = members.find((m) => m.role_type === "groom");
         const brideMember = members.find((m) => m.role_type === "bride");
-        
+
         const groomFather = members.find((m) => m.role_type === "groom_father");
         const groomMother = members.find((m) => m.role_type === "groom_mother");
         const brideFather = members.find((m) => m.role_type === "bride_father");
         const brideMother = members.find((m) => m.role_type === "bride_mother");
 
-        const groomParents: ParentInfo[] = [];
-        if (groomFather) groomParents.push({ name: groomFather.name, isDeceased: groomFather.is_deceased });
-        if (groomMother) groomParents.push({ name: groomMother.name, isDeceased: groomMother.is_deceased });
+        const groomParents: ContactPerson[] = [];
+        if (groomFather) {
+          groomParents.push({
+            role: "신랑 아버지",
+            relationLabel: "아버지",
+            name: groomFather.name,
+            phone: groomFather.phone,
+            isDeceased: groomFather.is_deceased,
+          });
+        }
+        if (groomMother) {
+          groomParents.push({
+            role: "신랑 어머니",
+            relationLabel: "어머니",
+            name: groomMother.name,
+            phone: groomMother.phone,
+            isDeceased: groomMother.is_deceased,
+          });
+        }
 
-        const brideParents: ParentInfo[] = [];
-        if (brideFather) brideParents.push({ name: brideFather.name, isDeceased: brideFather.is_deceased });
-        if (brideMother) brideParents.push({ name: brideMother.name, isDeceased: brideMother.is_deceased });
+        const brideParents: ContactPerson[] = [];
+        if (brideFather) {
+          brideParents.push({
+            role: "신부 아버지",
+            relationLabel: "아버지",
+            name: brideFather.name,
+            phone: brideFather.phone,
+            isDeceased: brideFather.is_deceased,
+          });
+        }
+        if (brideMother) {
+          brideParents.push({
+            role: "신부 어머니",
+            relationLabel: "어머니",
+            name: brideMother.name,
+            phone: brideMother.phone,
+            isDeceased: brideMother.is_deceased,
+          });
+        }
 
         setGreetingInfo({
           title: weddingData.greeting_title || "소중한 분들을 초대합니다",
@@ -84,24 +112,25 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
           groom: {
             name: groomMember?.name || "신랑",
             relation: groomMember?.relation || "장남",
+            phone: groomMember?.phone,
             parents: groomParents,
           },
           bride: {
             name: brideMember?.name || "신부",
             relation: brideMember?.relation || "차녀",
+            phone: brideMember?.phone,
             parents: brideParents,
           },
         });
       } catch (error) {
-        console.error("Failed to fetch greeting data from Supabase:", error);
+        console.error("인사말 데이터 조회 실패:", error);
       }
     }
 
     fetchGreetingData();
   }, []);
 
-  /** 부모님 성함 목록 렌더링 (고인 표기 및 가운데 점 연결) */
-  const renderParents = (parents: ParentInfo[]) => {
+  const renderParents = (parents: ContactPerson[]) => {
     if (!parents || parents.length === 0) return null;
     return parents.map((parent, index) => (
       <span key={index}>
@@ -114,53 +143,178 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
 
   return (
     <section className={styles.greetingSection}>
-      {/* 일반 모드 */}
-      {!isTerminalMode && greetingInfo && (
-        <motion.div 
-          className={styles.normalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className={styles.normalContentWrapper}>
-            <span className={styles.quoteMark}>“</span>
-            <h2 className={styles.normalTitle}>{greetingInfo.title}</h2>
-            <p className={styles.normalContent}>{greetingInfo.content}</p>
+      {isTerminalMode ? (
+        <TerminalGreeting />
+      ) : (
+        greetingInfo && (
+          <motion.div
+            className={styles.normalContainer}
+            initial={{ opacity: 0, y: 16, filter: "blur(2px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "0px 0px -90px 0px", amount: 0.25 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className={styles.normalContentWrapper}>
+              <span className={styles.quoteMark}>“</span>
+              <h2 className={styles.normalTitle}>{greetingInfo.title}</h2>
+              <p className={styles.normalContent}>{greetingInfo.content}</p>
 
-            <div className={styles.namesContainer}>
-              <div className={styles.nameRow}>
-                <span className={styles.parents}>
-                  {renderParents(greetingInfo.groom.parents)}
-                </span>
-                <span className={styles.relation}>의 {greetingInfo.groom.relation}</span>
-                <span className={styles.name}>{greetingInfo.groom.name}</span>
+              {/* 양가 혼주 & 신랑 신부 명단 표기 */}
+              <div className={styles.namesContainer}>
+                <div className={styles.nameRow}>
+                  <span className={styles.parents}>
+                    {renderParents(greetingInfo.groom.parents)}
+                  </span>
+                  <span className={styles.relation}>의 {greetingInfo.groom.relation}</span>
+                  <span className={styles.name}>{greetingInfo.groom.name}</span>
+                </div>
+
+                <div className={styles.nameRow}>
+                  <span className={styles.parents}>
+                    {renderParents(greetingInfo.bride.parents)}
+                  </span>
+                  <span className={styles.relation}>의 {greetingInfo.bride.relation}</span>
+                  <span className={styles.name}>{greetingInfo.bride.name}</span>
+                </div>
               </div>
 
-              <div className={styles.nameRow}>
-                <span className={styles.parents}>
-                  {renderParents(greetingInfo.bride.parents)}
-                </span>
-                <span className={styles.relation}>의 {greetingInfo.bride.relation}</span>
-                <span className={styles.name}>{greetingInfo.bride.name}</span>
+              {/* 연락하기 트리거 버튼 */}
+              <div className={styles.contactBtnWrapper}>
+                <button
+                  type="button"
+                  className={styles.contactOpenBtn}
+                  onClick={() => setIsContactModalOpen(true)}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  <span>연락처 보기</span>
+                </button>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )
       )}
 
-      {/* 개발자 모드 */}
-      {isTerminalMode && (
-        <motion.div 
-          className={styles.terminalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </motion.div>
-      )}
+      {/* 연락하기 바텀시트 모달 */}
+      <AnimatePresence>
+        {isContactModalOpen && greetingInfo && (
+          <div className={styles.modalOverlay} onClick={() => setIsContactModalOpen(false)}>
+            <motion.div
+              className={styles.modalContent}
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>축하 연락처</h3>
+                <button
+                  type="button"
+                  className={styles.closeBtn}
+                  onClick={() => setIsContactModalOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className={styles.contactList}>
+                {/* 신랑측 */}
+                <div className={styles.sideBlock}>
+                  <div className={styles.sideLabel}>신랑측</div>
+                  
+                  {/* 신랑 본인 */}
+                  <div className={styles.personRow}>
+                    <div className={styles.personInfo}>
+                      <span className={styles.personRole}>신랑</span>
+                      <span className={styles.personName}>{greetingInfo.groom.name}</span>
+                    </div>
+                    {greetingInfo.groom.phone && (
+                      <div className={styles.actionBtns}>
+                        <a href={`tel:${greetingInfo.groom.phone}`} className={styles.actionBtn} aria-label="전화">
+                          전화
+                        </a>
+                        <a href={`sms:${greetingInfo.groom.phone}`} className={styles.actionBtn} aria-label="문자">
+                          문자
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 신랑 혼주 */}
+                  {greetingInfo.groom.parents.map((p, idx) => (
+                    <div key={idx} className={styles.personRow}>
+                      <div className={styles.personInfo}>
+                        <span className={styles.personRole}>{p.relationLabel}</span>
+                        <span className={styles.personName}>
+                          {p.isDeceased && <span className={styles.deceasedMark}>故 </span>}
+                          {p.name}
+                        </span>
+                      </div>
+                      {!p.isDeceased && p.phone && (
+                        <div className={styles.actionBtns}>
+                          <a href={`tel:${p.phone}`} className={styles.actionBtn}>전화</a>
+                          <a href={`sms:${p.phone}`} className={styles.actionBtn}>문자</a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className={styles.contactDivider} />
+
+                {/* 신부측 */}
+                <div className={styles.sideBlock}>
+                  <div className={styles.sideLabel}>신부측</div>
+
+                  {/* 신부 본인 */}
+                  <div className={styles.personRow}>
+                    <div className={styles.personInfo}>
+                      <span className={styles.personRole}>신부</span>
+                      <span className={styles.personName}>{greetingInfo.bride.name}</span>
+                    </div>
+                    {greetingInfo.bride.phone && (
+                      <div className={styles.actionBtns}>
+                        <a href={`tel:${greetingInfo.bride.phone}`} className={styles.actionBtn}>전화</a>
+                        <a href={`sms:${greetingInfo.bride.phone}`} className={styles.actionBtn}>문자</a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 신부 혼주 */}
+                  {greetingInfo.bride.parents.map((p, idx) => (
+                    <div key={idx} className={styles.personRow}>
+                      <div className={styles.personInfo}>
+                        <span className={styles.personRole}>{p.relationLabel}</span>
+                        <span className={styles.personName}>
+                          {p.isDeceased && <span className={styles.deceasedMark}>故 </span>}
+                          {p.name}
+                        </span>
+                      </div>
+                      {!p.isDeceased && p.phone && (
+                        <div className={styles.actionBtns}>
+                          <a href={`tel:${p.phone}`} className={styles.actionBtn}>전화</a>
+                          <a href={`sms:${p.phone}`} className={styles.actionBtn}>문자</a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

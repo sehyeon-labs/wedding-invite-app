@@ -15,6 +15,7 @@ interface ContactPerson {
   relationLabel: string;
   name: string;
   phone?: string;
+  kakaoId?: string;
   isDeceased?: boolean;
 }
 
@@ -25,12 +26,14 @@ interface GreetingData {
     name: string;
     relation: string;
     phone?: string;
+    kakaoId?: string;
     parents: ContactPerson[];
   };
   bride: {
     name: string;
     relation: string;
     phone?: string;
+    kakaoId?: string;
     parents: ContactPerson[];
   };
 }
@@ -73,6 +76,7 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
             relationLabel: "아버지",
             name: groomFather.name,
             phone: groomFather.phone,
+            kakaoId: groomFather.kakao_id,
             isDeceased: groomFather.is_deceased,
           });
         }
@@ -82,6 +86,7 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
             relationLabel: "어머니",
             name: groomMother.name,
             phone: groomMother.phone,
+            kakaoId: groomMother.kakao_id,
             isDeceased: groomMother.is_deceased,
           });
         }
@@ -93,6 +98,7 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
             relationLabel: "아버지",
             name: brideFather.name,
             phone: brideFather.phone,
+            kakaoId: brideFather.kakao_id,
             isDeceased: brideFather.is_deceased,
           });
         }
@@ -102,6 +108,7 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
             relationLabel: "어머니",
             name: brideMother.name,
             phone: brideMother.phone,
+            kakaoId: brideMother.kakao_id,
             isDeceased: brideMother.is_deceased,
           });
         }
@@ -113,12 +120,14 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
             name: groomMember?.name || "신랑",
             relation: groomMember?.relation || "장남",
             phone: groomMember?.phone,
+            kakaoId: groomMember?.kakao_id,
             parents: groomParents,
           },
           bride: {
             name: brideMember?.name || "신부",
             relation: brideMember?.relation || "차녀",
             phone: brideMember?.phone,
+            kakaoId: brideMember?.kakao_id,
             parents: brideParents,
           },
         });
@@ -140,6 +149,9 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
       </span>
     ));
   };
+
+  // 카카오톡 ID를 앱 실행 딥링크로 변환
+  const getKakaoLink = (kakaoId: string) => `kakaotalk://search?q=${encodeURIComponent(kakaoId)}`;
 
   return (
     <section className={styles.greetingSection}>
@@ -178,26 +190,14 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
                 </div>
               </div>
 
-              {/* 연락하기 트리거 버튼 */}
+              {/* 아이콘 없는 단정한 텍스트 버튼 */}
               <div className={styles.contactBtnWrapper}>
                 <button
                   type="button"
                   className={styles.contactOpenBtn}
                   onClick={() => setIsContactModalOpen(true)}
                 >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                  <span>연락처 보기</span>
+                  <span>연락하기</span>
                 </button>
               </div>
             </div>
@@ -214,41 +214,55 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
               initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>축하 연락처</h3>
+                <h3 className={styles.modalTitle}>연락처 안내</h3>
                 <button
                   type="button"
                   className={styles.closeBtn}
                   onClick={() => setIsContactModalOpen(false)}
+                  aria-label="닫기"
                 >
-                  ✕
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
 
               <div className={styles.contactList}>
-                {/* 신랑측 */}
+                {/* 1. 신랑측 */}
                 <div className={styles.sideBlock}>
                   <div className={styles.sideLabel}>신랑측</div>
-                  
+
                   {/* 신랑 본인 */}
                   <div className={styles.personRow}>
                     <div className={styles.personInfo}>
                       <span className={styles.personRole}>신랑</span>
                       <span className={styles.personName}>{greetingInfo.groom.name}</span>
                     </div>
-                    {greetingInfo.groom.phone && (
-                      <div className={styles.actionBtns}>
-                        <a href={`tel:${greetingInfo.groom.phone}`} className={styles.actionBtn} aria-label="전화">
-                          전화
+                    <div className={styles.actionBtns}>
+                      {greetingInfo.groom.kakaoId && (
+                        <a
+                          href={getKakaoLink(greetingInfo.groom.kakaoId)}
+                          className={`${styles.actionBtn} ${styles.kakaoBtn}`}
+                        >
+                          카카오톡
                         </a>
-                        <a href={`sms:${greetingInfo.groom.phone}`} className={styles.actionBtn} aria-label="문자">
-                          문자
-                        </a>
-                      </div>
-                    )}
+                      )}
+                      {greetingInfo.groom.phone && (
+                        <>
+                          <a href={`tel:${greetingInfo.groom.phone}`} className={styles.actionBtn}>
+                            전화
+                          </a>
+                          <a href={`sms:${greetingInfo.groom.phone}`} className={styles.actionBtn}>
+                            문자
+                          </a>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* 신랑 혼주 */}
@@ -261,10 +275,26 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
                           {p.name}
                         </span>
                       </div>
-                      {!p.isDeceased && p.phone && (
+                      {!p.isDeceased && (
                         <div className={styles.actionBtns}>
-                          <a href={`tel:${p.phone}`} className={styles.actionBtn}>전화</a>
-                          <a href={`sms:${p.phone}`} className={styles.actionBtn}>문자</a>
+                          {p.kakaoId && (
+                            <a
+                              href={getKakaoLink(p.kakaoId)}
+                              className={`${styles.actionBtn} ${styles.kakaoBtn}`}
+                            >
+                              카카오톡
+                            </a>
+                          )}
+                          {p.phone && (
+                            <>
+                              <a href={`tel:${p.phone}`} className={styles.actionBtn}>
+                                전화
+                              </a>
+                              <a href={`sms:${p.phone}`} className={styles.actionBtn}>
+                                문자
+                              </a>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
@@ -273,7 +303,7 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
 
                 <div className={styles.contactDivider} />
 
-                {/* 신부측 */}
+                {/* 2. 신부측 */}
                 <div className={styles.sideBlock}>
                   <div className={styles.sideLabel}>신부측</div>
 
@@ -283,12 +313,26 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
                       <span className={styles.personRole}>신부</span>
                       <span className={styles.personName}>{greetingInfo.bride.name}</span>
                     </div>
-                    {greetingInfo.bride.phone && (
-                      <div className={styles.actionBtns}>
-                        <a href={`tel:${greetingInfo.bride.phone}`} className={styles.actionBtn}>전화</a>
-                        <a href={`sms:${greetingInfo.bride.phone}`} className={styles.actionBtn}>문자</a>
-                      </div>
-                    )}
+                    <div className={styles.actionBtns}>
+                      {greetingInfo.bride.kakaoId && (
+                        <a
+                          href={getKakaoLink(greetingInfo.bride.kakaoId)}
+                          className={`${styles.actionBtn} ${styles.kakaoBtn}`}
+                        >
+                          카카오톡
+                        </a>
+                      )}
+                      {greetingInfo.bride.phone && (
+                        <>
+                          <a href={`tel:${greetingInfo.bride.phone}`} className={styles.actionBtn}>
+                            전화
+                          </a>
+                          <a href={`sms:${greetingInfo.bride.phone}`} className={styles.actionBtn}>
+                            문자
+                          </a>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* 신부 혼주 */}
@@ -301,10 +345,26 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
                           {p.name}
                         </span>
                       </div>
-                      {!p.isDeceased && p.phone && (
+                      {!p.isDeceased && (
                         <div className={styles.actionBtns}>
-                          <a href={`tel:${p.phone}`} className={styles.actionBtn}>전화</a>
-                          <a href={`sms:${p.phone}`} className={styles.actionBtn}>문자</a>
+                          {p.kakaoId && (
+                            <a
+                              href={getKakaoLink(p.kakaoId)}
+                              className={`${styles.actionBtn} ${styles.kakaoBtn}`}
+                            >
+                              카카오톡
+                            </a>
+                          )}
+                          {p.phone && (
+                            <>
+                              <a href={`tel:${p.phone}`} className={styles.actionBtn}>
+                                전화
+                              </a>
+                              <a href={`sms:${p.phone}`} className={styles.actionBtn}>
+                                문자
+                              </a>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>

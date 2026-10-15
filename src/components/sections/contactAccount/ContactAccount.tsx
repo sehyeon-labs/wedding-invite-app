@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { getAssetPath } from "@/utils/path";
 import styles from "./ContactAccount.module.scss";
+import TerminalAccount from "@/components/developer/TerminalAccount/TerminalAccount";
 
 interface ContactAccountProps {
   isTerminalMode: boolean;
@@ -13,9 +14,9 @@ interface ContactAccountProps {
 
 interface FamilyMember {
   id: string;
-  role_type: string; // 'groom', 'groom_father', 'groom_mother', 'bride', 'bride_father', 'bride_mother'
+  role_type: string;
   name: string;
-  relation: string; // '차녀', '아버지', '어머니', '장남' 등
+  relation: string;
   phone: string | null;
   is_deceased: boolean;
   bank_name: string | null;
@@ -23,9 +24,6 @@ interface FamilyMember {
   holder_name: string | null;
 }
 
-/**
- * Supabase에서 신랑/신부 및 혼주 연락처와 계좌 정보를 조회하여 아코디언 형태로 제공하는 컴포넌트
- */
 export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactAccountProps) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [openSide, setOpenSide] = useState<string | null>(null);
@@ -33,7 +31,6 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
   const groomContentRef = useRef<HTMLDivElement>(null);
   const brideContentRef = useRef<HTMLDivElement>(null);
 
-  /** Supabase에서 혼주 및 당사자 연락처/계좌 목록 조회 */
   useEffect(() => {
     async function fetchFamilyMembers() {
       try {
@@ -46,7 +43,7 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
           setFamilyMembers(data);
         }
       } catch (error) {
-        console.error("Failed to fetch family members from Supabase:", error);
+        console.error("가족 정보 조회 실패:", error);
       }
     }
 
@@ -65,15 +62,13 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
     });
   };
 
-  // role_type에 따라 신랑 측과 신부 측 그룹 분류
   const groomMembers = familyMembers.filter((m) => m.role_type && m.role_type.startsWith("groom"));
   const brideMembers = familyMembers.filter((m) => m.role_type && m.role_type.startsWith("bride"));
 
-  /** DB의 relation 값을 화면에 맞게 깔끔한 명칭("혼주 (부)", "혼주 (모)" 등)으로 변환하는 함수 */
   const formatRelation = (relation: string) => {
     if (relation === "아버지") return "혼주 (부)";
     if (relation === "어머니") return "혼주 (모)";
-    return relation; // '장남', '차녀' 등은 그대로 출력
+    return relation;
   };
 
   const renderHeaderButton = (side: "groom" | "bride", title: string) => {
@@ -81,6 +76,7 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
 
     return (
       <button 
+        type="button"
         className={styles.groupHeaderBtn} 
         onClick={() => handleToggle(side)}
       >
@@ -121,6 +117,7 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
           )}
           {member.account_number && (
             <button 
+              type="button"
               className={styles.miniBtn}
               onClick={() => handleCopy(member.account_number!)}
             >
@@ -134,7 +131,9 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
 
   return (
     <section className={styles.section}>
-      {!isTerminalMode && (
+      {isTerminalMode ? (
+        <TerminalAccount />
+      ) : (
         <motion.div 
           className={styles.container}
           initial={{ opacity: 0, y: 30 }}
@@ -142,7 +141,6 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          
           <div className={styles.headerTag}>CONTACT & ACCOUNT</div>
           <h2 className={styles.mainTitle}>마음 전하실 곳</h2>
 
@@ -152,7 +150,6 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
           </p>
 
           <div className={styles.contentWrapper}>
-            
             {/* 신랑 측 통합 상자 */}
             <div className={styles.groupCard}>
               {renderHeaderButton("groom", "신랑 측 연락처 및 계좌번호")}
@@ -186,21 +183,7 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
                 </div>
               </div>
             </div>
-
           </div>
-
-        </motion.div>
-      )}
-
-      {isTerminalMode && (
-        <motion.div 
-          className={styles.terminalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
         </motion.div>
       )}
     </section>

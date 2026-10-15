@@ -25,7 +25,7 @@ export default function MapView({
   onCopySuccess,
 }: MapViewProps) {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const testMode = true;
+  const testMode = false;
 
   // 네이버 지도 SDK 초기화 (lat 또는 lng가 유효하지 않으면 API 호출하지 않음)
   useEffect(() => {

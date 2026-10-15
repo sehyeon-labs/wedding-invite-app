@@ -202,18 +202,4 @@
       }
     }
   }
-
-  /* 개발자 모드 */
-  .terminalContainer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .todo {
-      color: var(--dev-green);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-    }
-  }
 }

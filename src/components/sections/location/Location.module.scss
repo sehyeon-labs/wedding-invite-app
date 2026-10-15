@@ -1,40 +1,30 @@
 .section {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 2rem 1.5rem;
-  background-color: var(--bg-main);
+  min-height: 80vh;
+  min-height: 80dvh;
+  padding: 4.5rem 1.4rem 4rem 1.4rem;
+  background-color: var(--bg-main, #fbf9f5);
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
   box-sizing: border-box;
 
   .container {
     width: 100%;
-    max-width: 400px;
+    max-width: 380px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.2rem;
-    will-change: opacity, transform;
+    gap: 1.4rem;
 
     .headerTag {
-      font-size: 0.8rem;
       font-family: "Schoolbell", cursive;
-      color: var(--text-muted);
-      letter-spacing: 0.15em;
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-    }
-
-    .mainTitle {
-      font-size: 1.15rem;
-      font-family: 'NostalgicOnHandwriting', sans-serif;
-      font-weight: 500;
-      color: var(--text-main);
-      letter-spacing: 0.05em;
-      margin-top: -0.4rem;
+      color: var(--text-muted, #94a3b8);
+      user-select: none;
     }
 
     .contentWrapper {
@@ -42,194 +32,201 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.2rem;
+      gap: 1.1rem;
     }
 
-    .infoTextGroup {
+    /* 예식 정보 카드 */
+    .infoCard {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.55rem;
       text-align: left;
-      padding: 0.8rem 1rem;
-      background-color: var(--bg-sub);
-      border-radius: 6px;
-      border: 1px solid var(--border-light);
+      padding: 1.15rem 1.2rem;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 12px;
+      border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+      box-shadow: 0 4px 18px rgba(17, 50, 34, 0.03);
       box-sizing: border-box;
 
       .infoRow {
         display: flex;
-        align-items: flex-start;
-        font-size: 0.75rem;
+        align-items: baseline;
+        font-size: 0.82rem;
         line-height: 1.6;
 
         .key {
-          font-family: 'SeoulHangang', sans-serif;
-          color: var(--text-muted);
+          font-family: "SeoulHangang", serif;
+          color: var(--text-muted, #94a3b8);
           font-weight: 500;
-          width: 45px;
+          width: 44px;
           flex-shrink: 0;
+          letter-spacing: 0.05em;
         }
 
         .val {
-          color: var(--text-sub);
-          font-family: 'SeoulHangang', sans-serif;
-          word-break: break-all;
-          letter-spacing: 0.1rem;
+          font-family: "SeoulHangang", serif;
+          color: var(--text-sub, #475569);
+          word-break: keep-all;
+          letter-spacing: 0.02em;
+        }
+
+        .valHighlight {
+          font-family: "SeoulHangang", serif;
+          font-weight: 600;
+          color: var(--text-main, #113222);
+          word-break: keep-all;
+          letter-spacing: 0.02em;
         }
       }
     }
 
-    /* 지도 영역 감싸기 */
+    /* 지도 래퍼 */
     .mapContainer {
       width: 100%;
-      border-radius: 6px;
+      border-radius: 12px;
       overflow: hidden;
+      border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+      box-shadow: 0 4px 18px rgba(17, 50, 34, 0.03);
     }
 
-    /* 대중교통 안내 블록 */
-    .transportWrapper {
+    /* 감성적인 교통 안내 카드 */
+    .transportCard {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
       text-align: left;
-      padding: 0.8rem 1rem;
-      background-color: var(--bg-sub);
-      border-radius: 6px;
-      border: 1px solid var(--border-light);
+      padding: 1.2rem 1.25rem;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 12px;
+      border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+      box-shadow: 0 4px 18px rgba(17, 50, 34, 0.03);
       box-sizing: border-box;
 
-      .configHeader {
-        font-family: 'SeoulHangang', sans-serif;
-        font-size: 0.85rem;
-        color: var(--text-muted-dark);
-        font-weight: 600;
-        margin-bottom: 0.2rem;
+      .cardHeader {
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px dashed rgba(203, 213, 225, 0.8);
+
+        .cardTitle {
+          font-family: "SeoulHangang", serif;
+          font-size: 0.88rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          color: var(--text-main, #113222);
+        }
       }
 
-      .transportContent {
+      .transportList {
         display: flex;
         flex-direction: column;
-        gap: 0.8rem;
+        gap: 1rem;
 
-        .transitItem {
+        .transportRow {
           display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-family: 'SeoulHangang', sans-serif;
-          font-size: 0.78rem;
-          color: var(--text-sub);
-          line-height: 1.5;
-          word-break: break-all;
+          align-items: flex-start;
+          gap: 1rem;
 
-          /* 공통 뱃지 스타일 */
-          .badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 500;
+          /* 좌측 카테고리 타이틀 (단정한 고정폭) */
+          .categoryLabel {
+            width: 42px;
             flex-shrink: 0;
-            font-family: 'Pretendard', sans-serif;
-
-            /* 지하철 뱃지 스타일 */
-            &.subwayBadge {
-              background-color: #BDB193;
-              color: var(--bg-main);
-            }
-
-            /* 주차 안내 뱃지 스타일 */
-            &.parkingBadge {
-              background-color: #b45309;
-              color: var(--bg-main);
-            }
+            font-family: "SeoulHangang", serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted, #78716c);
+            letter-spacing: 0.04em;
+            padding-top: 1px;
           }
 
-          .bullet {
-            color: var(--text-muted);
-            font-weight: bold;
-            margin-right: 4px;
-          }
-
-          .transitText {
+          /* 우측 설명 및 뱃지 영역 */
+          .categoryContent {
             flex: 1;
-          }
-        }
-
-        /* 버스 그룹화 레이아웃 스타일 */
-        .busGroupContainer {
-          display: flex;
-          flex-direction: column;
-          gap: 0.4rem;
-          width: 100%;
-
-          .busGroupHeader {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 0.45rem;
 
-            .busGroupBadge {
+            .detailBlock {
+              display: flex;
+              flex-direction: column;
+              gap: 0.35rem;
+
+              .badgeLineWrap {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+              }
+            }
+
+            .descText {
+              margin: 0;
+              font-family: "SeoulHangang", serif;
+              font-size: 0.8rem;
+              line-height: 1.6;
+              color: var(--text-sub, #4b5563);
+              letter-spacing: 0.015em;
+              word-break: keep-all;
+            }
+
+            /* 지하철 파스텔 톤 캡슐 뱃지 */
+            .subwayPill {
               display: inline-flex;
               align-items: center;
               justify-content: center;
-              padding: 2px 6px;
-              border-radius: 4px;
-              font-size: 0.7rem;
-              font-weight: 500;
-              font-family: 'Pretendard', sans-serif;
-              background-color: var(--cyan-text);
-              color: var(--bg-main);
+              padding: 2.5px 7px;
+              border-radius: 9999px;
+              font-family: "Pretendard", sans-serif;
+              font-size: 0.65rem;
+              font-weight: 600;
+              letter-spacing: 0.02em;
+              color: #ffffff;
+              border: none;
+
+              /* 🚇 호선별 고유 컬러 배경 적용 */
+              &.line1 { background-color: #0052a4; }
+              &.line2 { background-color: #00873d; }
+              &.line3 { background-color: #d9690d; }
+              &.line4 { background-color: #008cb8; }
+              &.line5 { background-color: #85539b; }
+              &.line6 { background-color: #b3671f; }
+              &.line7 { background-color: #626b00; }
+              &.line8 { background-color: #c90f5a; }
+              &.line9 { background-color: #9c8e70; }
+              &.lineBundang { background-color: #c98200; }
+              &.lineShinbundang { background-color: #ba0034; }
+              &.lineGyeongui { background-color: #4fa480; }
+              &.lineAirport { background-color: #007bb5; }
+              &.lineDefault { background-color: #4b5563; }
             }
-          }
 
-          .busList {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            padding-left: 0.2rem;
-
-            .busItemRow {
+            /* 버스 목록 */
+            .busWrap {
               display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              font-family: 'SeoulHangang', sans-serif;
-              font-size: 0.78rem;
-              color: var(--text-sub);
-              line-height: 1.5;
+              flex-direction: column;
+              gap: 0.35rem;
 
-              .busDot {
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                flex-shrink: 0;
+              .busItem {
+                display: flex;
+                align-items: baseline;
+                gap: 0.45rem;
 
-                &.dotBlue { background-color: #2563eb; }
-                &.dotGreen { background-color: #16a34a; }
-                &.dotDefault { background-color: #64748b; }
-              }
+                .busTypeDot {
+                  width: 5px;
+                  height: 5px;
+                  border-radius: 50%;
+                  flex-shrink: 0;
+                  transform: translateY(-2px);
 
-              .transitText {
-                flex: 1;
+                  &.dotBlue { background-color: #3b82f6; }
+                  &.dotGreen { background-color: #10b981; }
+                  &.dotRed { background-color: #ef4444; }
+                  &.dotDefault { background-color: #94a3b8; }
+                }
               }
             }
           }
         }
       }
-    }
-  }
-
-  .terminalContainer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .todo {
-      color: var(--dev-green);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
     }
   }
 }

@@ -25,10 +25,15 @@ export default function MapView({
   onCopySuccess,
 }: MapViewProps) {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const testMode = true;
 
   // 네이버 지도 SDK 초기화 (lat 또는 lng가 유효하지 않으면 API 호출하지 않음)
   useEffect(() => {
     if (lat === null || lat === undefined || lng === null || lng === undefined) {
+      return;
+    }
+
+    if (testMode) {
       return;
     }
 
@@ -37,11 +42,11 @@ export default function MapView({
         try {
           const mapOptions = {
             center: new window.naver.maps.LatLng(lat, lng),
-            zoom: 17, // 💡 기존 16에서 17로 확대 (건물 윤곽과 주변 출구가 더 선명하게 보임)
+            zoom: 17,
             zoomControl: false,
             draggable: true,
             pinchZoom: true,
-            scrollWheel: false, // 청첩장 스크롤 중 의도치 않은 줌 방지
+            scrollWheel: false,
           };
 
           const map = new window.naver.maps.Map("map", mapOptions);

@@ -1,122 +1,159 @@
 .section {
-  width: 100%;
-  min-height: 80vh;
-  padding: 0 3.0rem;
-  background-color: var(--bg-main);
   position: relative;
+  width: 100%;
+  min-height: 70vh;
+  min-height: 70dvh;
+  padding: 5rem 1.4rem 4rem 1.4rem;
+  background-color: var(--bg-main, #fbf9f5);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   box-sizing: border-box;
 
   .container {
     width: 100%;
-    max-width: 400px;
+    max-width: 380px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.2rem;
-    will-change: opacity, transform;
+    gap: 1.4rem;
 
     .headerTag {
       font-family: "Schoolbell", cursive;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      letter-spacing: 0.15rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-    }
-
-    .mainTitle {
-      font-family: 'NostalgicOnHandwriting', sans-serif;
-      font-size: 1.1rem;
-      color: var(--text-main);
-      font-weight: 400;
-      margin-bottom: 0.5rem;
+      color: var(--text-muted, #94a3b8);
+      user-select: none;
     }
 
     .contentWrapper {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
-      padding-bottom: 2rem;
+      gap: 1.3rem;
 
-      /* 깔끔한 텍스트 버튼형 탭 */
+      /* 부드러운 텍스트 탭 헤더 */
       .tabHeader {
+        position: relative;
         display: flex;
         justify-content: center;
-        gap: 1.5rem;
-        border-bottom: 1px solid var(--border-light);
-        padding-bottom: 0.8rem;
+        gap: 2rem;
+        border-bottom: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+        padding-bottom: 0.6rem;
 
         .tabBtn {
+          position: relative;
           background: none;
           border: none;
-          padding: 0;
-          font-family: 'SeoulHangang', sans-serif;
-          font-size: 0.85rem;
-          color: var(--text-muted);
+          padding: 0.4rem 0.2rem;
+          font-family: "SeoulHangang", serif;
+          font-size: 0.86rem;
+          color: var(--text-muted, #94a3b8);
           font-weight: 500;
+          letter-spacing: 0.04em;
           cursor: pointer;
-          transition: color 0.2s ease, font-weight 0.2s ease;
+          transition: color 0.2s ease;
+          outline: none;
 
           &.active {
-            color: var(--text-main);
+            color: var(--text-main, #113222);
             font-weight: 600;
-            position: relative;
+          }
 
-            &::after {
-              content: '';
-              position: absolute;
-              bottom: -9px;
-              left: 0;
-              width: 100%;
-              height: 2px;
-              background-color: var(--text-main);
-            }
+          .activeIndicator {
+            position: absolute;
+            bottom: -0.65rem;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--text-main, #113222);
+            border-radius: 2px;
           }
         }
       }
 
-      /* 상자 없는 패널 영역 */
+      /* 탭 내용 패널 영역 */
       .contentPanel {
         width: 100%;
-        min-height: 100px;
         display: flex;
-        align-items: flex-start;
         justify-content: center;
+        align-items: flex-start;
 
         .panelInner {
           width: 100%;
+        }
+
+        /* 신부대기실 안내 카드 */
+        .singleMessageCard {
+          width: 100%;
           text-align: center;
+          padding: 1.5rem 1.2rem;
+          background: rgba(255, 255, 255, 0.65);
+          border-radius: 12px;
+          border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+          box-shadow: 0 4px 18px rgba(17, 50, 34, 0.02);
+          box-sizing: border-box;
+
+          .descriptionText {
+            margin: 0;
+            font-family: "SeoulHangang", serif;
+            font-size: 0.84rem;
+            color: var(--text-sub, #475569);
+            line-height: 2.1;
+            letter-spacing: 0.03em;
+            word-break: keep-all;
+            white-space: pre-line;
+          }
         }
 
-        .descriptionText {
-          font-family: 'SeoulHangang', sans-serif;
-          font-size: 0.82rem;
-          color: var(--text-sub);
-          line-height: 1.8;
-          margin: 0;
-          white-space: pre-line;
-          letter-spacing: 0.05em;
-        }
-
-        .bulletList {
+        /* 식장 이용 및 화환 리스트 */
+        .noticeList {
           margin: 0;
           padding: 0;
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: 0.6rem;
-          text-align: center;
+          gap: 0.65rem;
 
-          li {
-            font-family: 'SeoulHangang', sans-serif;
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            line-height: 1.6;
-            white-space: pre-line;
-            letter-spacing: 0.05em;
+          .noticeCard {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            padding: 1rem 1.15rem;
+            background: rgba(255, 255, 255, 0.65);
+            border-radius: 10px;
+            border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+            box-shadow: 0 3px 12px rgba(17, 50, 34, 0.02);
+            box-sizing: border-box;
+
+            .noticeNumber {
+              width: 18px;
+              height: 18px;
+              border-radius: 50%;
+              background-color: var(--border-light, #f1f5f9);
+              color: var(--text-muted, #78716c);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-family: "Pretendard", sans-serif;
+              font-size: 0.68rem;
+              font-weight: 600;
+              flex-shrink: 0;
+              margin-top: 2px;
+            }
+
+            .itemText {
+              margin: 0;
+              flex: 1;
+              font-family: "SeoulHangang", serif;
+              font-size: 0.82rem;
+              color: var(--text-sub, #475569);
+              line-height: 1.75;
+              letter-spacing: 0.02em;
+              word-break: keep-all;
+              white-space: pre-line;
+            }
           }
         }
       }
@@ -130,9 +167,10 @@
     align-items: center;
 
     .todo {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-light);
+      color: var(--dev-green, #10b981);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
     }
   }
 }

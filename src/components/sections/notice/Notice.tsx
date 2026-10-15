@@ -1,26 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import styles from "./Notice.module.scss";
+import TerminalNotice from "@/components/developer/TerminalNotice/TerminalNotice";
 
 interface NoticeProps {
   isTerminalMode: boolean;
 }
 
-/**
- * Supabase에서 신부대기실 시간 및 식장 주의사항 데이터를 조회하여 미니멀한 탭 형식으로 렌더링하는 컴포넌트
- */
-export default function Notice({ isTerminalMode }: NoticeProps) {
-  const [noticeData, setNoticeData] = useState<{
-    brideRoomTime: string;
-    venuePrecautions: string[];
-  } | null>(null);
+interface NoticeData {
+  brideRoomTime: string;
+  venuePrecautions: string[];
+}
 
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 14, filter: "blur(2px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.85,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
+export default function Notice({ isTerminalMode }: NoticeProps) {
+  const [noticeData, setNoticeData] = useState<NoticeData | null>(null);
   const [activeTab, setActiveTab] = useState<"brideRoom" | "precautions">("brideRoom");
 
-  /** Supabase에서 안내사항 데이터 조회 */
   useEffect(() => {
     async function fetchNoticeData() {
       try {
@@ -38,93 +60,110 @@ export default function Notice({ isTerminalMode }: NoticeProps) {
           });
         }
       } catch (error) {
-        console.error("Failed to fetch notice data from Supabase:", error);
+        console.error("안내사항 데이터 조회 실패:", error);
       }
     }
 
     fetchNoticeData();
   }, []);
 
-  if (!noticeData) return null;
+  if (!noticeData && !isTerminalMode) return null;
 
   return (
     <section className={styles.section}>
-      {!isTerminalMode && (
-        <motion.div 
-          className={styles.container}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className={styles.headerTag}>GUIDE</div>
-          <h2 className={styles.mainTitle}>안내사항</h2>
+      {isTerminalMode ? (
+        <TerminalNotice />
+      ) : (
+        noticeData && (
+          <motion.div
+            className={styles.container}
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{
+              once: true,
+              margin: "0px 0px -80px 0px",
+              amount: 0.2,
+            }}
+          >
+            <motion.div className={styles.headerTag} variants={itemVariants}>
+              GUIDE
+            </motion.div>
 
-          <div className={styles.contentWrapper}>
-            
-            {/* 탭 헤더 */}
-            <div className={styles.tabHeader}>
-              <button
-                className={`${styles.tabBtn} ${activeTab === "brideRoom" ? styles.active : ""}`}
-                onClick={() => setActiveTab("brideRoom")}
-              >
-                신부대기실 안내
-              </button>
-              <button
-                className={`${styles.tabBtn} ${activeTab === "precautions" ? styles.active : ""}`}
-                onClick={() => setActiveTab("precautions")}
-              >
-                식장 이용 및 화환
-              </button>
-            </div>
+            <motion.div className={styles.contentWrapper} variants={itemVariants}>
+              {/* 탭 네비게이션 헤더 */}
+              <div className={styles.tabHeader}>
+                <button
+                  type="button"
+                  className={`${styles.tabBtn} ${activeTab === "brideRoom" ? styles.active : ""}`}
+                  onClick={() => setActiveTab("brideRoom")}
+                >
+                  <span>신부대기실 안내</span>
+                  {activeTab === "brideRoom" && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className={styles.activeIndicator}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
 
-            {/* 상자 없는 깔끔한 텍스트 콘텐츠 영역 */}
-            <div className={styles.contentPanel}>
-              <AnimatePresence mode="wait">
-                {activeTab === "brideRoom" ? (
-                  <motion.div
-                    key="brideRoom"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                    className={styles.panelInner}
-                  >
-                    <p className={styles.descriptionText}>{noticeData.brideRoomTime}</p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="precautions"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                    className={styles.panelInner}
-                  >
-                    <ul className={styles.bulletList}>
-                      {noticeData.venuePrecautions.map((item, index) => (
-                        <li key={`precaution-${index}`}>{item}</li>
-                      ))}
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                <button
+                  type="button"
+                  className={`${styles.tabBtn} ${activeTab === "precautions" ? styles.active : ""}`}
+                  onClick={() => setActiveTab("precautions")}
+                >
+                  <span>식장 이용 및 화환</span>
+                  {activeTab === "precautions" && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className={styles.activeIndicator}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              </div>
 
-          </div>
-        </motion.div>
-      )}
-
-      {isTerminalMode && (
-        <motion.div 
-          className={styles.terminalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </motion.div>
+              {/* 탭 패널 콘텐츠 */}
+              <div className={styles.contentPanel}>
+                <AnimatePresence mode="wait">
+                  {activeTab === "brideRoom" ? (
+                    <motion.div
+                      key="brideRoom"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className={styles.panelInner}
+                    >
+                      <div className={styles.singleMessageCard}>
+                        <p className={styles.descriptionText}>{noticeData.brideRoomTime}</p>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="precautions"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className={styles.panelInner}
+                    >
+                      <ul className={styles.noticeList}>
+                        {noticeData.venuePrecautions.map((item, index) => (
+                          <li key={`precaution-${index}`} className={styles.noticeCard}>
+                            <span className={styles.noticeNumber}>{index + 1}</span>
+                            <p className={styles.itemText}>{item}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </motion.div>
+        )
       )}
     </section>
   );

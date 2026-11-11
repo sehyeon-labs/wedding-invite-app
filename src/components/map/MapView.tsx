@@ -12,6 +12,8 @@ declare global {
 interface MapViewProps {
   locationName: string;
   address: string;
+  naver_address?: string;
+  kakao_address?: string;
   lat?: number | null;
   lng?: number | null;
   onCopySuccess?: () => void;
@@ -20,6 +22,8 @@ interface MapViewProps {
 export default function MapView({
   locationName,
   address,
+  naver_address,
+  kakao_address,
   lat,
   lng,
   onCopySuccess,
@@ -27,7 +31,6 @@ export default function MapView({
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const testMode = false;
 
-  // 네이버 지도 SDK 초기화 (lat 또는 lng가 유효하지 않으면 API 호출하지 않음)
   useEffect(() => {
     if (lat === null || lat === undefined || lng === null || lng === undefined) {
       return;
@@ -85,14 +88,32 @@ export default function MapView({
     });
   };
 
-  // 검색 타겟 키워드 (주소 우선, 없으면 장소명)
-  const searchQuery = encodeURIComponent(address || locationName);
+  // 네이버 지도 URL 분기 처리
+  const getNaverMapUrl = () => {
+    if (!naver_address) {
+      const fallbackTarget = locationName || address;
+      return `https://map.naver.com/p/search/${encodeURIComponent(fallbackTarget)}`;
+    }
 
-  // 1. 네이버 지도: 통합 검색 딥링크
-  const naverMapUrl = `https://map.naver.com/p/search/${searchQuery}`;
+    // 1. 전체 URL이 들어온 경우 (http:// 또는 https:// 로 시작)
+    if (naver_address.startsWith("http://") || naver_address.startsWith("https://")) {
+      return naver_address;
+    }
 
-  // 2. 카카오맵: 통합 검색 딥링크
-  const kakaoMapUrl = `https://map.kakao.com/link/search/${searchQuery}`;
+    // 2. 숫자만 있는 플레이스 ID 형태인 경우 (예: "38339109")
+    if (/^\d+$/.test(naver_address.trim())) {
+      return `https://map.naver.com/p/entry/place/${naver_address.trim()}`;
+    }
+
+    // 3. 일반 텍스트나 주소 문자열인 경우
+    return `https://map.naver.com/p/search/${encodeURIComponent(naver_address)}`;
+  };
+
+  const naverMapUrl = getNaverMapUrl();
+
+  // 카카오맵 검색 타겟
+  const kakaoQueryTarget = kakao_address || locationName || address;
+  const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(kakaoQueryTarget)}`;
 
   return (
     <div className={styles.mapViewerWrapper}>
@@ -121,7 +142,7 @@ export default function MapView({
         </div>
       )}
 
-      {/* 지도 앱 바로가기 버튼 */}
+      {/* 지도 바로가기 버튼 */}
       <div className={styles.mapBtnGroup}>
         <a
           href={naverMapUrl}

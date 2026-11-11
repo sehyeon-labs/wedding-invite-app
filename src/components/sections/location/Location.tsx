@@ -14,7 +14,7 @@ interface LocationProps {
 }
 
 interface TransportItem {
-  category: "subway" | "bus" | "parking" | string;
+  category: "subway" | "bus" | "other" | "parking" | string;
   line?: string;
   busType?: "blue" | "green" | "red" | "yellow" | string;
   text: string;
@@ -23,6 +23,9 @@ interface TransportItem {
 interface WeddingLocationData {
   name: string;
   address: string;
+  detail_address?: string;
+  naver_address?: string;
+  kakao_address?: string;
   lat: number;
   lng: number;
   transport: TransportItem[];
@@ -88,7 +91,7 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
       try {
         const { data, error } = await supabase
           .from("weddings")
-          .select("wedding_date, location_name, location_address, location_lat, location_lng, transport")
+          .select("wedding_date, location_name, location_address, location_detail_address, location_lat, location_lng, location_naver_address, location_kakao_address, transport")
           .limit(1)
           .single();
 
@@ -99,6 +102,9 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
           setLocationData({
             name: data.location_name || "",
             address: data.location_address || "",
+            detail_address: data.location_detail_address || "",
+            naver_address: data.location_naver_address || "",
+            kakao_address: data.location_kakao_address || "",
             lat: data.location_lat,
             lng: data.location_lng,
             transport: data.transport || [],
@@ -155,7 +161,7 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                 {locationData.name && (
                   <div className={styles.infoRow}>
                     <span className={styles.key}>장소</span>
-                    <span className={styles.valHighlight}>{locationData.name}</span>
+                    <span className={styles.valHighlight}>{locationData.name} {locationData.detail_address}</span>
                   </div>
                 )}
                 {locationData.address && (
@@ -171,6 +177,8 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                 <MapView
                   locationName={locationData.name}
                   address={locationData.address}
+                  naver_address={locationData.naver_address}
+                  kakao_address={locationData.kakao_address}
                   lat={locationData.lat}
                   lng={locationData.lng}
                   onCopySuccess={onCopyToast}
@@ -259,7 +267,7 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                     {/* 기타 안내 */}
                     {otherItems.length > 0 && (
                       <div className={styles.transportRow}>
-                        <div className={styles.categoryLabel}>안내</div>
+                        <div className={styles.categoryLabel}>셔틀버스</div>
                         <div className={styles.categoryContent}>
                           {otherItems.map((item, index) => (
                             <p key={`other-${index}`} className={styles.descText}>

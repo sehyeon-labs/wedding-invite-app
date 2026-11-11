@@ -1,7 +1,7 @@
 .greetingSection {
   position: relative;
   width: 100%;
-  padding: 5rem 1.6rem 5rem 1.6rem;
+  padding: 6rem 1.6rem;
   background-color: var(--bg-main, #fbf9f5);
   display: flex;
   justify-content: center;
@@ -26,7 +26,7 @@
       .quoteMark {
         font-family: "NostalgicOnHandwriting", serif;
         font-size: 2.2rem;
-        color: var(--text-icon, #738a7c);
+        color: var(--text-muted, #94a3b8);
         line-height: 1;
         opacity: 0.7;
         user-select: none;
@@ -55,12 +55,12 @@
       /* 혼주 & 자녀 명단 영역 */
       .namesContainer {
         width: 100%;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
         padding-top: 1.6rem;
         border-top: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
         display: flex;
         flex-direction: column;
-        gap: 0.85rem;
+        gap: 1.05rem;
 
         .nameRow {
           display: flex;
@@ -72,7 +72,7 @@
           letter-spacing: 0.04em;
 
           .parents {
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-sub, #475569);
 
             .deceasedMark {
@@ -134,55 +134,59 @@
     }
   }
 
-  /* 연락하기 바텀시트 모달 */
+  /* 연락하기 바텀시트 모달 (리파인된 감성 스타일) */
   .modalOverlay {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: flex-end;
 
     .modalContent {
       width: 100%;
-      max-width: 420px;
-      background: var(--bg-main, #ffffff);
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      padding: 1.5rem 1.25rem 2.2rem 1.25rem;
+      max-width: 410px;
+      background: var(--bg-main, #faf8f5);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 1.6rem 1.4rem 2.4rem 1.4rem;
       box-sizing: border-box;
-      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
 
       .modalHeader {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.2rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
+        margin-bottom: 1.1rem;
 
         .modalTitle {
-          font-family: "SeoulHangang", serif;
-          font-size: 1.05rem;
-          font-weight: 600;
-          letter-spacing: 0.04em;
-          color: var(--text-main, #113222);
+          font-family: "NostalgicOnHandwriting", serif;
+          font-size: 1.18rem;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+          color: var(--text-main, #142f21);
           margin: 0;
         }
 
         .closeBtn {
           border: none;
           background: none;
-          color: var(--text-muted, #94a3b8);
+          color: #94a3b8;
           cursor: pointer;
-          padding: 0.3rem;
+          padding: 0.35rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: color 0.15s ease;
+          border-radius: 50%;
+          transition: all 0.15s ease;
 
           &:hover {
-            color: var(--text-main, #113222);
+            color: #475569;
+            background-color: rgba(0, 0, 0, 0.04);
           }
         }
       }
@@ -190,89 +194,95 @@
       .contactList {
         display: flex;
         flex-direction: column;
-        gap: 1.2rem;
+        gap: 1.1rem;
 
         .sideBlock {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 0.65rem;
 
           .sideLabel {
-            font-family: "Pretendard", sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted, #94a3b8);
-            letter-spacing: 0.05em;
+            font-family: "Schoolbell", cursive;
+            font-size: 0.72rem;
+            color: #94a3b8;
+            letter-spacing: 0.14em;
+            margin-bottom: 0.1rem;
           }
 
           .personRow {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.35rem 0;
+            padding: 0.3rem 0;
 
             .personInfo {
               display: flex;
-              align-items: center;
+              align-items: baseline;
               gap: 0.4rem;
               font-family: "SeoulHangang", serif;
               flex-shrink: 0;
 
               .personRole {
-                font-size: 0.8rem;
-                color: var(--text-muted, #94a3b8);
-                min-width: 36px;
+                font-size: 0.78rem;
+                color: #85929e;
+                min-width: 34px;
               }
 
               .personName {
-                font-size: 0.92rem;
+                font-size: 0.85rem;
                 font-weight: 600;
-                color: var(--text-main, #113222);
+                color: var(--text-sub, #475569);
 
                 .deceasedMark {
                   font-weight: 400;
                   color: var(--text-light, #94a3b8);
+                  margin-right: 2px;
                 }
               }
             }
 
             .actionBtns {
               display: flex;
-              gap: 0.28rem;
+              align-items: center;
+              gap: 0.35rem;
 
               .actionBtn {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                padding: 0.35rem 0.58rem;
-                border-radius: 6px;
-                border: 1px solid var(--border-light, #e2e8f0);
+                padding: 0.35rem 0.65rem;
+                border-radius: 5px;
+                border: 1px solid rgba(203, 213, 225, 0.85);
                 background: #ffffff;
-                font-family: "Pretendard", sans-serif;
-                font-size: 0.7rem;
+                font-family: "SeoulHangang", serif;
+                font-size: 0.72rem;
+                letter-spacing: 0.02em;
                 font-weight: 500;
-                color: var(--text-sub, #475569);
+                color: #475569;
                 text-decoration: none;
                 transition: all 0.15s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 
                 &:hover {
                   background-color: #f8fafc;
-                  border-color: #cbd5e1;
+                  border-color: #94a3b8;
+                  color: #142f21;
                 }
 
                 &:active {
+                  transform: scale(0.96);
                   background-color: #f1f5f9;
                 }
 
-                /* 카카오톡 소프트 옐로우 뱃지 */
+                /* 소프트 파스텔 옐로우 카카오 버튼 */
                 &.kakaoBtn {
                   background-color: #fae100;
-                  border-color: #f0d800;
-                  color: #371d1e;
+                  border-color: #ebd300;
+                  color: #381e1f;
                   font-weight: 600;
 
                   &:hover {
-                    background-color: #f7dc00;
+                    background-color: #f5dc00;
                   }
 
                   &:active {
@@ -287,7 +297,7 @@
         .contactDivider {
           width: 100%;
           height: 1px;
-          background-color: var(--border-light, rgba(226, 232, 240, 0.7));
+          background-color: var(--border-light, rgba(226, 232, 240, 0.6));
         }
       }
     }

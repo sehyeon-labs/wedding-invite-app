@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { getAssetPath } from "@/utils/path";
 import styles from "./Gallery.module.scss";
 import TerminalGallery from "@/components/developer/TerminalGallery/TerminalGallery";
 
@@ -34,15 +35,45 @@ const itemVariants: Variants = {
   },
 };
 
+const slideVariants: Variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      x: { type: "spring", stiffness: 320, damping: 32 },
+      opacity: { duration: 0.2 },
+    },
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? "-100%" : "100%",
+    opacity: 0,
+    transition: {
+      x: { type: "spring", stiffness: 320, damping: 32 },
+      opacity: { duration: 0.2 },
+    },
+  }),
+};
+
+const THUMB_ITEM_WIDTH = 42;
+const THUMB_ITEM_GAP = 6;
+const THUMB_PITCH = THUMB_ITEM_WIDTH + THUMB_ITEM_GAP;
+
 export default function Gallery({ isTerminalMode }: GalleryProps) {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [direction, setDirection] = useState<number>(0);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
 
   const thumbnailTrackRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
-  const isAutoScrolling = useRef<boolean>(false);
+  const isNavigatingRef = useRef<boolean>(false);
+  const scrollUnlockTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrubbingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastIndexRef = useRef<number>(0);
 
   useEffect(() => {
     async function fetchGalleryImages() {
@@ -76,79 +107,99 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
     fetchGalleryImages();
   }, []);
 
+  // [수정 핵심] 상단 넘김 시 하단 썸네일 이동 로직
   useEffect(() => {
-    if (selectedIndex !== null && thumbnailTrackRef.current) {
-      const selectedThumb = thumbnailTrackRef.current.children[selectedIndex] as HTMLElement;
-      if (selectedThumb) {
-        isAutoScrolling.current = true;
-        selectedThumb.scrollIntoView({
-          behavior: "smooth",
-          inline: "center",
-          block: "nearest",
-        });
-        setTimeout(() => {
-          isAutoScrolling.current = false;
-        }, 300);
-      }
-    }
-  }, [selectedIndex]);
+    if (selectedIndex !== null && thumbnailTrackRef.current && !isScrubbing) {
+      const container = thumbnailTrackRef.current;
+      isNavigatingRef.current = true;
 
+      if (scrollUnlockTimerRef.current) {
+        clearTimeout(scrollUnlockTimerRef.current);
+      }
+
+      // 마지막 ↔ 0번 순환 루프 점프일 때는 스무스 롤백 없이 'instant(즉시)'로 이동하여 중간 사진 침범 차단
+      const isLooping =
+        (lastIndexRef.current === galleryImages.length - 1 && selectedIndex === 0) ||
+        (lastIndexRef.current === 0 && selectedIndex === galleryImages.length - 1);
+
+      container.scrollTo({
+        left: selectedIndex * THUMB_PITCH,
+        behavior: isLooping ? "instant" : "smooth",
+      });
+
+      lastIndexRef.current = selectedIndex;
+
+      // 스크롤이 끝날 때까지 onScroll 감지 확실히 차단
+      scrollUnlockTimerRef.current = setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, isLooping ? 100 : 360);
+    }
+  }, [selectedIndex, isScrubbing, galleryImages.length]);
+
+  // 하단 썸네일 트랙 스크러빙 핸들러
   const handleThumbnailScroll = () => {
-    if (isAutoScrolling.current || !thumbnailTrackRef.current) return;
-    const container = thumbnailTrackRef.current;
-    const containerRect = container.getBoundingClientRect();
-    const containerCenter = containerRect.left + containerRect.width / 2;
+    // 자동 이동 중일 때는 onScroll 계산을 완전히 스킵하여 인덱스 간섭 원천 차단
+    if (isNavigatingRef.current || !thumbnailTrackRef.current) return;
 
-    const thumbItems = container.children;
-    let closestIndex = 0;
-    let minDistance = Infinity;
+    const scrollLeft = thumbnailTrackRef.current.scrollLeft;
+    const currentIndex = Math.max(
+      0,
+      Math.min(galleryImages.length - 1, Math.round(scrollLeft / THUMB_PITCH))
+    );
 
-    for (let i = 0; i < thumbItems.length; i++) {
-      const thumb = thumbItems[i] as HTMLElement;
-      const thumbRect = thumb.getBoundingClientRect();
-      const thumbCenter = thumbRect.left + thumbRect.width / 2;
-      const distance = Math.abs(containerCenter - thumbCenter);
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = i;
+    if (lastIndexRef.current !== currentIndex) {
+      if (typeof window !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(6);
+        } catch (_) {}
       }
+
+      setDirection(currentIndex > lastIndexRef.current ? 1 : -1);
+      lastIndexRef.current = currentIndex;
+      setSelectedIndex(currentIndex);
     }
 
-    if (selectedIndex !== closestIndex) {
-      setSelectedIndex(closestIndex);
+    setIsScrubbing(true);
+    if (scrubbingTimerRef.current) {
+      clearTimeout(scrubbingTimerRef.current);
     }
+    scrubbingTimerRef.current = setTimeout(() => {
+      setIsScrubbing(false);
+    }, 120);
   };
 
   const handlePrev = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (selectedIndex === null) return;
-    setSelectedIndex(selectedIndex === 0 ? galleryImages.length - 1 : selectedIndex - 1);
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (selectedIndex === null || galleryImages.length === 0) return;
+
+    setIsScrubbing(false);
+    isNavigatingRef.current = true;
+    setDirection(-1);
+    setSelectedIndex((prev) => (prev === 0 ? galleryImages.length - 1 : (prev ?? 0) - 1));
   };
 
   const handleNext = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    if (selectedIndex === null) return;
-    setSelectedIndex(selectedIndex === galleryImages.length - 1 ? 0 : selectedIndex + 1);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const distance = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 45;
-
-    if (distance > minSwipeDistance) {
-      handleNext();
-    } else if (distance < -minSwipeDistance) {
-      handlePrev();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
+    if (selectedIndex === null || galleryImages.length === 0) return;
+
+    setIsScrubbing(false);
+    isNavigatingRef.current = true;
+    setDirection(1);
+    setSelectedIndex((prev) => (prev === galleryImages.length - 1 ? 0 : (prev ?? 0) + 1));
+  };
+
+  const openImageModal = (index: number) => {
+    setIsScrubbing(false);
+    isNavigatingRef.current = true;
+    setDirection(0);
+    setSelectedIndex(index);
+    lastIndexRef.current = index;
   };
 
   const displayedImages = isExpanded ? galleryImages : galleryImages.slice(0, 9);
@@ -173,13 +224,12 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
             GALLERY
           </motion.div>
 
-          {/* 3열 썸네일 그리드 */}
           <motion.div className={styles.albumGrid} variants={itemVariants}>
             {displayedImages.map((src, index) => (
               <div
                 key={index}
                 className={styles.imageCard}
-                onClick={() => setSelectedIndex(index)}
+                onClick={() => openImageModal(index)}
               >
                 <img src={src} alt={`갤러리 사진 ${index + 1}`} loading="lazy" />
                 <div className={styles.overlay} />
@@ -187,7 +237,6 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
             ))}
           </motion.div>
 
-          {/* 더보기 버튼 */}
           {galleryImages.length > 9 && (
             <motion.div className={styles.actionRow} variants={itemVariants}>
               <button
@@ -195,9 +244,18 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                 className={styles.expandBtn}
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded
-                  ? "접기 ∧"
-                  : `사진 더보기 (${galleryImages.length - 9}장 더) ∨`}
+                <span>
+                  {isExpanded
+                    ? "사진 접기"
+                    : `사진 더보기 (${galleryImages.length - 9}장 더)`}
+                </span>
+                <img
+                  src={getAssetPath("/icon/down.png")}
+                  alt="토글 아이콘"
+                  width={11}
+                  height={11}
+                  className={`${styles.toggleIconImg} ${isExpanded ? styles.rotate : ""}`}
+                />
               </button>
             </motion.div>
           )}
@@ -212,11 +270,10 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.22 }}
             onClick={() => setSelectedIndex(null)}
           >
             <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-              {/* 상단 닫기 바 */}
               <div className={styles.modalTopBar}>
                 <span className={styles.imageCounter}>
                   {selectedIndex + 1} / {galleryImages.length}
@@ -242,25 +299,44 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                   onClick={handlePrev}
                   aria-label="이전 사진"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15 18 9 12 15 6" />
                   </svg>
                 </button>
 
-                <div
-                  className={styles.mainImageContainer}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  <motion.img
-                    key={selectedIndex}
-                    src={galleryImages[selectedIndex]}
-                    alt={`확대 사진 ${selectedIndex + 1}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.25 }}
-                  />
+                <div className={styles.mainImageContainer}>
+                  <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                    <motion.div
+                      key={selectedIndex}
+                      custom={direction}
+                      variants={isScrubbing ? undefined : slideVariants}
+                      initial={isScrubbing ? false : "enter"}
+                      animate={isScrubbing ? { opacity: 1, x: 0 } : "center"}
+                      exit={isScrubbing ? { opacity: 0 } : "exit"}
+                      transition={
+                        isScrubbing
+                          ? { duration: 0 }
+                          : { x: { type: "spring", stiffness: 320, damping: 32 }, opacity: { duration: 0.2 } }
+                      }
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.4}
+                      onDragEnd={(e, { offset, velocity }) => {
+                        const swipe = offset.x;
+                        if (swipe < -40 || velocity.x < -400) {
+                          handleNext();
+                        } else if (swipe > 40 || velocity.x > 400) {
+                          handlePrev();
+                        }
+                      }}
+                      className={styles.slideItem}
+                    >
+                      <img
+                        src={galleryImages[selectedIndex]}
+                        alt={`확대 사진 ${selectedIndex + 1}`}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
 
                 <button
@@ -269,7 +345,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                   onClick={handleNext}
                   aria-label="다음 사진"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </button>
@@ -280,18 +356,35 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                 ref={thumbnailTrackRef}
                 className={styles.thumbnailDock}
                 onScroll={handleThumbnailScroll}
+                onTouchStart={() => {
+                  isNavigatingRef.current = false;
+                }}
+                onMouseDown={() => {
+                  isNavigatingRef.current = false;
+                }}
               >
+                <div className={styles.dockSpacer} />
+
                 {galleryImages.map((src, index) => (
                   <div
                     key={index}
                     className={`${styles.thumbItem} ${
                       selectedIndex === index ? styles.activeThumb : ""
                     }`}
-                    onClick={() => setSelectedIndex(index)}
+                    onClick={() => {
+                      if (selectedIndex !== index) {
+                        setIsScrubbing(false);
+                        isNavigatingRef.current = true;
+                        setDirection(index > (selectedIndex ?? 0) ? 1 : -1);
+                        setSelectedIndex(index);
+                      }
+                    }}
                   >
                     <img src={src} alt={`미니 썸네일 ${index + 1}`} />
                   </div>
                 ))}
+
+                <div className={styles.dockSpacer} />
               </div>
             </div>
           </motion.div>

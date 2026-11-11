@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { getAssetPath } from "@/utils/path";
 import styles from "./ContactAccount.module.scss";
 import TerminalAccount from "@/components/developer/TerminalAccount/TerminalAccount";
 
@@ -17,40 +16,69 @@ interface FamilyMember {
   role_type: string;
   name: string;
   relation: string;
-  phone: string | null;
   is_deceased: boolean;
   bank_name: string | null;
   account_number: string | null;
   holder_name: string | null;
 }
 
+const ROLE_ORDER: Record<string, number> = {
+  groom: 1,
+  groom_father: 2,
+  groom_mother: 3,
+  bride: 1,
+  bride_father: 2,
+  bride_mother: 3,
+};
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 14, filter: "blur(2px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
 export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactAccountProps) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [openSide, setOpenSide] = useState<string | null>(null);
-
-  const groomContentRef = useRef<HTMLDivElement>(null);
-  const brideContentRef = useRef<HTMLDivElement>(null);
+  const [openSide, setOpenSide] = useState<"groom" | "bride" | null>(null);
 
   useEffect(() => {
     async function fetchFamilyMembers() {
       try {
         const { data, error } = await supabase
           .from("wedding_family_members")
-          .select("*");
+          .select("id, role_type, name, relation, is_deceased, bank_name, account_number, holder_name");
 
         if (error) throw error;
         if (data) {
           setFamilyMembers(data);
         }
       } catch (error) {
-        console.error("가족 정보 조회 실패:", error);
+        console.error("계좌 정보 데이터 조회 실패:", error);
       }
     }
 
     fetchFamilyMembers();
   }, []);
 
-  const handleToggle = (side: string) => {
+  const handleToggle = (side: "groom" | "bride") => {
     setOpenSide(openSide === side ? null : side);
   };
 
@@ -62,8 +90,20 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
     });
   };
 
-  const groomMembers = familyMembers.filter((m) => m.role_type && m.role_type.startsWith("groom"));
-  const brideMembers = familyMembers.filter((m) => m.role_type && m.role_type.startsWith("bride"));
+  const sortMembers = (members: FamilyMember[]) => {
+    return [...members].sort((a, b) => {
+      const orderA = ROLE_ORDER[a.role_type] || 99;
+      const orderB = ROLE_ORDER[b.role_type] || 99;
+      return orderA - orderB;
+    });
+  };
+
+  const groomMembers = sortMembers(
+    familyMembers.filter((m) => m.role_type && m.role_type.startsWith("groom"))
+  );
+  const brideMembers = sortMembers(
+    familyMembers.filter((m) => m.role_type && m.role_type.startsWith("bride"))
+  );
 
   const formatRelation = (relation: string) => {
     if (relation === "아버지") return "혼주 (부)";
@@ -71,119 +111,121 @@ export default function ContactAccount({ isTerminalMode, onCopyToast }: ContactA
     return relation;
   };
 
-  const renderHeaderButton = (side: "groom" | "bride", title: string) => {
+  const renderAccountCard = (side: "groom" | "bride", title: string, members: FamilyMember[]) => {
     const isOpen = openSide === side;
 
     return (
-      <button 
-        type="button"
-        className={styles.groupHeaderBtn} 
-        onClick={() => handleToggle(side)}
-      >
-        <span>{title}</span>
-        <div className={styles.toggleWrapper}>
-          <span className={styles.toggleText}>{isOpen ? "접기" : "열기"}</span>
-          <img 
-            src={getAssetPath("/icon/down.png")} 
-            alt="토글 아이콘" 
-            width={12} 
-            height={12} 
-            className={`${styles.toggleIconImg} ${isOpen ? styles.rotate : ""}`}
-          />
-        </div>
-      </button>
+      <div className={`${styles.accordionCard} ${isOpen ? styles.cardOpen : ""}`}>
+        <button
+          type="button"
+          className={styles.headerBtn}
+          onClick={() => handleToggle(side)}
+        >
+          <span className={styles.sideTitle}>{title}</span>
+          <div className={styles.toggleState}>
+            <span className={styles.stateLabel}>{isOpen ? "닫기" : "확인하기"}</span>
+            <motion.svg
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className={styles.chevron}
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </motion.svg>
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div
+              key="content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              className={styles.contentDrawer}
+            >
+              <div className={styles.memberList}>
+                {members.map((member) => (
+                  <div key={member.id} className={styles.memberRow}>
+                    <div className={styles.infoArea}>
+                      <div className={styles.primaryInfo}>
+                        <span className={styles.badge}>{formatRelation(member.relation)}</span>
+                        <span className={styles.memberName}>
+                          {member.is_deceased && <span className={styles.deceasedMark}>故 </span>}
+                          {member.name}
+                        </span>
+                        {!member.is_deceased && member.holder_name && member.holder_name !== member.name && (
+                          <span className={styles.holderTag}>(예금주: {member.holder_name})</span>
+                        )}
+                      </div>
+
+                      {!member.is_deceased && member.account_number && (
+                        <div className={styles.accountLine}>
+                          <span className={styles.bankName}>{member.bank_name}</span>
+                          <span className={styles.accountNumber}>{member.account_number}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {!member.is_deceased && member.account_number && (
+                      <button
+                        type="button"
+                        className={styles.copyBtn}
+                        onClick={() => handleCopy(member.account_number!)}
+                      >
+                        복사
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     );
   };
 
-  const renderMemberList = (members: FamilyMember[]) => {
-    return members.map((member) => (
-      <div key={member.id} className={styles.rowItem}>
-        <div className={styles.info}>
-          <span className={styles.relation}>{formatRelation(member.relation)}</span>
-          <span className={styles.name}>
-            {member.is_deceased && <span className={styles.deceasedMark}>故 </span>}
-            {member.name}
-          </span>
-          {member.account_number && (
-            <span className={styles.subText}>{member.bank_name} {member.account_number}</span>
-          )}
-        </div>
-        <div className={styles.btnGroup}>
-          {member.phone && (
-            <>
-              <a href={`tel:${member.phone}`} className={styles.miniBtn}>통화</a>
-              <a href={`sms:${member.phone}`} className={styles.miniBtn}>문자</a>
-            </>
-          )}
-          {member.account_number && (
-            <button 
-              type="button"
-              className={styles.miniBtn}
-              onClick={() => handleCopy(member.account_number!)}
-            >
-              계좌복사
-            </button>
-          )}
-        </div>
-      </div>
-    ));
-  };
+  if (!familyMembers.length && !isTerminalMode) return null;
 
   return (
     <section className={styles.section}>
       {isTerminalMode ? (
         <TerminalAccount />
       ) : (
-        <motion.div 
+        <motion.div
           className={styles.container}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "0px 0px -80px 0px", amount: 0.2 }}
         >
-          <div className={styles.headerTag}>CONTACT & ACCOUNT</div>
-          <h2 className={styles.mainTitle}>마음 전하실 곳</h2>
+          <motion.div className={styles.headerTag} variants={itemVariants}>
+            ACCOUNT
+          </motion.div>
 
-          <p className={styles.subDescription}>
-            따뜻한 축하의 말씀을 전해주시는 분들께 감사드리며,<br />
-            연락처와 함께 조심스럽게 마음 전하실 곳을 안내해 드립니다.
-          </p>
+          <motion.h2 className={styles.mainTitle} variants={itemVariants}>
+            마음 전하실 곳
+          </motion.h2>
 
-          <div className={styles.contentWrapper}>
-            {/* 신랑 측 통합 상자 */}
-            <div className={styles.groupCard}>
-              {renderHeaderButton("groom", "신랑 측 연락처 및 계좌번호")}
-              
-              <div 
-                ref={groomContentRef}
-                className={`${styles.accordionContent} ${openSide === "groom" ? styles.open : ""}`}
-                style={{
-                  maxHeight: openSide === "groom" ? `${groomContentRef.current?.scrollHeight}px` : "0px"
-                }}
-              >
-                <div className={styles.innerList}>
-                  {renderMemberList(groomMembers)}
-                </div>
-              </div>
-            </div>
+          <motion.p className={styles.subDescription} variants={itemVariants}>
+            축복해 주시는 따뜻한 마음만으로도 충분히 감사하지만,<br />
+            참석이 어려워 마음 전하고자 하시는 분들을 위해<br />
+            계좌번호를 함께 안내해 드립니다.
+          </motion.p>
 
-            {/* 신부 측 통합 상자 */}
-            <div className={styles.groupCard}>
-              {renderHeaderButton("bride", "신부 측 연락처 및 계좌번호")}
-              
-              <div 
-                ref={brideContentRef}
-                className={`${styles.accordionContent} ${openSide === "bride" ? styles.open : ""}`}
-                style={{
-                  maxHeight: openSide === "bride" ? `${brideContentRef.current?.scrollHeight}px` : "0px"
-                }}
-              >
-                <div className={styles.innerList}>
-                  {renderMemberList(brideMembers)}
-                </div>
-              </div>
-            </div>
-          </div>
+          <motion.div className={styles.cardGroup} variants={itemVariants}>
+            {groomMembers.length > 0 && renderAccountCard("groom", "신랑측 계좌번호", groomMembers)}
+            {brideMembers.length > 0 && renderAccountCard("bride", "신부측 계좌번호", brideMembers)}
+          </motion.div>
         </motion.div>
       )}
     </section>

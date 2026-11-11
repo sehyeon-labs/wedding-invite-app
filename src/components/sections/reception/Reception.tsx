@@ -107,9 +107,9 @@ export default function Reception({ isTerminalMode, onCopyToast }: ReceptionProp
 
             <div className={styles.contentWrapper}>
               <motion.p className={styles.subDescription} variants={itemVariants}>
-               소중한 분들을 모시고 감사의 마음을 전하고자<br />
-               작은 피로연 자리를 준비했습니다.<br />
-               함께 자리해 주시어 기쁨을 나누어 주시면 감사하겠습니다.
+                소중한 분들을 모시고 감사의 마음을 전하고자<br />
+                작은 피로연 자리를 준비했습니다.<br />
+                함께 자리해 주시어 기쁨을 나누어 주시면 감사하겠습니다.
               </motion.p>
 
               {/* 피로연 정보 카드 */}

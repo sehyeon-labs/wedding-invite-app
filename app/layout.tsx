@@ -105,7 +105,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Gaegu&family=Hi+Melody&family=Gowun+Batang:wght@400;700&family=JetBrains+Mono:wght@400;500;700&family=Nanum+Gothic+Coding:wght@400;700&family=Amatic+SC:wght@400;700&family=Schoolbell&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC&family=Gaegu&family=Hi+Melody&family=Gowun+Batang:wght@400;700&family=JetBrains+Mono:wght@400;500;700&family=Nanum+Gothic+Coding:wght@400;700&family=Amatic+SC:wght@400;700&family=Schoolbell&display=swap"
           rel="stylesheet"
         />
         {naverClientId && (

@@ -61,6 +61,20 @@ html, body {
     font-display: swap;
 }
 
+@font-face {
+  font-family: "NanumGothic", sans-serif;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumGothic-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Chiron", sans-serif;
+  font-optical-sizing: auto;
+  src: url('https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap') format('woff2');
+  font-style: normal;
+}
+
 :root {
   --bg-main: #ffffff;
   --bg-sub: #f8fafc;

@@ -10,7 +10,6 @@
     width: 100%;
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
 
     .mapScreen {
       width: 100%;
@@ -86,7 +85,7 @@
       border: 1px solid var(--border-light, #e2e8f0);
       border-radius: 8px;
       padding: 0.65rem 0;
-      font-family: "Pretendard", sans-serif;
+      font-family: "SeoulHangang", sans-serif;
       font-size: 0.76rem;
       font-weight: 500;
       color: var(--text-sub, #475569);
@@ -100,10 +99,12 @@
         justify-content: center;
         width: 15px;
         height: 15px;
+        line-height: 15px;
         border-radius: 3px;
         background-color: #03cf5d;
+        font-family: "Pretendard", sans-serif;
         color: #ffffff;
-        font-weight: 700;
+        font-weight: 800;
         font-size: 0.62rem;
       }
 
@@ -113,8 +114,10 @@
         justify-content: center;
         width: 15px;
         height: 15px;
+        line-height: 15px;
         border-radius: 3px;
         background-color: #fee500;
+        font-family: "Pretendard", sans-serif;
         color: #191919;
         font-weight: 800;
         font-size: 0.62rem;

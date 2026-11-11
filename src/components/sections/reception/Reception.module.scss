@@ -29,9 +29,9 @@
 
     .mainTitle {
       font-family: "SeoulHangang", serif;
-      font-size: 1.1rem;
+      font-size: 1.0rem;
       font-weight: 600;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: var(--text-main, #113222);
       margin: -0.8rem 0 0 0;
     }
@@ -47,7 +47,7 @@
     .subDescription {
       margin: 0;
       font-family: "SeoulHangang", serif;
-      font-size: 0.84rem;
+      font-size: 0.8rem;
       line-height: 2.1;
       letter-spacing: 0.04em;
       color: var(--text-sub, #475569);
@@ -119,8 +119,6 @@
       width: 100%;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid var(--border-light, rgba(226, 232, 240, 0.7));
-      box-shadow: 0 4px 18px rgba(17, 50, 34, 0.03);
     }
   }
 }

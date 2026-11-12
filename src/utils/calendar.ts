@@ -71,11 +71,11 @@ const isKakaoInApp = () => /KAKAOTALK/i.test(navigator.userAgent);
 /**
  * 기기 기본 캘린더에 일정 추가
  * - Android: 캘린더 앱의 일정 추가 화면을 바로 실행
- * - iOS: 정적 .ics 주소를 열어 "캘린더에 추가" 시트 표시 (카카오톡 인앱은 Safari로 열어서 처리)
- * - 그 외(PC 등): .ics 다운로드
- * @param icsUrl iOS에서 열 .ics 파일의 절대 주소
+ * - iOS 카카오톡 인앱: 파일 처리가 막혀 있어 Safari로 같은 위치를 열어줌 (거기서 다시 버튼 클릭)
+ * - 그 외(iOS Safari, PC 등): .ics 다운로드 → 열면 캘린더에 추가
+ * @param safariUrl iOS 카카오톡 인앱에서 Safari로 열 주소
  */
-export function addToDeviceCalendar(event: CalendarEvent, icsUrl: string) {
+export function addToDeviceCalendar(event: CalendarEvent, safariUrl: string) {
   const ua = navigator.userAgent;
   const { durationMinutes = 120 } = event;
 
@@ -92,8 +92,8 @@ export function addToDeviceCalendar(event: CalendarEvent, icsUrl: string) {
     return;
   }
 
-  if (/iPhone|iPad|iPod/i.test(ua)) {
-    window.location.href = isKakaoInApp() ? `kakaotalk://web/openExternal?url=${encodeURIComponent(icsUrl)}` : icsUrl;
+  if (/iPhone|iPad|iPod/i.test(ua) && isKakaoInApp()) {
+    window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(safariUrl)}`;
     return;
   }
 

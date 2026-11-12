@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { addToDeviceCalendar, buildWeddingEvent } from "@/utils/calendar";
-import { getAssetPath } from "@/utils/path";
 import styles from "./Dday.module.scss";
 import TerminalDday from "@/components/developer/TerminalDday/TerminalDday";
 
@@ -27,6 +26,9 @@ interface TimeLeft {
   isAfter: boolean;
   isToday: boolean;
 }
+
+/** 카카오톡 인앱 → Safari 이동 시 스크롤할 위치 */
+const CALENDAR_ANCHOR = "wedding-calendar";
 
 /** 달력 영역 등장 애니메이션 */
 const calendarGroupVariants: Variants = {
@@ -117,7 +119,8 @@ export default function Dday({ isTerminalMode }: DdayProps) {
   /** 결혼식 일정을 기기 기본 캘린더에 저장 */
   const handleSaveCalendar = () => {
     if (!weddingInfo) return;
-    addToDeviceCalendar(buildWeddingEvent(weddingInfo), `${window.location.origin}${getAssetPath("/wedding.ics")}`);
+    const safariUrl = `${window.location.origin}${window.location.pathname}#${CALENDAR_ANCHOR}`;
+    addToDeviceCalendar(buildWeddingEvent(weddingInfo), safariUrl);
   };
 
   const targetDateObj = weddingInfo ? new Date(weddingInfo.weddingDate) : new Date();
@@ -203,7 +206,7 @@ export default function Dday({ isTerminalMode }: DdayProps) {
   const weekDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
   return (
-    <section className={styles.ddaySection}>
+    <section id={CALENDAR_ANCHOR} className={styles.ddaySection}>
       {isTerminalMode ? (
         <TerminalDday />
       ) : (

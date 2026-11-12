@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { copyToClipboard } from "@/utils/format";
 import styles from "./MapView.module.scss";
 
 declare global {
   interface Window {
     naver: any;
+    navermap_authFailure?: () => void;
   }
 }
 
@@ -31,6 +32,8 @@ export default function MapView({
   onCopySuccess,
 }: MapViewProps) {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const mapRef = useRef<HTMLDivElement>(null);
   const testMode = false;
 
   useEffect(() => {
@@ -42,8 +45,11 @@ export default function MapView({
       return;
     }
 
+    // 네이버 지도 인증 실패(등록되지 않은 URL 등) 시 안내 표시
+    window.navermap_authFailure = () => setLoadError("지도 인증에 실패했습니다. (등록된 서비스 URL 확인 필요)");
+
     const initMap = () => {
-      if (window.naver && window.naver.maps) {
+      if (mapRef.current && window.naver && window.naver.maps) {
         try {
           const mapOptions = {
             center: new window.naver.maps.LatLng(lat, lng),
@@ -54,7 +60,7 @@ export default function MapView({
             scrollWheel: false,
           };
 
-          const map = new window.naver.maps.Map("map", mapOptions);
+          const map = new window.naver.maps.Map(mapRef.current, mapOptions);
 
           new window.naver.maps.Marker({
             position: new window.naver.maps.LatLng(lat, lng),
@@ -78,7 +84,11 @@ export default function MapView({
           clearInterval(checkInterval);
         }
       }, 100);
-      return () => clearInterval(checkInterval);
+      const timeout = setTimeout(() => setLoadError("지도 스크립트를 불러오지 못했습니다."), 10000);
+      return () => {
+        clearInterval(checkInterval);
+        clearTimeout(timeout);
+      };
     }
   }, [lat, lng]);
 
@@ -112,10 +122,10 @@ export default function MapView({
   return (
     <div className={styles.mapViewerWrapper}>
       <div className={styles.mapFrame}>
-        <div id="map" className={styles.mapScreen}>
+        <div ref={mapRef} className={styles.mapScreen}>
           {!isMapLoaded && (
             <div className={styles.mapLoading}>
-              {lat && lng ? "지도를 불러오는 중입니다..." : "지도를 준비 중입니다."}
+              {loadError || (lat && lng ? "지도를 불러오는 중입니다..." : "지도를 준비 중입니다.")}
             </div>
           )}
         </div>

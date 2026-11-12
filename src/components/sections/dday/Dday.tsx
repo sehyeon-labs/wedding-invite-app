@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { addToDeviceCalendar } from "@/utils/calendar";
+import { addToDeviceCalendar, buildWeddingEvent } from "@/utils/calendar";
+import { getAssetPath } from "@/utils/path";
 import styles from "./Dday.module.scss";
 import TerminalDday from "@/components/developer/TerminalDday/TerminalDday";
 
@@ -116,12 +117,7 @@ export default function Dday({ isTerminalMode }: DdayProps) {
   /** 결혼식 일정을 기기 기본 캘린더에 저장 */
   const handleSaveCalendar = () => {
     if (!weddingInfo) return;
-    addToDeviceCalendar({
-      title: `${weddingInfo.groomName} ♥ ${weddingInfo.brideName} 결혼식`,
-      start: new Date(weddingInfo.weddingDate),
-      location: weddingInfo.locationName,
-      description: "소중한 걸음으로 축하해 주세요.",
-    });
+    addToDeviceCalendar(buildWeddingEvent(weddingInfo), `${window.location.origin}${getAssetPath("/wedding.ics")}`);
   };
 
   const targetDateObj = weddingInfo ? new Date(weddingInfo.weddingDate) : new Date();

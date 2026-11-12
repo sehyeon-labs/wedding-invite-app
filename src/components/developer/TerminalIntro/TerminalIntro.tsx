@@ -1,4 +1,4 @@
-// src/components/sections/TerminalIntro.tsx
+// 개발자 모드 부팅 인트로 화면
 "use client";
 
 import { useState, useEffect } from "react";

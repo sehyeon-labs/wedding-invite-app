@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { addToDeviceCalendar } from "@/utils/calendar";
 import styles from "./Dday.module.scss";
 import TerminalDday from "@/components/developer/TerminalDday/TerminalDday";
 
@@ -12,6 +13,7 @@ interface DdayProps {
 
 interface DdayWeddingInfo {
   weddingDate: string;
+  locationName: string;
   groomName: string;
   brideName: string;
 }
@@ -25,7 +27,7 @@ interface TimeLeft {
   isToday: boolean;
 }
 
-// 1. 달력 묶음 애니메이션
+/** 달력 영역 등장 애니메이션 */
 const calendarGroupVariants: Variants = {
   hidden: { opacity: 0, y: 18, filter: "blur(2px)" },
   visible: {
@@ -39,7 +41,7 @@ const calendarGroupVariants: Variants = {
   },
 };
 
-// 2. 타이머 묶음 애니메이션
+/** 타이머 영역 등장 애니메이션 (스태거) */
 const timerGroupVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -64,6 +66,7 @@ const timerItemVariants: Variants = {
   },
 };
 
+/** 예식 달력 및 D-Day 카운트다운 섹션 */
 export default function Dday({ isTerminalMode }: DdayProps) {
   const [weddingInfo, setWeddingInfo] = useState<DdayWeddingInfo | null>(null);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
@@ -80,7 +83,7 @@ export default function Dday({ isTerminalMode }: DdayProps) {
       try {
         const { data: weddingData, error: weddingError } = await supabase
           .from("weddings")
-          .select("id, wedding_date")
+          .select("id, wedding_date, location_name, location_address")
           .limit(1)
           .single();
 
@@ -98,6 +101,7 @@ export default function Dday({ isTerminalMode }: DdayProps) {
 
         setWeddingInfo({
           weddingDate: weddingData.wedding_date,
+          locationName: [weddingData.location_name, weddingData.location_address].filter(Boolean).join(" · "),
           groomName: groom?.name || "신랑",
           brideName: bride?.name || "신부",
         });
@@ -108,6 +112,17 @@ export default function Dday({ isTerminalMode }: DdayProps) {
 
     fetchDdayData();
   }, []);
+
+  /** 결혼식 일정을 기기 기본 캘린더에 저장 */
+  const handleSaveCalendar = () => {
+    if (!weddingInfo) return;
+    addToDeviceCalendar({
+      title: `${weddingInfo.groomName} ♥ ${weddingInfo.brideName} 결혼식`,
+      start: new Date(weddingInfo.weddingDate),
+      location: weddingInfo.locationName,
+      description: "소중한 걸음으로 축하해 주세요.",
+    });
+  };
 
   const targetDateObj = weddingInfo ? new Date(weddingInfo.weddingDate) : new Date();
   const year = targetDateObj.getFullYear();
@@ -198,7 +213,7 @@ export default function Dday({ isTerminalMode }: DdayProps) {
       ) : (
         weddingInfo && (
           <div className={styles.normalContainer}>
-            {/* 1단계: 달력 섹션 독립 트리거 */}
+            {/* 달력 */}
             <motion.div
               className={styles.calendarSectionWrapper}
               variants={calendarGroupVariants}
@@ -252,9 +267,13 @@ export default function Dday({ isTerminalMode }: DdayProps) {
                   })}
                 </div>
               </div>
+
+              <button type="button" className={styles.saveBtn} onClick={handleSaveCalendar}>
+                캘린더에 저장하기
+              </button>
             </motion.div>
 
-            {/* 2단계: 타이머 및 메시지 독립 트리거 (스크롤이 더 도달했을 때 실행) */}
+            {/* 타이머 및 메시지 */}
             <motion.div
               className={styles.timerSectionWrapper}
               variants={timerGroupVariants}

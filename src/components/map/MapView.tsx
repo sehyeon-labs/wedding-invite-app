@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { copyToClipboard } from "@/utils/format";
 import styles from "./MapView.module.scss";
 
 declare global {
@@ -19,6 +20,7 @@ interface MapViewProps {
   onCopySuccess?: () => void;
 }
 
+/** 네이버 지도 + 주소 복사 및 네이버/카카오 지도 바로가기 */
 export default function MapView({
   locationName,
   address,
@@ -80,44 +82,35 @@ export default function MapView({
     }
   }, [lat, lng]);
 
-  const handleCopyAddress = (targetAddress: string) => {
-    navigator.clipboard.writeText(targetAddress).then(() => {
-      if (onCopySuccess) {
-        onCopySuccess();
-      }
-    });
+  const handleCopyAddress = async (targetAddress: string) => {
+    if (await copyToClipboard(targetAddress)) onCopySuccess?.();
   };
 
-  // 네이버 지도 URL 분기 처리
+  /** 입력값(전체 URL / 플레이스 ID / 일반 텍스트)에 따라 네이버 지도 링크 생성 */
   const getNaverMapUrl = () => {
     if (!naver_address) {
       const fallbackTarget = locationName || address;
       return `https://map.naver.com/p/search/${encodeURIComponent(fallbackTarget)}`;
     }
 
-    // 1. 전체 URL이 들어온 경우 (http:// 또는 https:// 로 시작)
     if (naver_address.startsWith("http://") || naver_address.startsWith("https://")) {
       return naver_address;
     }
 
-    // 2. 숫자만 있는 플레이스 ID 형태인 경우 (예: "38339109")
     if (/^\d+$/.test(naver_address.trim())) {
       return `https://map.naver.com/p/entry/place/${naver_address.trim()}`;
     }
 
-    // 3. 일반 텍스트나 주소 문자열인 경우
     return `https://map.naver.com/p/search/${encodeURIComponent(naver_address)}`;
   };
 
   const naverMapUrl = getNaverMapUrl();
 
-  // 카카오맵 검색 타겟
   const kakaoQueryTarget = kakao_address || locationName || address;
   const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(kakaoQueryTarget)}`;
 
   return (
     <div className={styles.mapViewerWrapper}>
-      {/* 지도 렌더링 영역 */}
       <div className={styles.mapFrame}>
         <div id="map" className={styles.mapScreen}>
           {!isMapLoaded && (
@@ -128,7 +121,6 @@ export default function MapView({
         </div>
       </div>
 
-      {/* 주소 안내 및 복사 */}
       {address && (
         <div className={styles.addressRow}>
           <span className={styles.addressText}>{address}</span>
@@ -142,7 +134,6 @@ export default function MapView({
         </div>
       )}
 
-      {/* 지도 바로가기 버튼 */}
       <div className={styles.mapBtnGroup}>
         <a
           href={naverMapUrl}

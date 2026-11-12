@@ -10,6 +10,7 @@ interface CustomTextProps {
   content?: string;
 }
 
+/** 줄바꿈 문자(\n)를 <br />로 변환 */
 const renderWithLineBreaks = (text: string) => {
   return text.split(/\\n|\n/).map((line, index) => (
     <React.Fragment key={index}>
@@ -19,6 +20,7 @@ const renderWithLineBreaks = (text: string) => {
   ));
 };
 
+/** 성경 구절 등 사용자 지정 문구 섹션 */
 export default function CustomText({
   isTerminalMode,
   title,

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, Variants } from "framer-motion";
-import { supabase } from "@/lib/supabase";
-import styles from "./Location.module.scss";
-import MapView from "@/components/map/MapView";
+import { motion } from "framer-motion";
+import { fetchWedding } from "@/lib/supabaseHelpers";
 import { formatDay, formatTime } from "@/utils/format";
+import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
+import MapView from "@/components/map/MapView";
+import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
+import styles from "./Location.module.scss";
 import TerminalLocation from "@/components/developer/TerminalLocation/TerminalLocation";
 
 interface LocationProps {
@@ -31,31 +33,19 @@ interface WeddingLocationData {
   transport: TransportItem[];
 }
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.05,
-    },
-  },
-};
+interface LocationRow {
+  wedding_date: string;
+  location_name: string | null;
+  location_address: string | null;
+  location_detail_address: string | null;
+  location_naver_address: string | null;
+  location_kakao_address: string | null;
+  location_lat: number;
+  location_lng: number;
+  transport: TransportItem[] | null;
+}
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 14, filter: "blur(2px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.85,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
-
-// 지하철 호선별 소프트 컬러 스타일 매핑
+/** 지하철 호선명에 맞는 컬러 스타일 클래스 반환 */
 const getSubwayThemeClass = (lineName: string) => {
   const clean = lineName.trim().replace(/\s+/g, "");
   if (clean.includes("1호선")) return styles.line1;
@@ -74,6 +64,7 @@ const getSubwayThemeClass = (lineName: string) => {
   return styles.lineDefault;
 };
 
+/** "2호선, 9호선" 형태의 문자열을 호선 배열로 분리 */
 const splitSubwayLines = (lineStr?: string) => {
   if (!lineStr) return ["지하철"];
   return lineStr
@@ -82,40 +73,30 @@ const splitSubwayLines = (lineStr?: string) => {
     .filter(Boolean);
 };
 
+/** 오시는 길: 예식 정보 · 지도 · 교통편 안내 섹션 */
 export default function Location({ isTerminalMode, onCopyToast }: LocationProps) {
   const [locationData, setLocationData] = useState<WeddingLocationData | null>(null);
   const [weddingDate, setWeddingDate] = useState<string>("");
 
   useEffect(() => {
-    async function fetchLocationData() {
-      try {
-        const { data, error } = await supabase
-          .from("weddings")
-          .select("wedding_date, location_name, location_address, location_detail_address, location_lat, location_lng, location_naver_address, location_kakao_address, transport")
-          .limit(1)
-          .single();
-
-        if (error) throw error;
-
-        if (data) {
-          setWeddingDate(data.wedding_date);
-          setLocationData({
-            name: data.location_name || "",
-            address: data.location_address || "",
-            detail_address: data.location_detail_address || "",
-            naver_address: data.location_naver_address || "",
-            kakao_address: data.location_kakao_address || "",
-            lat: data.location_lat,
-            lng: data.location_lng,
-            transport: data.transport || [],
-          });
-        }
-      } catch (error) {
-        console.error("오시는 길 데이터 조회 실패:", error);
-      }
-    }
-
-    fetchLocationData();
+    fetchWedding<LocationRow>(
+      "wedding_date, location_name, location_address, location_detail_address, location_lat, location_lng, location_naver_address, location_kakao_address, transport"
+    )
+      .then((data) => {
+        if (!data) return;
+        setWeddingDate(data.wedding_date);
+        setLocationData({
+          name: data.location_name || "",
+          address: data.location_address || "",
+          detail_address: data.location_detail_address || "",
+          naver_address: data.location_naver_address || "",
+          kakao_address: data.location_kakao_address || "",
+          lat: data.location_lat,
+          lng: data.location_lng,
+          transport: data.transport || [],
+        });
+      })
+      .catch((error) => console.error("오시는 길 데이터 조회 실패:", error));
   }, []);
 
   if (!locationData && !isTerminalMode) return null;
@@ -139,18 +120,11 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{
-              once: true,
-              margin: "0px 0px -80px 0px",
-              amount: 0.2,
-            }}
+            viewport={sectionViewport}
           >
-            <motion.div className={styles.headerTag} variants={itemVariants}>
-              LOCATION
-            </motion.div>
+            <SectionHeader tag="LOCATION" />
 
             <div className={styles.contentWrapper}>
-              {/* 기본 안내 카드 */}
               <motion.div className={styles.infoCard} variants={itemVariants}>
                 <div className={styles.infoRow}>
                   <span className={styles.key}>일시</span>
@@ -172,7 +146,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                 )}
               </motion.div>
 
-              {/* 지도 */}
               <motion.div className={styles.mapContainer} variants={itemVariants}>
                 <MapView
                   locationName={locationData.name}
@@ -185,7 +158,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                 />
               </motion.div>
 
-              {/* 세련되게 정돈된 교통안내 카드 */}
               {rawTransport.length > 0 && (
                 <motion.div className={styles.transportCard} variants={itemVariants}>
                   <div className={styles.cardHeader}>
@@ -193,7 +165,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                   </div>
 
                   <div className={styles.transportList}>
-                    {/* 지하철 섹션 */}
                     {subwayItems.length > 0 && (
                       <div className={styles.transportRow}>
                         <div className={styles.categoryLabel}>지하철</div>
@@ -220,7 +191,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                       </div>
                     )}
 
-                    {/* 버스 섹션 */}
                     {busItems.length > 0 && (
                       <div className={styles.transportRow}>
                         <div className={styles.categoryLabel}>버스</div>
@@ -250,7 +220,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                       </div>
                     )}
 
-                    {/* 주차 안내 */}
                     {parkingItems.length > 0 && (
                       <div className={styles.transportRow}>
                         <div className={styles.categoryLabel}>주차</div>
@@ -264,7 +233,6 @@ export default function Location({ isTerminalMode, onCopyToast }: LocationProps)
                       </div>
                     )}
 
-                    {/* 기타 안내 */}
                     {otherItems.length > 0 && (
                       <div className={styles.transportRow}>
                         <div className={styles.categoryLabel}>셔틀버스</div>

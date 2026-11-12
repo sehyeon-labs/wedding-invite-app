@@ -6,6 +6,7 @@ interface ToastProps {
   showToast: boolean;
 }
 
+/** 하단 토스트 알림 */
 export default function Toast({ text, showToast }: ToastProps) {
   return (
     <div className={`${styles.toast} ${showToast ? styles.show : ""}`}>

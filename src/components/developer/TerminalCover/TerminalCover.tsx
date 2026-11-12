@@ -2,7 +2,7 @@
 
 import { useState, useEffect, MutableRefObject } from "react";
 import styles from "./TerminalCover.module.scss";
-import TerminalIntro from "@/components/sections/terminalIntro/TerminalIntro";
+import TerminalIntro from "@/components/developer/TerminalIntro/TerminalIntro";
 import { formatWeddingDate } from "@/utils/format";
 import type { WeddingCoverInfo } from "@/components/sections/cover/Cover";
 

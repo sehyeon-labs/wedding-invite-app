@@ -34,6 +34,7 @@ interface GreetingData {
   bride: SideData;
 }
 
+/** 인사말 · 혼주/신랑신부 소개 및 연락하기 바텀시트 섹션 */
 export default function Greeting({ isTerminalMode }: GreetingProps) {
   const [greetingInfo, setGreetingInfo] = useState<GreetingData | null>(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -129,7 +130,7 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
 
   const getKakaoLink = (kakaoId: string) => `kakaotalk://search?q=${encodeURIComponent(kakaoId)}`;
 
-  // 인원별 연락처 행을 렌더링하는 공통 함수 (코드 간소화)
+  /** 인원별 연락처(전화/카카오톡) 행 렌더링 */
   const renderPersonRow = (role: string, name: string, phone?: string, kakaoId?: string, isDeceased?: boolean) => (
     <div className={styles.personRow} key={`${role}-${name}`}>
       <div className={styles.personInfo}>
@@ -179,7 +180,6 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
               <h2 className={styles.normalTitle}>{greetingInfo.title}</h2>
               <p className={styles.normalContent}>{greetingInfo.content}</p>
 
-              {/* 혼주 & 자녀 명단 */}
               <div className={styles.namesContainer}>
                 <div className={styles.nameRow}>
                   <span className={styles.parents}>{renderParents(greetingInfo.groom.parents)}</span>
@@ -193,7 +193,6 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
                 </div>
               </div>
 
-              {/* 연락하기 열기 버튼 */}
               <div className={styles.contactBtnWrapper}>
                 <button
                   type="button"
@@ -236,7 +235,6 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
               </div>
 
               <div className={styles.contactList}>
-                {/* 신랑측 */}
                 <div className={styles.sideBlock}>
                   <div className={styles.sideLabel}>GROOM SIDE</div>
                   {renderPersonRow("신랑", greetingInfo.groom.name, greetingInfo.groom.phone, greetingInfo.groom.kakaoId)}
@@ -247,7 +245,6 @@ export default function Greeting({ isTerminalMode }: GreetingProps) {
 
                 <div className={styles.contactDivider} />
 
-                {/* 신부측 */}
                 <div className={styles.sideBlock}>
                   <div className={styles.sideLabel}>BRIDE SIDE</div>
                   {renderPersonRow("신부", greetingInfo.bride.name, greetingInfo.bride.phone, greetingInfo.bride.kakaoId)}

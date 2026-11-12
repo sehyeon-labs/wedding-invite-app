@@ -1,166 +1,137 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import styles from "./Notice.module.scss";
+import { fetchWedding } from "@/lib/supabaseHelpers";
+import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
+import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
 import TerminalNotice from "@/components/developer/TerminalNotice/TerminalNotice";
+import styles from "./Notice.module.scss";
 
 interface NoticeProps {
   isTerminalMode: boolean;
 }
 
-interface NoticeData {
-  brideRoomTime: string;
-  venuePrecautions: string[];
+/** wedding_notices.type 값 → 탭 이름 (표시 순서 포함) */
+const NOTICE_TABS = [
+  { type: "bride_room", label: "신부대기실" },
+  { type: "venue", label: "식장 이용" },
+  { type: "flower", label: "화환" },
+] as const;
+
+type NoticeType = (typeof NOTICE_TABS)[number]["type"];
+type NoticeGroups = Record<NoticeType, string[]>;
+
+const emptyGroups = (): NoticeGroups => ({ bride_room: [], venue: [], flower: [] });
+
+/** 문자열 / 문자열 배열 / {content|text} 객체 배열 등 다양한 저장 형태를 문자열 목록으로 정규화 */
+function toTextList(value: unknown): string[] {
+  const list = Array.isArray(value) ? value : typeof value === "string" ? value.split("\n\n") : [];
+  return list
+    .map((item) => (typeof item === "string" ? item : (item as { content?: string; text?: string })?.content ?? (item as { text?: string })?.text))
+    .filter((text): text is string => typeof text === "string" && text.trim().length > 0);
 }
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.05,
-    },
-  },
-};
+/**
+ * 안내사항 조회
+ * 1순위: wedding_notices 테이블(type, content, sort_order)
+ * 2순위(테이블이 없거나 비어있을 때): weddings 기존 컬럼 — "화환" 포함 문구는 화환 탭으로 분류
+ */
+async function fetchNoticeGroups(): Promise<NoticeGroups> {
+  const groups = emptyGroups();
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 14, filter: "blur(2px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.85,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
+  const { data: rows, error } = await supabase
+    .from("wedding_notices")
+    .select("type, content")
+    .order("sort_order", { ascending: true });
 
+  if (!error && rows && rows.length > 0) {
+    rows.forEach(({ type, content }) => {
+      if (type in groups && content) groups[type as NoticeType].push(content);
+    });
+    return groups;
+  }
+
+  const data = await fetchWedding<{ notice_bride_room_time: string | null; venue_precautions: unknown }>(
+    "notice_bride_room_time, venue_precautions"
+  );
+  if (data?.notice_bride_room_time) groups.bride_room.push(data.notice_bride_room_time);
+  toTextList(data?.venue_precautions).forEach((item) => (item.includes("화환") ? groups.flower : groups.venue).push(item));
+  return groups;
+}
+
+/** 신부대기실 / 식장 이용 / 화환 안내 섹션 (내용이 있는 탭만 표시) */
 export default function Notice({ isTerminalMode }: NoticeProps) {
-  const [noticeData, setNoticeData] = useState<NoticeData | null>(null);
-  const [activeTab, setActiveTab] = useState<"brideRoom" | "precautions">("brideRoom");
+  const [groups, setGroups] = useState<NoticeGroups | null>(null);
+  const [activeType, setActiveType] = useState<NoticeType | null>(null);
 
   useEffect(() => {
-    async function fetchNoticeData() {
-      try {
-        const { data, error } = await supabase
-          .from("weddings")
-          .select("notice_bride_room_time, venue_precautions")
-          .limit(1)
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          setNoticeData({
-            brideRoomTime: data.notice_bride_room_time || "추후 안내될 예정입니다.",
-            venuePrecautions: data.venue_precautions || [],
-          });
-        }
-      } catch (error) {
-        console.error("안내사항 데이터 조회 실패:", error);
-      }
-    }
-
-    fetchNoticeData();
+    fetchNoticeGroups()
+      .then(setGroups)
+      .catch((error) => console.error("안내사항 데이터 조회 실패:", error));
   }, []);
 
-  if (!noticeData && !isTerminalMode) return null;
+  const tabs = groups ? NOTICE_TABS.filter(({ type }) => groups[type].length > 0) : [];
+  const currentType = tabs.find((t) => t.type === activeType)?.type ?? tabs[0]?.type;
+
+  if (!isTerminalMode && tabs.length === 0) return null;
 
   return (
     <section className={styles.section}>
       {isTerminalMode ? (
         <TerminalNotice />
       ) : (
-        noticeData && (
+        groups &&
+        currentType && (
           <motion.div
             className={styles.container}
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{
-              once: true,
-              margin: "0px 0px -80px 0px",
-              amount: 0.2,
-            }}
+            viewport={sectionViewport}
           >
-            <motion.div className={styles.headerTag} variants={itemVariants}>
-              GUIDE
-            </motion.div>
+            <SectionHeader tag="GUIDE" title="안내사항" />
 
             <motion.div className={styles.contentWrapper} variants={itemVariants}>
-              {/* 탭 네비게이션 헤더 */}
-              <div className={styles.tabHeader}>
-                <button
-                  type="button"
-                  className={`${styles.tabBtn} ${activeTab === "brideRoom" ? styles.active : ""}`}
-                  onClick={() => setActiveTab("brideRoom")}
-                >
-                  <span>신부대기실 안내</span>
-                  {activeTab === "brideRoom" && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className={styles.activeIndicator}
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.tabBtn} ${activeTab === "precautions" ? styles.active : ""}`}
-                  onClick={() => setActiveTab("precautions")}
-                >
-                  <span>식장 이용 및 화환</span>
-                  {activeTab === "precautions" && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className={styles.activeIndicator}
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                </button>
+              <div className={styles.tabHeader} role="tablist">
+                {tabs.map(({ type, label }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    role="tab"
+                    aria-selected={currentType === type}
+                    className={`${styles.tabBtn} ${currentType === type ? styles.active : ""}`}
+                    onClick={() => setActiveType(type)}
+                  >
+                    {currentType === type && (
+                      <motion.span
+                        layoutId="noticeTabPill"
+                        className={styles.activePill}
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <span className={styles.tabLabel}>{label}</span>
+                  </button>
+                ))}
               </div>
 
-              {/* 탭 패널 콘텐츠 */}
-              <div className={styles.contentPanel}>
-                <AnimatePresence mode="wait">
-                  {activeTab === "brideRoom" ? (
-                    <motion.div
-                      key="brideRoom"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.25, ease: "easeOut" }}
-                      className={styles.panelInner}
-                    >
-                      <div className={styles.singleMessageCard}>
-                        <p className={styles.descriptionText}>{noticeData.brideRoomTime}</p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="precautions"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.25, ease: "easeOut" }}
-                      className={styles.panelInner}
-                    >
-                      <ul className={styles.noticeList}>
-                        {noticeData.venuePrecautions.map((item, index) => (
-                          <li key={`precaution-${index}`} className={styles.noticeCard}>
-                            <span className={styles.noticeNumber}>{index + 1}</span>
-                            <p className={styles.itemText}>{item}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentType}
+                  className={styles.panel}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  {groups[currentType].map((text, index) => (
+                    <p key={index} className={styles.text}>
+                      {text}
+                    </p>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         )

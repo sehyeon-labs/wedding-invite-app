@@ -4,36 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { getAssetPath } from "@/utils/path";
+import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
+import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
 import styles from "./Gallery.module.scss";
 import TerminalGallery from "@/components/developer/TerminalGallery/TerminalGallery";
 
 interface GalleryProps {
   isTerminalMode: boolean;
 }
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 14, filter: "blur(2px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.8,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
 
 const slideVariants: Variants = {
   enter: (direction: number) => ({
@@ -58,10 +36,17 @@ const slideVariants: Variants = {
   }),
 };
 
+/** 앨범 그리드 크기 패턴 (9장 주기로 반복): big=2x2, tall=1x2, wide=2x1, 빈 값=1x1 */
+const GRID_SHAPES = ["big", "", "", "wide", "", "tall", "", "", "wide"];
+
+/** 처음 보여줄 사진 수 (3줄이 빈틈없이 채워지는 개수) */
+const INITIAL_COUNT = 5;
+
 const THUMB_ITEM_WIDTH = 42;
 const THUMB_ITEM_GAP = 6;
 const THUMB_PITCH = THUMB_ITEM_WIDTH + THUMB_ITEM_GAP;
 
+/** 웨딩 갤러리: 그리드 목록 + 슬라이드/썸네일 상세 모달 */
 export default function Gallery({ isTerminalMode }: GalleryProps) {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -107,7 +92,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
     fetchGalleryImages();
   }, []);
 
-  // [수정 핵심] 상단 넘김 시 하단 썸네일 이동 로직
+  // 선택 이미지가 바뀌면 썸네일 트랙을 해당 위치로 이동 (처음↔마지막 순환 시에는 즉시 이동)
   useEffect(() => {
     if (selectedIndex !== null && thumbnailTrackRef.current && !isScrubbing) {
       const container = thumbnailTrackRef.current;
@@ -117,7 +102,6 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
         clearTimeout(scrollUnlockTimerRef.current);
       }
 
-      // 마지막 ↔ 0번 순환 루프 점프일 때는 스무스 롤백 없이 'instant(즉시)'로 이동하여 중간 사진 침범 차단
       const isLooping =
         (lastIndexRef.current === galleryImages.length - 1 && selectedIndex === 0) ||
         (lastIndexRef.current === 0 && selectedIndex === galleryImages.length - 1);
@@ -129,16 +113,14 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
 
       lastIndexRef.current = selectedIndex;
 
-      // 스크롤이 끝날 때까지 onScroll 감지 확실히 차단
       scrollUnlockTimerRef.current = setTimeout(() => {
         isNavigatingRef.current = false;
       }, isLooping ? 100 : 360);
     }
   }, [selectedIndex, isScrubbing, galleryImages.length]);
 
-  // 하단 썸네일 트랙 스크러빙 핸들러
+  /** 하단 썸네일 트랙을 직접 스크롤(스크러빙)할 때 현재 이미지 인덱스 동기화 */
   const handleThumbnailScroll = () => {
-    // 자동 이동 중일 때는 onScroll 계산을 완전히 스킵하여 인덱스 간섭 원천 차단
     if (isNavigatingRef.current || !thumbnailTrackRef.current) return;
 
     const scrollLeft = thumbnailTrackRef.current.scrollLeft;
@@ -202,7 +184,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
     lastIndexRef.current = index;
   };
 
-  const displayedImages = isExpanded ? galleryImages : galleryImages.slice(0, 9);
+  const displayedImages = isExpanded ? galleryImages : galleryImages.slice(0, INITIAL_COUNT);
 
   return (
     <section className={styles.gallerySection}>
@@ -214,21 +196,15 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{
-            once: true,
-            margin: "0px 0px -80px 0px",
-            amount: 0.2,
-          }}
+          viewport={sectionViewport}
         >
-          <motion.div className={styles.headerTag} variants={itemVariants}>
-            GALLERY
-          </motion.div>
+          <SectionHeader tag="GALLERY" />
 
           <motion.div className={styles.albumGrid} variants={itemVariants}>
             {displayedImages.map((src, index) => (
               <div
                 key={index}
-                className={styles.imageCard}
+                className={`${styles.imageCard} ${styles[GRID_SHAPES[index % GRID_SHAPES.length]] ?? ""}`}
                 onClick={() => openImageModal(index)}
               >
                 <img src={src} alt={`갤러리 사진 ${index + 1}`} loading="lazy" />
@@ -237,7 +213,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
             ))}
           </motion.div>
 
-          {galleryImages.length > 9 && (
+          {galleryImages.length > INITIAL_COUNT && (
             <motion.div className={styles.actionRow} variants={itemVariants}>
               <button
                 type="button"
@@ -247,7 +223,7 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                 <span>
                   {isExpanded
                     ? "사진 접기"
-                    : `사진 더보기 (${galleryImages.length - 9}장 더)`}
+                    : `사진 더보기 (${galleryImages.length - INITIAL_COUNT}장 더)`}
                 </span>
                 <img
                   src={getAssetPath("/icon/down.png")}
@@ -291,7 +267,6 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                 </button>
               </div>
 
-              {/* 메인 이미지 스테이지 */}
               <div className={styles.stageArea}>
                 <button
                   type="button"
@@ -351,7 +326,6 @@ export default function Gallery({ isTerminalMode }: GalleryProps) {
                 </button>
               </div>
 
-              {/* 하단 썸네일 독 */}
               <div
                 ref={thumbnailTrackRef}
                 className={styles.thumbnailDock}

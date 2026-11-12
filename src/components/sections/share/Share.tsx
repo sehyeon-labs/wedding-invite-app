@@ -2,104 +2,62 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/lib/supabase";
+import { fetchWedding, getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
+import { copyToClipboard } from "@/utils/format";
+import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
+import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
+import TerminalShare from "@/components/developer/TerminalShare/TerminalShare";
 import styles from "./Share.module.scss";
 
 interface ShareProps {
   isTerminalMode: boolean;
-  onCopyToast?: () => void;
+  onToast?: (msg: string) => void;
 }
 
-export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
-  const [shareLink, setShareLink] = useState<string>("");
-  const [shareImage, setShareImage] = useState<string>("");
+const currentUrl = () => window.location.origin + window.location.pathname;
+
+/** 카카오 SDK 초기화 (이미 초기화된 경우 무시). 사용 가능하면 true */
+function ensureKakao(): boolean {
+  if (!window.Kakao) return false;
+  const key = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+  if (!window.Kakao.isInitialized() && key) window.Kakao.init(key);
+  return !!window.Kakao.Share;
+}
+
+/** 청첩장 공유 섹션 (카카오톡 공유 / 링크 복사) */
+export default function Share({ isTerminalMode, onToast }: ShareProps) {
+  const [shareLink, setShareLink] = useState("");
+  const [shareImage, setShareImage] = useState("");
 
   useEffect(() => {
-    async function fetchShareData() {
-      try {
-        const { data: weddingData, error: weddingError } = await supabase
-          .from("weddings")
-          .select("share_link")
-          .limit(1)
-          .single();
+    fetchWedding<{ share_link: string | null }>("share_link")
+      .then((data) => setShareLink(data?.share_link || currentUrl()))
+      .catch((error) => {
+        console.error("공유 링크 조회 실패:", error);
+        setShareLink(currentUrl());
+      });
 
-        if (weddingError) throw weddingError;
-        if (weddingData) {
-          setShareLink(weddingData.share_link || window.location.origin + window.location.pathname);
-        }
-      } catch (error) {
-        console.error("Failed to fetch share link from Supabase:", error);
-        setShareLink(window.location.origin + window.location.pathname);
-      }
-    }
+    getFirstStorageFileUrl("main")
+      .then((url) => url && setShareImage(url))
+      .catch((error) => console.error("공유 이미지 조회 실패:", error));
 
-    async function fetchFirstPhoto() {
-      try {
-        const { data: files, error: storageError } = await supabase.storage
-          .from("photos")
-          .list("main", {
-            limit: 1,
-            sortBy: { column: "name", order: "asc" },
-          });
-
-        if (storageError) throw storageError;
-
-        if (files && files.length > 0) {
-          const firstFileName = files[0].name;
-          
-          const { data: publicUrlData } = supabase.storage
-            .from("photos")
-            .getPublicUrl(`main/${firstFileName}`);
-
-          if (publicUrlData) {
-            setShareImage(publicUrlData.publicUrl);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch storage photo:", error);
-      }
-    }
-
-    fetchShareData();
-    fetchFirstPhoto();
-
-    // 카카오 SDK 초기화 (전역 window.Kakao 활용)
-    if (window.Kakao && !window.Kakao.isInitialized()) {
-      const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-      if (kakaoKey) {
-        window.Kakao.init(kakaoKey);
-      }
-    }
+    ensureKakao();
   }, []);
 
+  const targetUrl = () => shareLink || currentUrl();
+
   const handleCopyLink = async () => {
-    try {
-      const targetUrl = shareLink || window.location.origin + window.location.pathname;
-      await navigator.clipboard.writeText(targetUrl);
-      if (onCopyToast) onCopyToast();
-    } catch (err) {
-      alert("링크 복사에 실패했습니다.");
-    }
+    onToast?.((await copyToClipboard(targetUrl())) ? "주소가 복사되었습니다." : "링크 복사에 실패했습니다.");
   };
 
-  /** 카카오톡 공유하기 핸들러 */
   const handleKakaoShare = () => {
-    const baseUrl = shareLink || window.location.origin + window.location.pathname;
-    const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-
-    if (!window.Kakao) {
-      alert("카카오 SDK가 아직 로드되지 않았습니다. 잠시 후 다시 시도해 주세요.");
+    if (!ensureKakao()) {
+      onToast?.("카카오톡 공유를 지금은 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
-    if (!window.Kakao.isInitialized() && kakaoKey) {
-      window.Kakao.init(kakaoKey);
-    }
-
-    if (!window.Kakao.Share) {
-      alert("카카오톡 공유 기능을 사용할 수 없습니다.");
-      return;
-    }
+    const url = targetUrl();
+    const link = { mobileWebUrl: url, webUrl: url };
 
     try {
       window.Kakao.Share.sendDefault({
@@ -107,63 +65,52 @@ export default function Share({ isTerminalMode, onCopyToast }: ShareProps) {
         content: {
           title: "준구와 세현이의 결혼식에 초대합니다",
           description: "모바일 청첩장에서 일정과 상세 내용을 확인해 보세요.",
-          imageUrl: shareImage || "",
-          link: {
-            mobileWebUrl: baseUrl,
-            webUrl: baseUrl,
-          },
+          imageUrl: shareImage,
+          link,
         },
-        buttons: [
-          {
-            title: "청첩장 보기",
-            link: {
-              mobileWebUrl: baseUrl,
-              webUrl: baseUrl,
-            },
-          },
-        ],
+        buttons: [{ title: "청첩장 보기", link }],
       });
-    } catch (err) {
-      console.error("카카오 공유 에러:", err);
-      alert("카카오톡 공유 중 오류가 발생했습니다.");
+    } catch (error) {
+      console.error("카카오 공유 에러:", error);
+      onToast?.("카카오톡 공유 중 오류가 발생했습니다.");
     }
   };
 
   return (
     <section className={styles.section}>
-      {!isTerminalMode && (
-        <motion.div 
+      {isTerminalMode ? (
+        <TerminalShare />
+      ) : (
+        <motion.div
           className={styles.container}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={sectionViewport}
         >
-          <div className={styles.headerTag}>SHARE</div>
-          <h2 className={styles.mainTitle}>청첩장 공유하기</h2>
+          <SectionHeader tag="SHARE" title="청첩장 공유하기" />
 
-          <div className={styles.contentWrapper}>
-            <div className={styles.buttonGroup}>
-              <button className={styles.kakaoBtn} onClick={handleKakaoShare}>
-                카카오톡 공유하기
-              </button>
-              <button className={styles.linkBtn} onClick={handleCopyLink}>
-                링크 복사하기
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
+          <motion.p className={styles.desc} variants={itemVariants}>
+            소중한 분들께 두 사람의 초대장을
+            <br />
+            전해주세요.
+          </motion.p>
 
-      {isTerminalMode && (
-        <motion.div 
-          className={styles.terminalContainer}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
+          <motion.div className={styles.buttonGroup} variants={itemVariants}>
+            <button type="button" className={`${styles.shareBtn} ${styles.kakao}`} onClick={handleKakaoShare}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M12 3C6.48 3 2 6.58 2 11c0 2.84 1.87 5.33 4.69 6.75l-.95 3.5c-.08.3.26.54.52.37l4.15-2.75c.52.07 1.05.13 1.59.13 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+              </svg>
+              <span>카카오톡으로 공유</span>
+            </button>
+            <button type="button" className={`${styles.shareBtn} ${styles.link}`} onClick={handleCopyLink}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              <span>링크 복사하기</span>
+            </button>
+          </motion.div>
         </motion.div>
       )}
     </section>

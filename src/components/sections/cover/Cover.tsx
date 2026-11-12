@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { formatCoverDate, formatCoverTime } from "@/utils/format";
 import styles from "./Cover.module.scss";
 import { supabase } from "@/lib/supabase";
+import { getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
 import TerminalCover from "@/components/developer/TerminalCover/TerminalCover";
 
 interface CoverProps {
@@ -22,6 +23,7 @@ export interface WeddingCoverInfo {
   locationName: string;
 }
 
+/** 메인 커버: 신랑·신부 영문 이름, 대표 사진, 예식 일시 */
 export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }: CoverProps) {
   const [weddingInfo, setWeddingInfo] = useState<WeddingCoverInfo | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
@@ -56,21 +58,7 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
           locationName: weddingData.location_name,
         });
 
-        const storageRef = supabase.storage.from("photos");
-        const { data: fileList, error: storageError } = await storageRef.list("main", {
-          limit: 5,
-          sortBy: { column: "name", order: "asc" },
-        });
-
-        if (!storageError && fileList && fileList.length > 0) {
-          const validFiles = fileList.filter((file) => file.name !== ".emptyFolderPlaceholder");
-          if (validFiles.length > 0) {
-            const { data: publicUrlData } = storageRef.getPublicUrl(`main/${validFiles[0].name}`);
-            if (publicUrlData?.publicUrl) {
-              setCoverImageUrl(publicUrlData.publicUrl);
-            }
-          }
-        }
+        setCoverImageUrl(await getFirstStorageFileUrl("main"));
       } catch (error) {
         console.error("커버 데이터 로드 실패:", error);
       }
@@ -98,7 +86,6 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            {/* 상단 신랑 & 신부 영문 이름 */}
             <motion.div
               className={styles.headerArea}
               initial={{ opacity: 0, y: -12 }}
@@ -112,9 +99,7 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
               </h1>
             </motion.div>
 
-            {/* 메인 레이아웃 행 */}
             <div className={styles.contentRow}>
-              {/* 좌측 90도 회전 텍스트: Save the date! + 날짜 */}
               <div className={`${styles.sideColumn} ${styles.leftSide}`}>
                 <motion.div
                   className={styles.verticalGroupLeft}
@@ -127,7 +112,6 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
                 </motion.div>
               </div>
 
-              {/* 중앙 대표 사진 */}
               <div className={styles.imageCenter}>
                 {coverImageUrl ? (
                   <motion.img
@@ -145,7 +129,6 @@ export default function Cover({ isTerminalMode, hasLoadedRef, onLoadingChange }:
                 )}
               </div>
 
-              {/* 우측 90도 회전 텍스트: 드로잉 선 + 시간 */}
               <div className={`${styles.sideColumn} ${styles.rightSide}`}>
                 <motion.div
                   className={styles.verticalGroupRight}

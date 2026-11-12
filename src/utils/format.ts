@@ -1,5 +1,3 @@
-// src/utils/format.ts
-
 /**
  * ISO 날짜 문자열을 받아 국문 전체 웨딩 일시 포맷으로 변환합니다.
  * @param dateString - ISO 형식의 날짜 문자열 (예: "2026-10-25T14:00:00")

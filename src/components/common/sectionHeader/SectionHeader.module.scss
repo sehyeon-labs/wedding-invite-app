@@ -1,0 +1,17 @@
+.tag {
+  font-family: "Schoolbell", cursive;
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted, #94a3b8);
+  user-select: none;
+}
+
+.title {
+  margin-top: -0.4rem;
+  font-family: "NostalgicOnHandwriting", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+}

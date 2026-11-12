@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import styles from "./page.module.scss";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/useToast";
 
 import Cover from "@/components/sections/cover/Cover";
 import Greeting from "@/components/sections/greeting/Greeting";
@@ -25,17 +26,16 @@ interface WeddingVerse {
   reference: string;
 }
 
+/** 모바일 청첩장 메인 페이지: 섹션 조합 + 공통 토스트 관리 */
 export default function Page() {
   const [isTerminalMode] = useState(false);
   const [isLoaderActive, setIsLoaderActive] = useState(false);
   const [verseData, setVerseData] = useState<WeddingVerse>({ verse: "", reference: "" });
   const [coupleNames, setCoupleNames] = useState({ groom: "신랑", bride: "신부" });
   
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const { message: toastMessage, visible: showToast, showToast: handleTriggerToast } = useToast();
 
   const hasLoadedRef = useRef(false);
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     async function fetchPageData() {
@@ -70,24 +70,10 @@ export default function Page() {
     }
 
     fetchPageData();
-
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
-
-  const handleTriggerToast = useCallback((message: string) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToastMessage(message);
-    setShowToast(true);
-    toastTimerRef.current = setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
   }, []);
 
   return (
     <div className={`${styles.container} ${isLoaderActive ? styles.lockScroll : ""}`}>
-      {/* 화면 우측 상단 고정 BGM 컨트롤러 */}
       <BackgroundMusic />
 
       <Cover 
@@ -113,6 +99,8 @@ export default function Page() {
         onCopyToast={() => handleTriggerToast("주소가 복사되었습니다.")}
       />
 
+      <Rsvp isTerminalMode={isTerminalMode} onToast={handleTriggerToast} />
+
       <Notice isTerminalMode={isTerminalMode} />
 
       <Reception 
@@ -125,19 +113,11 @@ export default function Page() {
         onCopyToast={() => handleTriggerToast("복사되었습니다.")}
       />
 
-      <GuestPhotoUpload isTerminalMode={isTerminalMode} />
+      <GuestPhotoUpload isTerminalMode={isTerminalMode} onToast={handleTriggerToast} />
       
-      <Guestbook 
-        isTerminalMode={isTerminalMode} 
-        onCopyToast={handleTriggerToast}
-      />
+      <Guestbook isTerminalMode={isTerminalMode} onToast={handleTriggerToast} />
 
-      <Rsvp isTerminalMode={isTerminalMode} />
-
-      <Share
-        isTerminalMode={isTerminalMode} 
-        onCopyToast={() => handleTriggerToast("주소가 복사되었습니다.")}
-      />
+      <Share isTerminalMode={isTerminalMode} onToast={handleTriggerToast} />
 
       <footer className={styles.footer}>
         <p className={styles.footerText}>소중한 걸음해 주셔서 고맙습니다.</p>

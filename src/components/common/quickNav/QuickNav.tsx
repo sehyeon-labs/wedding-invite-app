@@ -1,4 +1,3 @@
-// src/components/common/QuickNav.tsx
 "use client";
 
 import styles from "./QuickNav.module.scss";
@@ -10,6 +9,7 @@ interface QuickNavProps {
   onSelect: (index: number) => void;
 }
 
+/** 섹션 이동용 퀵 네비게이션 바 */
 export default function QuickNav({ totalSections, activeIndex, isVisible, onSelect }: QuickNavProps) {
   return (
     <nav className={`${styles.quickNav} ${isVisible ? styles.show : ""}`}>

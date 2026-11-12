@@ -1,98 +1,184 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState, useMemo, useRef, useSyncExternalStore } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import RsvpModal from "@/components/common/modal/rsvp/RsvpModal";
+import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
+import RsvpModal, { RsvpFormData } from "@/components/common/modal/rsvp/RsvpModal";
+import { RsvpPromptModal, RsvpDoneModal } from "@/components/common/modal/rsvp/RsvpResultModals";
+import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
+import TerminalRsvp from "@/components/developer/TerminalRsvp/TerminalRsvp";
 import styles from "./Rsvp.module.scss";
 
 interface RsvpProps {
   isTerminalMode: boolean;
-  onCopyToast?: () => void;
+  onToast?: (msg: string) => void;
 }
 
-export default function Rsvp({ isTerminalMode }: RsvpProps) {
+const STORAGE_KEY = "wedding_rsvp_submitted";
+
+const PROMPT_KEY = "wedding_rsvp_prompt_seen";
+
+const CHANGE_EVENT = "rsvp-submitted-change";
+
+const subscribe = (callback: () => void) => {
+  window.addEventListener(CHANGE_EVENT, callback);
+  return () => window.removeEventListener(CHANGE_EVENT, callback);
+};
+
+const getStoredRaw = () => {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+/** 전송 완료 정보를 기기에 저장 (새로고침 후에도 재전송 차단) */
+const saveSubmitted = (data: RsvpFormData) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+  } catch {
+    /* 저장소 사용 불가 시 현재 세션에서만 차단 */
+  }
+};
+
+/** 참석 의사 확인 섹션: 같은 성함·연락처로 다시 입력하면 기존 응답을 수정 */
+export default function Rsvp({ isTerminalMode, onToast }: RsvpProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isDoneOpen, setIsDoneOpen] = useState(false);
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [sessionSubmitted, setSubmitted] = useState<RsvpFormData | null>(null);
+  const submittingRef = useRef(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const storedRaw = useSyncExternalStore(subscribe, getStoredRaw, () => null);
+  const submitted = useMemo<RsvpFormData | null>(() => {
+    if (!storedRaw) return sessionSubmitted;
+    try {
+      return JSON.parse(storedRaw) as RsvpFormData;
+    } catch {
+      return sessionSubmitted;
+    }
+  }, [storedRaw, sessionSubmitted]);
 
-  const handleRsvpSubmit = async (formData: { 
-    side: string; 
-    name: string; 
-    meal: string | null; 
-    count: number; 
-    phone: string; 
-  }) => {
+  /** RSVP 섹션에 처음 진입하면 참석 여부 안내 모달 표시 (이미 응답했거나 한 번 본 기기는 제외) */
+  const handleSectionEnter = () => {
+    if (getStoredRaw() || localStorage.getItem(PROMPT_KEY)) return;
+    setIsPromptOpen(true);
+  };
+
+  const closePrompt = () => {
+    setIsPromptOpen(false);
+    try {
+      localStorage.setItem(PROMPT_KEY, "1");
+    } catch {
+      /* 저장소 사용 불가 시 무시 */
+    }
+  };
+  const handleSubmit = async (form: RsvpFormData) => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setLoading(true);
 
-    const payload = {
-      side: formData.side,
-      name: formData.name,
-      attendance: "attending",
-      meal: formData.meal,
-      guests_count: formData.count,
-      phone: formData.phone, // 추가된 phone 컬럼 연동
-    };
+    try {
+      // 같은 성함·연락처가 있으면 수정, 없으면 신규 등록 (조회 권한이 없으면 신규 등록)
+      const { data: existing } = await supabase
+        .from("rsvp")
+        .select("id")
+        .eq("name", form.name)
+        .eq("phone", form.phone)
+        .limit(1);
 
-    const { error } = await supabase.from("rsvp").insert([payload]);
+      const values = { side: form.side, meal: form.meal, guests_count: form.count };
+      const isUpdate = !!existing?.length;
 
-    if (error) {
-      alert("전송 실패: " + error.message);
-    } else {
-      setSubmitted(true);
+      if (isUpdate) {
+        const { data: updated, error } = await supabase.from("rsvp").update(values).eq("id", existing![0].id).select("id");
+        if (error) throw error;
+        if (!updated?.length) throw new Error("수정 권한이 없습니다.");
+      } else {
+        const { error } = await supabase
+          .from("rsvp")
+          .insert([{ ...values, name: form.name, phone: form.phone, attendance: "attending" }]);
+        if (error) throw error;
+      }
+
+      saveSubmitted(form);
+      setSubmitted(form);
       setIsModalOpen(false);
+      setIsDoneOpen(true);
+    } catch (error) {
+      console.error("참석 의사 전송 실패:", error);
+      onToast?.("전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      submittingRef.current = false;
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <section className={styles.section}>
-      {!isTerminalMode && (
-        <div className={styles.container}>
-          <div className={styles.headerTag}>RSVP</div>
-          <h2 className={styles.mainTitle}>참석 의사 확인</h2>
+      {isTerminalMode ? (
+        <TerminalRsvp />
+      ) : (
+        <motion.div
+          className={styles.container}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={sectionViewport}
+          onViewportEnter={handleSectionEnter}
+        >
+          <SectionHeader tag="RSVP" title="참석 의사 확인" />
 
-          <div className={styles.contentWrapper}>
-            <div className={styles.infoTextGroup}>
-              <p className={styles.desc}>
-                소중한 발걸음으로 자리를 빛내주세요.<br />
-                참석 여부를 미리 알려주시면 준비에 큰 도움이 됩니다.
-              </p>
-            </div>
+          <motion.p className={styles.desc} variants={itemVariants}>
+            소중한 발걸음으로 자리를 빛내주세요.
+            <br />
+            참석 여부를 미리 알려주시면 준비에 큰 도움이 됩니다.
+          </motion.p>
 
+          <motion.div className={styles.action} variants={itemVariants}>
             {submitted ? (
-              <div className={styles.successBox}>
-                <p>참석 정보가 성공적으로 전달되었습니다.</p>
-                <p className={styles.subText}>소중한 걸음해 주셔서 감사합니다.</p>
-              </div>
+              <button type="button" className={styles.openBtn} onClick={() => setIsDoneOpen(true)}>
+                참석 정보 확인
+              </button>
             ) : (
-              <button className={styles.openModalBtn} onClick={() => setIsModalOpen(true)}>
+              <button type="button" className={styles.openBtn} onClick={() => setIsModalOpen(true)}>
                 참석합니다
               </button>
             )}
-          </div>
+          </motion.div>
 
-          {mounted && createPortal(
-            <RsvpModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSubmit={handleRsvpSubmit}
-              loading={loading}
-            />,
-            document.body
-          )}
-        </div>
-      )}
+          <RsvpPromptModal
+            isOpen={isPromptOpen}
+            onDismiss={closePrompt}
+            onAccept={() => {
+              closePrompt();
+              setIsModalOpen(true);
+            }}
+          />
 
-      {isTerminalMode && (
-        <div className={styles.terminalContainer}>
-          <span className={styles.todo}>// TODO: 개발자 모드는 추후 필요할 때 구현</span>
-        </div>
+          <RsvpDoneModal
+            isOpen={isDoneOpen}
+            data={submitted}
+            onClose={() => setIsDoneOpen(false)}
+            onEdit={() => {
+              setIsDoneOpen(false);
+              setIsModalOpen(true);
+            }}
+          />
+
+          <RsvpModal
+            isOpen={isModalOpen}
+            initial={submitted}
+            loading={loading}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={handleSubmit}
+            onInvalid={(msg) => onToast?.(msg)}
+          />
+        </motion.div>
       )}
     </section>
   );

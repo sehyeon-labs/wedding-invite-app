@@ -1,82 +1,55 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
 import styles from "./BackgroundMusic.module.scss";
 
+/** 사용자 제스처로 인정될 수 있는 이벤트들 (브라우저별 차이를 고려해 폭넓게 감지) */
+const GESTURE_EVENTS = ["pointerdown", "pointerup", "mousedown", "touchstart", "touchend", "click", "keydown", "wheel", "scroll"] as const;
+
+/** 배경음악 플레이어: 진입 즉시 재생을 시도하고, 브라우저가 막으면 첫 사용자 동작에 재생 */
 export default function BackgroundMusic() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 음원 파일 불러오기
+  // 음원 파일 URL 조회
   useEffect(() => {
-    async function fetchAudioFile() {
-      try {
-        const storageRef = supabase.storage.from("photos");
-        const { data, error } = await storageRef.list("audio", {
-          limit: 1,
-          sortBy: { column: "name", order: "asc" },
-        });
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const validFile = data.find((file) => file.name !== ".emptyFolderPlaceholder");
-          if (validFile) {
-            const { data: publicUrlData } = storageRef.getPublicUrl(`audio/${validFile.name}`);
-            if (publicUrlData?.publicUrl) {
-              setAudioUrl(publicUrlData.publicUrl);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("음원 파일 조회 실패:", error);
-      }
-    }
-
-    fetchAudioFile();
+    getFirstStorageFileUrl("audio")
+      .then(setAudioUrl)
+      .catch((error) => console.error("음원 파일 조회 실패:", error));
   }, []);
 
-  // 첫 화면 터치/클릭 감지하여 오디오 재생
+  // 자동 재생 시도 + 차단 시 첫 제스처에서 재생
   useEffect(() => {
-    if (!audioUrl || !audioRef.current) return;
-
     const audio = audioRef.current;
+    if (!audioUrl || !audio) return;
 
-    const startAudio = () => {
+    let started = false;
+
+    const cleanup = () => GESTURE_EVENTS.forEach((evt) => window.removeEventListener(evt, tryPlay));
+
+    const tryPlay = () => {
+      if (started) return;
       audio
         .play()
         .then(() => {
+          started = true;
           setIsPlaying(true);
-          removeListeners();
+          cleanup();
         })
         .catch(() => {
-          // 브라우저가 아직 권한을 주지 않은 경우 대기
+          // 아직 재생 권한이 없으면 다음 제스처/로드 완료 시 재시도
         });
     };
 
-    const removeListeners = () => {
-      // 스크롤 대신 브라우저가 유효한 제스처로 인정하는 터치/클릭 이벤트들
-      window.removeEventListener("pointerdown", startAudio);
-      window.removeEventListener("touchend", startAudio);
-      window.removeEventListener("click", startAudio);
-    };
-
-    // 1. 자동 재생 즉시 시도 (PC 또는 자동재생 허용 브라우저)
-    audio
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => {
-        // 2. 모바일 브라우저 차단 시: 화면 어디든 첫 터치/탭 발생 즉시 재생
-        setIsPlaying(false);
-        window.addEventListener("pointerdown", startAudio, { once: true });
-        window.addEventListener("touchend", startAudio, { once: true });
-        window.addEventListener("click", startAudio, { once: true });
-      });
+    tryPlay();
+    GESTURE_EVENTS.forEach((evt) => window.addEventListener(evt, tryPlay, { passive: true }));
+    audio.addEventListener("canplaythrough", tryPlay);
 
     return () => {
-      removeListeners();
+      cleanup();
+      audio.removeEventListener("canplaythrough", tryPlay);
     };
   }, [audioUrl]);
 

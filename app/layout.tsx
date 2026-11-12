@@ -4,6 +4,7 @@ import "./globals.css";
 import styles from "./layout.module.scss";
 import { supabase } from "@/lib/supabase";
 import { getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
+import { formatWeddingDate } from "@/utils/format";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -24,6 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
     let groomName = "신랑";
     let brideName = "신부";
     let coverImageUrl = "https://sehyeon-labs.github.io/wedding-invite-app/public/images/tomato.jpeg";
+    let date = formatWeddingDate(weddingData?.wedding_date || "날짜 미정");
+    let location = weddingData?.location_name || "장소 미정";
 
     if (weddingData) {
       const { data: familyData } = await supabase
@@ -40,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
     coverImageUrl = (await getFirstStorageFileUrl("main").catch(() => null)) || coverImageUrl;
 
-    const title = `${groomName} & ${brideName} 결혼합니다`;
-    const description = "소중한 분들을 초대합니다. 함께 축복해 주세요.";
+    const title = `${groomName}와 ${brideName}의 결혼식에 초대합니다`;
+    const description = `${date} ${location}`;
 
     return {
       title,
@@ -55,7 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
             url: coverImageUrl,
             width: 800,
             height: 600,
-            alt: `${groomName} & ${brideName} 웨딩 사진`,
+            alt: `${groomName}와 ${brideName}의 결혼식`,
           },
         ],
       },

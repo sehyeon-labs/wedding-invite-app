@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fetchWedding, getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
 import { initKakao } from "@/lib/kakao";
+import { fetchShareInfo, type ShareInfo } from "@/lib/shareInfo";
 import { copyToClipboard } from "@/utils/format";
 import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
 import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
@@ -24,6 +25,7 @@ const ensureKakao = () => initKakao() && !!window.Kakao.Share;
 export default function Share({ isTerminalMode, onToast }: ShareProps) {
   const [shareLink, setShareLink] = useState("");
   const [shareImage, setShareImage] = useState("");
+  const [shareInfo, setShareInfo] = useState<ShareInfo | null>(null);
 
   useEffect(() => {
     fetchWedding<{ share_link: string | null }>("share_link")
@@ -36,6 +38,10 @@ export default function Share({ isTerminalMode, onToast }: ShareProps) {
     getFirstStorageFileUrl("main")
       .then((url) => url && setShareImage(url))
       .catch((error) => console.error("공유 이미지 조회 실패:", error));
+
+    fetchShareInfo()
+      .then(setShareInfo)
+      .catch((error) => console.error("공유 정보 조회 실패:", error));
 
     ensureKakao();
   }, []);
@@ -59,8 +65,8 @@ export default function Share({ isTerminalMode, onToast }: ShareProps) {
       window.Kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "준구와 세현이의 결혼식에 초대합니다",
-          description: "모바일 청첩장에서 일정과 상세 내용을 확인해 보세요.",
+          title: shareInfo?.title ?? "결혼식에 초대합니다",
+          description: shareInfo?.description ?? "",
           imageUrl: shareImage,
           link,
         },

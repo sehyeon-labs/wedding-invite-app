@@ -2,9 +2,8 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import styles from "./layout.module.scss";
-import { supabase } from "@/lib/supabase";
+import { fetchShareInfo } from "@/lib/shareInfo";
 import { getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
-import { formatWeddingDate } from "@/utils/format";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -16,35 +15,10 @@ export const viewport: Viewport = {
 /** 신랑·신부 이름과 대표 사진으로 SEO / 공유 미리보기 메타데이터 생성 */
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const { data: weddingData } = await supabase
-      .from("weddings")
-      .select("id, wedding_date, location_name")
-      .limit(1)
-      .maybeSingle();
-
-    let groomName = "신랑";
-    let brideName = "신부";
-    let coverImageUrl = "https://sehyeon-labs.github.io/wedding-invite-app/public/images/tomato.jpeg";
-    let date = formatWeddingDate(weddingData?.wedding_date || "날짜 미정");
-    let location = weddingData?.location_name || "장소 미정";
-
-    if (weddingData) {
-      const { data: familyData } = await supabase
-        .from("wedding_family_members")
-        .select("role_type, name")
-        .eq("wedding_id", weddingData.id)
-        .in("role_type", ["groom", "bride"]);
-
-      if (familyData) {
-        groomName = familyData.find((m) => m.role_type === "groom")?.name || groomName;
-        brideName = familyData.find((m) => m.role_type === "bride")?.name || brideName;
-      }
-    }
-
-    coverImageUrl = (await getFirstStorageFileUrl("main").catch(() => null)) || coverImageUrl;
-
-    const title = `${groomName}와 ${brideName}의 결혼식에 초대합니다`;
-    const description = `${date} ${location}`;
+    const { title, description, groomName, brideName } = await fetchShareInfo();
+    const coverImageUrl =
+      (await getFirstStorageFileUrl("main").catch(() => null)) ||
+      "https://sehyeon-labs.github.io/wedding-invite-app/public/images/tomato.jpeg";
 
     return {
       title,

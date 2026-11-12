@@ -90,3 +90,19 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return false;
   }
 }
+/** 성을 제외한 이름을 반환합니다. (예: "홍길동" → "길동") 한 글자 이하면 그대로 반환합니다. */
+export function stripSurname(name: string): string {
+  const trimmed = name.trim();
+  return trimmed.length >= 2 ? trimmed.slice(1) : trimmed;
+}
+
+/**
+ * 공유 카드용 일시 포맷 (YYYY년 M월 D일 오전/오후 h시)
+ * @example "2026-10-25T14:00:00" → "2026년 10월 25일 오후 2시"
+ */
+export function formatShareDate(dateString: string): string {
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return "날짜 미정";
+  const period = d.getHours() < 12 ? "오전" : "오후";
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${period} ${d.getHours() % 12 || 12}시`;
+}

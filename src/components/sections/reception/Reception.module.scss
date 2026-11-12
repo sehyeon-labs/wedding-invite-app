@@ -25,16 +25,16 @@
     }
 
     .subDescription {
+      width: 100%;
       margin: 0;
-      font-family: "SeoulHangang", serif;
-      font-size: 0.8rem;
-      line-height: 1.75;
-      letter-spacing: 0.04em;
-      color: var(--text-sub, #475569);
+      padding: 1rem;
+      box-sizing: border-box;
       text-align: center;
-      word-break: keep-all;
-      white-space: pre-line;
-      position: relative;
+      font-family: "NostalgicOnHandwriting", sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      letter-spacing: 0.03rem;
+      color: var(--text-muted-dark);
 
       /* 문구 하단에 아주 은은한 포인트 라인 (과하지 않은 40px 미니 구분선) */
       &::after {

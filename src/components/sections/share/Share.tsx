@@ -87,9 +87,7 @@ export default function Share({ isTerminalMode, onToast }: ShareProps) {
           <SectionHeader tag="SHARE" title="청첩장 공유하기" />
 
           <motion.p className={styles.desc} variants={itemVariants}>
-            소중한 분들께 두 사람의 초대장을
-            <br />
-            전해주세요.
+            소중한 분들께 두 사람의 초대장을 전해주세요.
           </motion.p>
 
           <motion.div className={styles.buttonGroup} variants={itemVariants}>

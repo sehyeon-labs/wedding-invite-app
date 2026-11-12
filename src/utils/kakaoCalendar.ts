@@ -1,8 +1,8 @@
-import { initKakao } from "@/lib/kakao";
 import type { CalendarEvent } from "@/utils/calendar";
 
 const CALLBACK_STATE = "kakao-calendar";
 const TOKEN_URL = "https://kauth.kakao.com/oauth/token";
+const CREATE_EVENT_URL = "https://kapi.kakao.com/v2/api/calendar/create/event";
 
 /** 카카오톡 인앱 브라우저 여부 */
 export const isKakaoInApp = () =>
@@ -11,14 +11,22 @@ export const isKakaoInApp = () =>
 const getRedirectUri = () =>
   `${window.location.origin}${window.location.pathname}`;
 
-/** 카카오 로그인/동의 화면으로 이동 (톡캘린더 일정 생성 권한). SDK를 쓸 수 없으면 false */
+/** 인가 코드 발급과 토큰 발급에 같은 키(client_id)를 써야 하므로 한 곳에서 결정 */
+const getClientId = () => process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY || process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY || "";
+
+/** 카카오 로그인/동의 화면으로 이동 (톡캘린더 일정 생성 권한). 키가 없으면 false */
 export function startKakaoCalendarAuth(): boolean {
-  if (!initKakao()) return false;
-  window.Kakao.Auth.authorize({
-    redirectUri: getRedirectUri(),
+  const clientId = getClientId();
+  if (!clientId) return false;
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: getRedirectUri(),
+    response_type: "code",
     scope: "talk_calendar",
     state: CALLBACK_STATE,
   });
+  window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
   return true;
 }
 
@@ -43,10 +51,7 @@ export async function saveEventToTalkCalendar(
   code: string,
   event: CalendarEvent,
 ): Promise<void> {
-  const clientId =
-    process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY ||
-    process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY ||
-    "";
+  const clientId = getClientId();
 
   let token;
   try {
@@ -73,38 +78,35 @@ export async function saveEventToTalkCalendar(
     );
   }
 
-  initKakao();
-  window.Kakao.Auth.setAccessToken(token.access_token);
-
   const { durationMinutes = 120 } = event;
+  const eventBody = {
+    title: event.title,
+    time: {
+      start_at: toIso(event.start),
+      end_at: toIso(new Date(event.start.getTime() + durationMinutes * 60000)),
+      time_zone: "Asia/Seoul",
+      all_day: false,
+      lunar: false,
+    },
+    description: event.description,
+    location: event.location ? { name: event.location } : undefined,
+    reminders: [1440],
+  };
+
   try {
-    await window.Kakao.API.request({
-      url: "/v2/api/calendar/create/event",
-      data: {
-        calendar_id: "primary",
-        event: JSON.stringify({
-          title: event.title,
-          time: {
-            start_at: toIso(event.start),
-            end_at: toIso(
-              new Date(event.start.getTime() + durationMinutes * 60000),
-            ),
-            time_zone: "Asia/Seoul",
-            all_day: false,
-            lunar: false,
-          },
-          description: event.description,
-          location: event.location ? { name: event.location } : undefined,
-          reminders: [1440],
-        }),
+    const res = await fetch(CREATE_EVENT_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token.access_token}`,
+        "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
       },
+      body: new URLSearchParams({ calendar_id: "primary", event: JSON.stringify(eventBody) }),
     });
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      throw new Error(`${result.code ?? res.status} ${result.msg ?? ""}`);
+    }
   } catch (error) {
-    const detail =
-      (error as { code?: number; msg?: string })?.msg ??
-      (error instanceof Error ? error.message : JSON.stringify(error));
-    throw new Error(
-      `일정 생성 실패 - ${(error as { code?: number })?.code ?? ""} ${detail}`,
-    );
+    throw new Error(`일정 생성 실패 - ${error instanceof Error ? error.message : String(error)}`);
   }
 }

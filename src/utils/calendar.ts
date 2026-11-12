@@ -65,9 +65,6 @@ function downloadIcs(ics: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** 카카오톡 인앱 브라우저 여부 */
-const isKakaoInApp = () => /KAKAOTALK/i.test(navigator.userAgent);
-
 /**
  * 기기 기본 캘린더에 일정 추가
  * - Android: 캘린더 앱의 일정 추가 화면을 바로 실행
@@ -92,7 +89,7 @@ export function addToDeviceCalendar(event: CalendarEvent, safariUrl: string) {
     return;
   }
 
-  if (/iPhone|iPad|iPod/i.test(ua) && isKakaoInApp()) {
+  if (/iPhone|iPad|iPod/i.test(ua) && /KAKAOTALK/i.test(ua)) {
     window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(safariUrl)}`;
     return;
   }

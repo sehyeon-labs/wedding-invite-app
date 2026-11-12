@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fetchWedding, getFirstStorageFileUrl } from "@/lib/supabaseHelpers";
+import { initKakao } from "@/lib/kakao";
 import { copyToClipboard } from "@/utils/format";
 import { containerVariants, itemVariants, sectionViewport } from "@/utils/motion";
 import SectionHeader from "@/components/common/sectionHeader/SectionHeader";
@@ -16,13 +17,8 @@ interface ShareProps {
 
 const currentUrl = () => window.location.origin + window.location.pathname;
 
-/** 카카오 SDK 초기화 (이미 초기화된 경우 무시). 사용 가능하면 true */
-function ensureKakao(): boolean {
-  if (!window.Kakao) return false;
-  const key = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
-  if (!window.Kakao.isInitialized() && key) window.Kakao.init(key);
-  return !!window.Kakao.Share;
-}
+/** 카카오 SDK 초기화 후 공유 기능 사용 가능 여부 */
+const ensureKakao = () => initKakao() && !!window.Kakao.Share;
 
 /** 청첩장 공유 섹션 (카카오톡 공유 / 링크 복사) */
 export default function Share({ isTerminalMode, onToast }: ShareProps) {

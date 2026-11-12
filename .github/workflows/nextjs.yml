@@ -78,7 +78,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY }}
-          NEXT_PUBLIC_KAKAO_REST_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_REST_API_KEY }}
           NEXT_PUBLIC_NAVER_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_NAVER_CLIENT_ID }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact

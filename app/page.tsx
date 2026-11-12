@@ -84,7 +84,7 @@ export default function Page() {
       
       <Greeting isTerminalMode={isTerminalMode} />
 
-      <Dday isTerminalMode={isTerminalMode} onToast={handleTriggerToast} />
+      <Dday isTerminalMode={isTerminalMode} />
 
       <CustomText
         isTerminalMode={isTerminalMode}

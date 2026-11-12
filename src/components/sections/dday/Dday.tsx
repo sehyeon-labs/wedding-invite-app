@@ -1,23 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { addToDeviceCalendar, buildWeddingEvent } from "@/utils/calendar";
-import { isKakaoInApp, startKakaoCalendarAuth, readKakaoCalendarCallback, saveEventToTalkCalendar } from "@/utils/kakaoCalendar";
-import Modal from "@/components/common/modal/Modal";
-import modalStyles from "@/components/common/modal/Modal.module.scss";
 import styles from "./Dday.module.scss";
 import TerminalDday from "@/components/developer/TerminalDday/TerminalDday";
 
 interface DdayProps {
   isTerminalMode: boolean;
-  onToast?: (msg: string) => void;
 }
 
 interface DdayWeddingInfo {
   weddingDate: string;
-  locationName: string;
   groomName: string;
   brideName: string;
 }
@@ -30,9 +24,6 @@ interface TimeLeft {
   isAfter: boolean;
   isToday: boolean;
 }
-
-/** 카카오톡 인앱 → Safari 이동 시 스크롤할 위치 */
-const CALENDAR_ANCHOR = "wedding-calendar";
 
 /** 달력 영역 등장 애니메이션 */
 const calendarGroupVariants: Variants = {
@@ -74,12 +65,8 @@ const timerItemVariants: Variants = {
 };
 
 /** 예식 달력 및 D-Day 카운트다운 섹션 */
-export default function Dday({ isTerminalMode, onToast }: DdayProps) {
+export default function Dday({ isTerminalMode }: DdayProps) {
   const [weddingInfo, setWeddingInfo] = useState<DdayWeddingInfo | null>(null);
-  // 카카오톡 인앱에서 Safari로 넘어온 경우(해시 존재) 저장 확인 모달을 바로 표시
-  const [isCalendarPromptOpen, setIsCalendarPromptOpen] = useState(
-    () => typeof window !== "undefined" && window.location.hash === `#${CALENDAR_ANCHOR}` && !/KAKAOTALK/i.test(navigator.userAgent)
-  );
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -94,7 +81,7 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
       try {
         const { data: weddingData, error: weddingError } = await supabase
           .from("weddings")
-          .select("id, wedding_date, location_name, location_address")
+          .select("id, wedding_date")
           .limit(1)
           .single();
 
@@ -112,7 +99,6 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
 
         setWeddingInfo({
           weddingDate: weddingData.wedding_date,
-          locationName: [weddingData.location_name, weddingData.location_address].filter(Boolean).join(" · "),
           groomName: groom?.name || "신랑",
           brideName: bride?.name || "신부",
         });
@@ -123,38 +109,6 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
 
     fetchDdayData();
   }, []);
-
-  // 카카오 로그인/동의 후 돌아오면 톡캘린더에 일정 생성
-  const kakaoCallbackHandled = useRef(false);
-  useEffect(() => {
-    if (!weddingInfo || kakaoCallbackHandled.current) return;
-    const callback = readKakaoCalendarCallback();
-    if (!callback) return;
-    kakaoCallbackHandled.current = true;
-
-    window.history.replaceState(null, "", `${window.location.pathname}#${CALENDAR_ANCHOR}`);
-    document.getElementById(CALENDAR_ANCHOR)?.scrollIntoView();
-
-    if (!callback.code) {
-      onToast?.("톡캘린더 저장이 취소되었습니다.");
-      return;
-    }
-    saveEventToTalkCalendar(callback.code, buildWeddingEvent(weddingInfo))
-      .then(() => onToast?.("톡캘린더에 일정이 저장되었습니다."))
-      .catch((error) => {
-        console.error("톡캘린더 저장 실패:", error);
-        onToast?.(`톡캘린더 저장 실패: ${String(error.message).slice(0, 80)}`);
-      });
-  }, [weddingInfo, onToast]);
-
-  /** 결혼식 일정 저장: 카카오톡 인앱은 톡캘린더, 그 외는 기기 기본 캘린더 */
-  const handleSaveCalendar = () => {
-    if (!weddingInfo) return;
-    setIsCalendarPromptOpen(false);
-    if (isKakaoInApp() && startKakaoCalendarAuth()) return;
-    const safariUrl = `${window.location.origin}${window.location.pathname}#${CALENDAR_ANCHOR}`;
-    addToDeviceCalendar(buildWeddingEvent(weddingInfo), safariUrl);
-  };
 
   const targetDateObj = weddingInfo ? new Date(weddingInfo.weddingDate) : new Date();
   const year = targetDateObj.getFullYear();
@@ -239,7 +193,7 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
   const weekDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
   return (
-    <section id={CALENDAR_ANCHOR} className={styles.ddaySection}>
+    <section className={styles.ddaySection}>
       {isTerminalMode ? (
         <TerminalDday />
       ) : (
@@ -299,10 +253,6 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
                   })}
                 </div>
               </div>
-
-              <button type="button" className={styles.saveBtn} onClick={handleSaveCalendar}>
-                캘린더에 저장하기
-              </button>
             </motion.div>
 
             {/* 타이머 및 메시지 */}
@@ -366,17 +316,6 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
                 )}
               </motion.div>
             </motion.div>
-            <Modal isOpen={isCalendarPromptOpen} onClose={() => setIsCalendarPromptOpen(false)} title="캘린더에 저장" size="sm">
-              <p className={styles.promptText}>결혼식 일정을 캘린더에 저장할까요?</p>
-              <div className={modalStyles.btnGroup}>
-                <button type="button" className={modalStyles.ghostBtn} onClick={() => setIsCalendarPromptOpen(false)}>
-                  닫기
-                </button>
-                <button type="button" className={modalStyles.submitBtn} onClick={handleSaveCalendar}>
-                  저장하기
-                </button>
-              </div>
-            </Modal>
           </div>
         )
       )}

@@ -143,7 +143,7 @@ export default function Dday({ isTerminalMode, onToast }: DdayProps) {
       .then(() => onToast?.("톡캘린더에 일정이 저장되었습니다."))
       .catch((error) => {
         console.error("톡캘린더 저장 실패:", error);
-        onToast?.("톡캘린더 저장에 실패했습니다.");
+        onToast?.(`톡캘린더 저장 실패: ${String(error.message).slice(0, 80)}`);
       });
   }, [weddingInfo, onToast]);
 

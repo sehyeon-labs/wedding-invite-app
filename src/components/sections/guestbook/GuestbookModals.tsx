@@ -125,3 +125,96 @@ export function GuestbookDeleteModal({ isOpen, loading, onClose, onSubmit }: Del
     </Modal>
   );
 }
+
+export interface GuestbookMatch {
+  id: number;
+  message: string;
+  created_at: string;
+}
+
+interface DeleteMineModalProps {
+  isOpen: boolean;
+  loading: boolean;
+  onClose: () => void;
+  /** 이름·비밀번호가 모두 일치하는 메시지 목록 조회 */
+  onFind: (name: string, password: string) => Promise<GuestbookMatch[]>;
+  /** 선택한 메시지 1건 삭제. 성공 시 true */
+  onDelete: (id: number, name: string, password: string) => Promise<boolean>;
+}
+
+function DeleteMineBody({ loading, onClose, onFind, onDelete }: Omit<DeleteMineModalProps, "isOpen">) {
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [matches, setMatches] = useState<GuestbookMatch[] | null>(null);
+
+  if (matches) {
+    return (
+      <div className={m.form}>
+        <p className={m.label}>삭제할 메시지를 선택해주세요.</p>
+        {matches.map((item) => (
+          <div key={item.id} className={m.field}>
+            <p className={m.label} style={{ whiteSpace: "pre-wrap" }}>
+              {item.message.length > 60 ? `${item.message.slice(0, 60)}…` : item.message}
+            </p>
+            <button
+              type="button"
+              className={`${m.submitBtn} ${m.dangerBtn}`}
+              disabled={loading}
+              onClick={async () => {
+                if (await onDelete(item.id, name, password)) {
+                  const rest = matches.filter((x) => x.id !== item.id);
+                  if (rest.length) setMatches(rest);
+                  else onClose();
+                }
+              }}
+            >
+              {loading ? "삭제 중..." : "이 메시지 삭제"}
+            </button>
+          </div>
+        ))}
+        <div className={m.btnGroup}>
+          <button type="button" className={m.ghostBtn} onClick={onClose}>
+            닫기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className={m.form}
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const found = await onFind(name.trim(), password.trim());
+        if (found.length) setMatches(found);
+      }}
+    >
+      <div className={m.field}>
+        <label className={m.label}>이름</label>
+        <input className={m.input} value={name} placeholder="작성 시 입력한 이름" onChange={(e) => setName(e.target.value)} required />
+      </div>
+      <div className={m.field}>
+        <label className={m.label}>비밀번호</label>
+        <input className={m.input} type="password" value={password} placeholder="작성 시 입력한 비밀번호" onChange={(e) => setPassword(e.target.value)} required />
+      </div>
+      <div className={m.btnGroup}>
+        <button type="button" className={m.ghostBtn} onClick={onClose}>
+          취소
+        </button>
+        <button type="submit" className={m.submitBtn} disabled={loading}>
+          {loading ? "확인 중..." : "내 메시지 찾기"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/** 내 메시지 삭제 모달: 이름+비밀번호로 찾은 메시지 중 하나를 골라 삭제 */
+export function GuestbookDeleteMineModal({ isOpen, ...rest }: DeleteMineModalProps) {
+  return (
+    <Modal isOpen={isOpen} onClose={rest.onClose} size="sm" title="내 메시지 삭제">
+      <DeleteMineBody {...rest} />
+    </Modal>
+  );
+}

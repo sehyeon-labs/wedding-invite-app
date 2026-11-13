@@ -17,13 +17,14 @@ export async function fetchShareInfo(): Promise<ShareInfo> {
 
   const { data: wedding } = await supabase
     .from("weddings")
-    .select("id, wedding_date, location_name")
+    .select("id, wedding_date, location_name, location_detail_address")
     .limit(1)
     .maybeSingle();
 
   if (wedding) {
     if (wedding.wedding_date) date = formatShareDate(wedding.wedding_date);
-    if (wedding.location_name) location = wedding.location_name;
+    const place = [wedding.location_name, wedding.location_detail_address].filter(Boolean).join(" ");
+    if (place) location = place;
 
     const { data: family } = await supabase
       .from("wedding_family_members")
